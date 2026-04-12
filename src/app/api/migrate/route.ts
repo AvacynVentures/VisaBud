@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
     // Check what tables exist
     const tables = ['visa_applications', 'feature_access_logs', 'payments', 'users'];
     for (const t of tables) {
-      const { data, error } = await supabase.from(t).select('*').limit(0);
+      const { error } = await supabase.from(t).select('*').limit(0);
       results.push(`${t}: ${error ? `ERROR - ${error.message}` : 'EXISTS'}`);
     }
 
