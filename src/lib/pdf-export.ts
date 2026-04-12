@@ -56,9 +56,9 @@ export async function generateVisaBudPDF(options: PDFExportOptions): Promise<Blo
   pdf.rect(pageWidth - 60, 12, 45, 26, 'F');
   pdf.setTextColor(30, 58, 138);
   pdf.setFontSize(10);
-  pdf.setFont(undefined, 'bold');
+  pdf.setFont('helvetica', 'bold');
   pdf.text(visa.toUpperCase(), pageWidth - 57, 25);
-  pdf.setFont(undefined, 'normal');
+  pdf.setFont('helvetica', 'normal');
 
   pdf.setTextColor(0, 0, 0);
   yPosition = 65;
@@ -82,18 +82,18 @@ export async function generateVisaBudPDF(options: PDFExportOptions): Promise<Blo
 
   // ---- SECTION: CHECKLIST ----
   pdf.setFontSize(14);
-  pdf.setFont(undefined, 'bold');
+  pdf.setFont('helvetica', 'bold');
   pdf.text('📋 Your Document Checklist', margin, yPosition);
   yPosition += 8;
 
   // Personal documents
   pdf.setFontSize(11);
-  pdf.setFont(undefined, 'bold');
+  pdf.setFont('helvetica', 'bold');
   pdf.text('Personal Documents', margin, yPosition);
   yPosition += 6;
 
   pdf.setFontSize(10);
-  pdf.setFont(undefined, 'normal');
+  pdf.setFont('helvetica', 'normal');
   checklist.personal.forEach((item) => {
     const lines = pdf.splitTextToSize(`☐ ${item.label}`, contentWidth - 5);
     lines.forEach((line: string) => {
@@ -125,12 +125,12 @@ export async function generateVisaBudPDF(options: PDFExportOptions): Promise<Blo
 
   // Financial documents
   pdf.setFontSize(11);
-  pdf.setFont(undefined, 'bold');
+  pdf.setFont('helvetica', 'bold');
   pdf.text(unlocked ? 'Financial Documents' : 'Financial Documents (Requires Full Pack)', margin, yPosition);
   yPosition += 6;
 
   pdf.setFontSize(10);
-  pdf.setFont(undefined, 'normal');
+  pdf.setFont('helvetica', 'normal');
   if (!unlocked) pdf.setTextColor(150, 150, 150);
   checklist.financial.forEach((item) => {
     const lines = pdf.splitTextToSize(`☐ ${item.label}`, contentWidth - 5);
@@ -165,12 +165,12 @@ export async function generateVisaBudPDF(options: PDFExportOptions): Promise<Blo
 
   // Supporting documents
   pdf.setFontSize(11);
-  pdf.setFont(undefined, 'bold');
+  pdf.setFont('helvetica', 'bold');
   pdf.text(unlocked ? 'Supporting Documents' : 'Supporting Documents (Requires Full Pack)', margin, yPosition);
   yPosition += 6;
 
   pdf.setFontSize(10);
-  pdf.setFont(undefined, 'normal');
+  pdf.setFont('helvetica', 'normal');
   if (!unlocked) pdf.setTextColor(150, 150, 150);
   checklist.supporting.forEach((item) => {
     const lines = pdf.splitTextToSize(`☐ ${item.label}`, contentWidth - 5);
@@ -207,25 +207,25 @@ export async function generateVisaBudPDF(options: PDFExportOptions): Promise<Blo
 
   // ---- SECTION: TIMELINE ----
   pdf.setFontSize(14);
-  pdf.setFont(undefined, 'bold');
+  pdf.setFont('helvetica', 'bold');
   pdf.text('⏱️ Your Application Timeline', margin, yPosition);
   yPosition += 8;
 
   pdf.setFontSize(10);
-  pdf.setFont(undefined, 'normal');
-  timeline.forEach((milestone: any, index: number) => {
+  pdf.setFont('helvetica', 'normal');
+  timeline.forEach((milestone: any, _index: number) => {
     if (yPosition > pageHeight - 20) {
       pdf.addPage();
       yPosition = margin;
     }
 
     // Week label
-    pdf.setFont(undefined, 'bold');
+    pdf.setFont('helvetica', 'bold');
     pdf.text(`${milestone.week}`, margin, yPosition);
     yPosition += 5;
 
     // Milestone title
-    pdf.setFont(undefined, 'normal');
+    pdf.setFont('helvetica', 'normal');
     const titleLines = pdf.splitTextToSize(milestone.label, contentWidth - 5);
     titleLines.forEach((line: string) => {
       pdf.text(line, margin + 3, yPosition);
@@ -256,13 +256,13 @@ export async function generateVisaBudPDF(options: PDFExportOptions): Promise<Blo
 
   // ---- SECTION: RISKS ----
   pdf.setFontSize(14);
-  pdf.setFont(undefined, 'bold');
+  pdf.setFont('helvetica', 'bold');
   pdf.text('⚠️ Risk Assessment', margin, yPosition);
   yPosition += 8;
 
   if (risks.length === 0) {
     pdf.setFontSize(10);
-    pdf.setFont(undefined, 'normal');
+    pdf.setFont('helvetica', 'normal');
     pdf.text('No major risks identified based on your answers.', margin, yPosition);
     yPosition += 6;
     pdf.text('Always verify with Gov.uk before submitting.', margin, yPosition);
@@ -275,11 +275,11 @@ export async function generateVisaBudPDF(options: PDFExportOptions): Promise<Blo
 
       // Risk badge (HIGH/MEDIUM/LOW)
       const badgeColor = risk.level === 'high' ? [220, 53, 69] : risk.level === 'medium' ? [255, 193, 7] : [13, 110, 253];
-      pdf.setFillColor(...badgeColor);
+      pdf.setFillColor(badgeColor[0], badgeColor[1], badgeColor[2]);
       pdf.rect(margin, yPosition - 4, 15, 6, 'F');
       pdf.setTextColor(255, 255, 255);
       pdf.setFontSize(7);
-      pdf.setFont(undefined, 'bold');
+      pdf.setFont('helvetica', 'bold');
       pdf.text(risk.level.toUpperCase(), margin + 1, yPosition + 0.5);
 
       // Risk title

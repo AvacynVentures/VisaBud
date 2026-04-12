@@ -7,7 +7,7 @@ interface EmailTemplate {
 }
 
 export const emailTemplates = {
-  welcome: (userEmail: string): EmailTemplate => ({
+  welcome: (_userEmail: string): EmailTemplate => ({
     subject: 'Your VisaBud checklist is ready 🎉',
     html: `
       <!DOCTYPE html>
@@ -65,7 +65,7 @@ The VisaBud Team
     `,
   }),
 
-  paymentConfirmation: (userEmail: string, downloadLink: string): EmailTemplate => ({
+  paymentConfirmation: (_userEmail: string, downloadLink: string): EmailTemplate => ({
     subject: 'Your application pack is ready to download 📦',
     html: `
       <!DOCTYPE html>
@@ -122,7 +122,7 @@ The VisaBud Team
     `,
   }),
 
-  premiumReviewStarted: (userEmail: string, tier: string): EmailTemplate => ({
+  premiumReviewStarted: (_userEmail: string, tier: string): EmailTemplate => ({
     subject: 'Your document review has started 🔍',
     html: `
       <!DOCTYPE html>
@@ -185,7 +185,7 @@ Check your dashboard for results.
 The VisaBud Team`,
   }),
 
-  premiumReviewComplete: (userEmail: string, overallRisk: string, issueCount: number): EmailTemplate => ({
+  premiumReviewComplete: (_userEmail: string, overallRisk: string, issueCount: number): EmailTemplate => ({
     subject: `Your document review is complete ${overallRisk === 'low' ? '✅' : overallRisk === 'medium' ? '🟡' : '🔴'}`,
     html: `
       <!DOCTYPE html>
@@ -243,7 +243,7 @@ View your full review on the dashboard.
 The VisaBud Team`,
   }),
 
-  upsellReminder: (userEmail: string): EmailTemplate => ({
+  upsellReminder: (_userEmail: string): EmailTemplate => ({
     subject: 'Getting nervous about your documents? 😰',
     html: `
       <!DOCTYPE html>
@@ -293,7 +293,7 @@ The VisaBud Team
 export async function sendEmail(
   to: string,
   template: EmailTemplate,
-  resendApiKey: string = process.env.RESEND_API_KEY || ''
+  _resendApiKey: string = process.env.RESEND_API_KEY || ''
 ) {
   try {
     // Using Resend API (would need to configure)

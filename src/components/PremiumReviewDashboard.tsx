@@ -5,9 +5,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Shield, ShieldCheck, ShieldAlert, ShieldX,
   ChevronDown, ChevronUp, AlertTriangle, CheckCircle,
-  Info, ArrowRight, Loader2, RefreshCw,
+  Info, ArrowRight, Loader2,
 } from 'lucide-react';
-import { useApplicationStore, PremiumReviewState, DocumentReviewResult } from '@/lib/store';
+import { useApplicationStore, DocumentReviewResult } from '@/lib/store';
 
 // ─── Risk Level Styling ─────────────────────────────────────────────────────
 

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Shield, ShieldCheck, Sparkles, Check, X, Loader2, Zap, Users } from 'lucide-react';
+import { ShieldCheck, Sparkles, Check, X, Loader2, Zap, Users } from 'lucide-react';
 import { useApplicationStore } from '@/lib/store';
 import { PREMIUM_REVIEW_TIERS } from '@/lib/stripe';
 

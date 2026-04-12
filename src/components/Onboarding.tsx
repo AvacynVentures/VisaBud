@@ -7,6 +7,7 @@ import { useAuth } from '@/lib/auth-context';
 import { useApplicationStore } from '@/lib/store';
 import { CheckCircle, ArrowRight, ArrowLeft } from 'lucide-react';
 import { PageFadeIn } from '@/lib/animations';
+import { VisaType, RelationshipStatus, Urgency } from '@/lib/types';
 import EmailCapture from './EmailCapture';
 
 const VISA_TYPES = [
@@ -327,7 +328,7 @@ export default function Onboarding() {
                             {PARTNER_STATUSES.map((status) => (
                               <button
                                 key={status}
-                                onClick={() => setRelationshipStatus(status)}
+                                onClick={() => setRelationshipStatus(status as RelationshipStatus)}
                                 className={`w-full text-left p-4 rounded-xl border-2 transition-all duration-200 touch-target
                                   ${relationshipStatus === status
                                     ? 'border-blue-600 bg-blue-50 shadow-sm'
@@ -447,7 +448,7 @@ export default function Onboarding() {
                           initial={{ opacity: 0, y: 8 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: i * 0.05, duration: 0.2 }}
-                          onClick={() => setUrgency(opt.id)}
+                          onClick={() => setUrgency(opt.id as Urgency)}
                           className={`w-full flex items-center gap-4 p-4 rounded-xl border-2 text-left transition-all duration-200 touch-target
                             ${urgency === opt.id
                               ? 'border-blue-600 bg-blue-50 shadow-sm'

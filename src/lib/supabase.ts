@@ -121,7 +121,7 @@ export async function updateUserUnlockStatus(userId: string, unlocked: boolean) 
  */
 export async function addAuditLog(userId: string, action: string) {
   try {
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('audit_log')
       .insert({
         user_id: userId,

@@ -184,25 +184,25 @@ export const useApplicationStore = create<AppState>()(
           premiumReview: { ...state.premiumReview, ...results },
         })),
       resetPremiumReview: () =>
-        set((state) => ({
+        set((_state) => ({
           premiumReview: { ...initialState.premiumReview },
         })),
 
       reset: () => set(initialState),
 
-      getApplicationData: () => {
+      getApplicationData: (): Partial<Application> => {
         const state = get();
         return {
-          visa_type: state.visaType !== 'unsure' ? state.visaType : undefined,
+          visa_type: (state.visaType && state.visaType !== 'unsure' ? state.visaType : undefined),
           nationality: state.nationality,
-          relationship_status: state.relationshipStatus,
-          currently_in_uk: state.currentlyInUk,
-          relationship_duration_months: state.relationshipDurationMonths,
-          annual_income_range: state.annualIncomeRange,
+          relationship_status: state.relationshipStatus ?? undefined,
+          currently_in_uk: state.currentlyInUk ?? undefined,
+          relationship_duration_months: state.relationshipDurationMonths ?? undefined,
+          annual_income_range: state.annualIncomeRange ?? undefined,
           employment_status: state.employmentStatus,
           documents_available: state.documentsAvailable,
-          urgency: state.urgency,
-          target_application_date: state.targetApplicationDate,
+          urgency: state.urgency ?? undefined,
+          target_application_date: state.targetApplicationDate ?? undefined,
           onboarding_completed: true,
         };
       },
