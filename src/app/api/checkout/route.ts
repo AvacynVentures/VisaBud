@@ -116,9 +116,55 @@ export async function POST(req: NextRequest) {
     });
   } catch (err: any) {
     console.error('Checkout error:', err);
+
+    // Surface more useful diagnostics
+    const isStripeAuth = err?.type === 'StripeAuthenticationError';
+    const isMissingKey = !process.env.STRIPE_SECRET_KEY;
+    const isMissingSiteUrl = !process.env.NEXT_PUBLIC_SITE_URL;
+    const keyPrefix = process.env.STRIPE_SECRET_KEY?.substring(0, 12) || 'NOT_SET';
+
     return NextResponse.json(
-      { error: 'Failed to create checkout session', details: err.message },
+      {
+        error: 'Failed to create checkout session',
+        hint: isStripeAuth
+          ? 'Stripe API key is invalid or expired. Check STRIPE_SECRET_KEY in Vercel env vars.'
+          : isMissingKey
+            ? 'STRIPE_SECRET_KEY is not set in environment variables.'
+            : isMissingSiteUrl
+              ? 'NEXT_PUBLIC_SITE_URL is not set — Stripe needs valid success/cancel URLs.'
+              : err.message,
+        keyPrefix,
+        siteUrl: process.env.NEXT_PUBLIC_SITE_URL ? 'set' : 'NOT_SET',
+      },
       { status: 500 }
     );
+  }
+}
+
+/**
+ * GET /api/checkout
+ * Health check — verify Stripe connectivity without auth
+ */
+export async function GET() {
+  const keyPrefix = process.env.STRIPE_SECRET_KEY?.substring(0, 12) || 'NOT_SET';
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'NOT_SET';
+
+  try {
+    // Quick Stripe connectivity check
+    await stripe.balance.retrieve();
+    return NextResponse.json({
+      status: 'ok',
+      stripe: 'connected',
+      keyPrefix,
+      siteUrl: siteUrl !== 'NOT_SET' ? 'set' : 'NOT_SET',
+    });
+  } catch (err: any) {
+    return NextResponse.json({
+      status: 'error',
+      stripe: err?.type || 'unknown_error',
+      message: err?.message?.substring(0, 100),
+      keyPrefix,
+      siteUrl: siteUrl !== 'NOT_SET' ? 'set' : 'NOT_SET',
+    });
   }
 }
