@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, CheckCircle, FileText, Mail, BookOpen, Loader2, Shield, Zap, Users, Clock } from 'lucide-react';
+import { createClient } from '@supabase/supabase-js';
 
 interface PaywallModalProps {
   isOpen: boolean;
@@ -41,24 +42,41 @@ export default function PaywallModal({ isOpen, onClose, visaType }: PaywallModal
 
   if (!isOpen) return null;
 
-  async function handleCheckout() {
+  async function handleCheckout(tier: 'standard' | 'premium' | 'expert' = 'premium') {
     setIsLoading(true);
     setError(null);
 
     try {
+      // Initialize Supabase client
+      const supabase = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      );
+
+      // Get auth token
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+
+      if (!token) {
+        setError('Please sign in to continue.');
+        setIsLoading(false);
+        return;
+      }
+
+      // Call checkout with auth token in header
       const res = await fetch('/api/checkout', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ tier }),
       });
 
       const data = await res.json();
 
       if (!res.ok) {
-        if (res.status === 401) {
-          setError('Please sign in to continue.');
-        } else {
-          setError(data.error || 'Something went wrong. Please try again.');
-        }
+        setError(data.error || 'Something went wrong. Please try again.');
         setIsLoading(false);
         return;
       }
@@ -70,6 +88,7 @@ export default function PaywallModal({ isOpen, onClose, visaType }: PaywallModal
         setIsLoading(false);
       }
     } catch (err) {
+      console.error('Checkout error:', err);
       setError('Network error. Check your connection and try again.');
       setIsLoading(false);
     }
