@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, CheckCircle, FileText, Mail, BookOpen, Loader2, Shield, Zap, Users, Clock } from 'lucide-react';
 
@@ -34,6 +35,7 @@ const BENEFITS = [
 ];
 
 export default function PaywallModal({ isOpen, onClose, visaType }: PaywallModalProps) {
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -168,16 +170,24 @@ export default function PaywallModal({ isOpen, onClose, visaType }: PaywallModal
           </ul>
         </div>
 
-        {/* Error */}
+        {/* Error or Sign In Needed */}
         <AnimatePresence>
           {error && (
             <motion.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              className="mx-8 mb-2 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700"
+              className="mx-8 mb-3 p-4 bg-amber-50 border border-amber-200 rounded-lg"
             >
-              {error}
+              <p className="text-sm font-medium text-amber-900 mb-2">{error}</p>
+              {error.includes('sign in') && (
+                <button
+                  onClick={() => router.push('/auth/login')}
+                  className="w-full py-2 px-4 bg-amber-600 hover:bg-amber-700 text-white font-medium text-sm rounded-lg transition-colors"
+                >
+                  Sign In Now
+                </button>
+              )}
             </motion.div>
           )}
         </AnimatePresence>
