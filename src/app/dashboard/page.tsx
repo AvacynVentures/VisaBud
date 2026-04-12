@@ -23,7 +23,6 @@ import {
   AlertCircle,
   Calendar,
   FileText,
-  ArrowLeft,
   ChevronDown,
   Shield,
   ShieldAlert,
@@ -40,6 +39,10 @@ import {
   Info,
   CreditCard,
   PartyPopper,
+  ArrowRight,
+  Users,
+  Zap,
+  Star,
 } from 'lucide-react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
@@ -101,7 +104,7 @@ export default function DashboardPage() {
 function DashboardContent() {
   const { user } = useAuth();
   const store = useApplicationStore();
-  const { visaType, currentStep, urgency, annualIncomeRange, currentlyInUk, relationshipDurationMonths, unlocked, setUnlocked, setUserEmail } = store;
+  const { visaType, currentStep, unlocked, setUnlocked, setUserEmail } = store;
 
   useEffect(() => {
     if (user?.email) setUserEmail(user.email);
@@ -125,6 +128,362 @@ function DashboardContent() {
     checkUnlockStatus();
   }, [setUnlocked]);
 
+  const [showPaywall, setShowPaywall] = useState(false);
+
+  const hasCompletedWizard = currentStep >= 5 && visaType && visaType !== 'unsure';
+
+  if (!hydrated) {
+    return (
+      <div className="min-h-screen bg-[#F9FAFB] flex items-center justify-center">
+        <div className="animate-pulse flex flex-col items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-blue-200" />
+          <div className="h-3 w-32 bg-gray-200 rounded" />
+        </div>
+      </div>
+    );
+  }
+
+  // If wizard not completed, show the freemium welcome dashboard
+  if (!hasCompletedWizard) {
+    return (
+      <FreemiumWelcomeDashboard
+        showPaywall={showPaywall}
+        setShowPaywall={setShowPaywall}
+        unlocked={unlocked}
+      />
+    );
+  }
+
+  // Full dashboard for users who completed the wizard
+  return (
+    <FullDashboard
+      store={store}
+      showPaywall={showPaywall}
+      setShowPaywall={setShowPaywall}
+    />
+  );
+}
+
+// ─── Freemium Welcome Dashboard (NEW) ──────────────────────────────────────
+
+function FreemiumWelcomeDashboard({
+  showPaywall,
+  setShowPaywall,
+}: {
+  showPaywall: boolean;
+  setShowPaywall: (v: boolean) => void;
+  unlocked: boolean;
+}) {
+  const { user } = useAuth();
+  const firstName = user?.user_metadata?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || 'there';
+
+  // Sample preview data for free tier
+  const previewChecklist = [
+    { id: 'preview-1', title: 'Valid passport', desc: 'Current passport with at least 6 months validity remaining' },
+    { id: 'preview-2', title: 'Passport-sized photos', desc: '2 recent photos meeting UK visa photo requirements' },
+    { id: 'preview-3', title: 'Completed application form', desc: 'Online VAF form — make sure all sections are filled accurately' },
+    { id: 'preview-4', title: 'TB test certificate', desc: 'Required if applying from a listed country' },
+    { id: 'preview-5', title: 'English language certificate', desc: 'IELTS Life Skills A1 or equivalent for spouse visa' },
+    { id: 'preview-6', title: 'Proof of relationship', desc: 'Photos, correspondence, travel tickets together' },
+    { id: 'preview-7', title: 'Financial evidence', desc: 'Bank statements, payslips, employment letter' },
+    { id: 'preview-8', title: 'Accommodation details', desc: 'Tenancy agreement or mortgage statement' },
+    { id: 'preview-9', title: 'Biometric enrolment', desc: 'Book appointment at visa application centre' },
+    { id: 'preview-10', title: 'Cover letter', desc: 'Summarise your application and circumstances' },
+  ];
+
+  const previewTimeline = [
+    { week: 1, title: 'Gather core documents', desc: 'Passport, photos, TB test booking' },
+    { week: 2, title: 'Financial evidence', desc: 'Collect bank statements and payslips' },
+    { week: 3, title: 'Complete application form', desc: 'Fill in the online VAF form' },
+  ];
+
+  return (
+    <PageFadeIn>
+      <div className="min-h-screen bg-[#F9FAFB]">
+        {/* Nav */}
+        <nav className="bg-white border-b border-gray-100 sticky top-0 z-30">
+          <div className="max-w-5xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between">
+            <Link href="/" className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-700 to-blue-900 flex items-center justify-center shadow-sm">
+                <span className="text-white text-sm font-bold">V</span>
+              </div>
+              <span className="font-bold text-blue-900 tracking-tight text-lg hidden sm:inline">VisaBud</span>
+            </Link>
+            <div className="flex items-center gap-3">
+              <span className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-semibold">
+                Free Plan
+              </span>
+              <button
+                onClick={() => setShowPaywall(true)}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-xl shadow-sm hover:shadow-md transition-all btn-hover"
+              >
+                <Zap className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Unlock Premium</span>
+                <span className="sm:hidden">Upgrade</span>
+              </button>
+            </div>
+          </div>
+        </nav>
+
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8 pb-24 sm:pb-8">
+          {/* Welcome Header */}
+          <FadeIn>
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 sm:p-8 mb-6">
+              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                <div>
+                  <h1 className="text-2xl sm:text-3xl font-bold text-blue-900 mb-2">
+                    Welcome, {firstName}! 👋
+                  </h1>
+                  <p className="text-gray-500 mb-4">
+                    Your UK visa checklist is ready. Here&apos;s a preview of what we&apos;ve prepared for you.
+                  </p>
+                  <Link
+                    href="/app/start"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-700 hover:bg-blue-800 text-white text-sm font-semibold rounded-xl shadow-sm transition-all btn-hover"
+                  >
+                    Personalise Your Checklist
+                    <ArrowRight className="w-4 h-4" />
+                  </Link>
+                </div>
+                <div className="flex items-center gap-3 bg-blue-50 rounded-xl px-4 py-3 self-start">
+                  <div className="text-center">
+                    <p className="text-2xl font-bold text-blue-900">94%</p>
+                    <p className="text-xs text-blue-600 font-medium">Avg success rate</p>
+                  </div>
+                  <div className="w-px h-10 bg-blue-200" />
+                  <div className="text-center">
+                    <p className="text-2xl font-bold text-blue-900">247</p>
+                    <p className="text-xs text-blue-600 font-medium">Couples this month</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </FadeIn>
+
+          {/* Free preview banner */}
+          <FadeIn delay={0.05}>
+            <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 mb-6 flex items-center gap-3">
+              <Info className="w-5 h-5 text-amber-600 flex-shrink-0" />
+              <p className="text-sm text-amber-800">
+                <span className="font-semibold">You&apos;re viewing a free preview.</span>{' '}
+                <button onClick={() => setShowPaywall(true)} className="text-amber-900 underline hover:no-underline font-semibold">
+                  Unlock Premium
+                </button>{' '}
+                for the full checklist, detailed timeline, and personalised risk assessment.
+              </p>
+            </div>
+          </FadeIn>
+
+          {/* Preview Checklist */}
+          <FadeIn delay={0.1}>
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-6">
+              <div className="px-5 sm:px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-blue-50/50">
+                <div className="flex items-center gap-2">
+                  <FileText className="w-5 h-5 text-blue-600" />
+                  <h3 className="font-semibold text-blue-900">Document Checklist</h3>
+                  <span className="inline-flex items-center gap-1 ml-2 px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 text-xs font-semibold">
+                    Preview
+                  </span>
+                </div>
+                <span className="text-xs text-gray-400">10 of ~30 documents shown</span>
+              </div>
+              <div className="divide-y divide-gray-50">
+                {previewChecklist.map((item) => (
+                  <div key={item.id} className="px-5 sm:px-6 py-3.5 flex items-start gap-3 hover:bg-gray-50/50 transition-colors">
+                    <Square className="w-5 h-5 text-gray-300 flex-shrink-0 mt-0.5" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-900">{item.title}</p>
+                      <p className="text-xs text-gray-500 mt-0.5">{item.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {/* Locked indicator */}
+              <div className="px-5 sm:px-6 py-4 bg-gradient-to-t from-amber-50 to-white border-t border-gray-100">
+                <button
+                  onClick={() => setShowPaywall(true)}
+                  className="w-full flex items-center justify-center gap-2 px-5 py-3 bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded-xl shadow-sm transition-all btn-hover"
+                >
+                  <Lock className="w-4 h-4" />
+                  See Full Checklist — ~20 more documents
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </FadeIn>
+
+          {/* Preview Timeline */}
+          <FadeIn delay={0.15}>
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-6">
+              <div className="px-5 sm:px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-emerald-50/50">
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-5 h-5 text-emerald-600" />
+                  <h3 className="font-semibold text-emerald-900">Application Timeline</h3>
+                  <span className="inline-flex items-center gap-1 ml-2 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-xs font-semibold">
+                    First 3 milestones
+                  </span>
+                </div>
+              </div>
+              <div className="divide-y divide-gray-50">
+                {previewTimeline.map((item) => (
+                  <div key={item.week} className="px-5 sm:px-6 py-4 flex items-center gap-4">
+                    <div className="w-9 h-9 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-sm font-bold flex-shrink-0">
+                      {item.week}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-gray-900">{item.title}</p>
+                      <p className="text-xs text-gray-500 mt-0.5">{item.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="px-5 sm:px-6 py-3 bg-emerald-50/50 border-t border-gray-100 flex items-center gap-2">
+                <Lock className="w-3.5 h-3.5 text-emerald-600" />
+                <span className="text-xs text-emerald-700 font-medium">Unlock Premium for the full week-by-week action plan</span>
+              </div>
+            </div>
+          </FadeIn>
+
+          {/* Risk Assessment Summary */}
+          <FadeIn delay={0.2}>
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-6">
+              <div className="px-5 sm:px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-amber-50/50">
+                <div className="flex items-center gap-2">
+                  <AlertTriangle className="w-5 h-5 text-amber-600" />
+                  <h3 className="font-semibold text-amber-900">Risk Assessment</h3>
+                  <span className="inline-flex items-center gap-1 ml-2 px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 text-xs font-semibold">
+                    Summary
+                  </span>
+                </div>
+              </div>
+              <div className="px-5 sm:px-6 py-5">
+                <p className="text-sm text-gray-600 mb-4">
+                  Common risks are flagged based on your visa type and circumstances. Complete the quick questionnaire to get a personalised assessment.
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+                  {[
+                    { label: 'Financial threshold', severity: 'high', desc: 'Income requirements vary by visa type' },
+                    { label: 'Document formatting', severity: 'medium', desc: 'Incorrect formats cause delays' },
+                    { label: 'Timeline planning', severity: 'low', desc: 'Processing times vary seasonally' },
+                  ].map((risk) => (
+                    <div key={risk.label} className={`rounded-xl p-3 border ${
+                      risk.severity === 'high' ? 'bg-red-50 border-red-200' :
+                      risk.severity === 'medium' ? 'bg-amber-50 border-amber-200' :
+                      'bg-emerald-50 border-emerald-200'
+                    }`}>
+                      <p className={`text-xs font-bold uppercase tracking-wide mb-1 ${
+                        risk.severity === 'high' ? 'text-red-700' :
+                        risk.severity === 'medium' ? 'text-amber-700' :
+                        'text-emerald-700'
+                      }`}>{risk.severity} risk</p>
+                      <p className="text-sm font-semibold text-gray-900">{risk.label}</p>
+                      <p className="text-xs text-gray-500 mt-0.5">{risk.desc}</p>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex items-center gap-2 text-xs text-amber-700">
+                  <Lock className="w-3.5 h-3.5" />
+                  <span className="font-medium">Unlock for detailed risk analysis with specific recommendations</span>
+                </div>
+              </div>
+            </div>
+          </FadeIn>
+
+          {/* CTA Section */}
+          <FadeIn delay={0.25}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+              {/* Personalise CTA */}
+              <Link
+                href="/app/start"
+                className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 hover:shadow-md transition-all group"
+              >
+                <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
+                  <Sparkles className="w-6 h-6 text-blue-600" />
+                </div>
+                <h3 className="font-bold text-gray-900 mb-1">Personalise Your Plan</h3>
+                <p className="text-sm text-gray-500 mb-3">Answer 5 quick questions to get a checklist tailored to your exact situation.</p>
+                <span className="inline-flex items-center gap-1 text-sm font-semibold text-blue-600 group-hover:gap-2 transition-all">
+                  Start questionnaire <ArrowRight className="w-4 h-4" />
+                </span>
+              </Link>
+
+              {/* Upgrade CTA */}
+              <button
+                onClick={() => setShowPaywall(true)}
+                className="bg-gradient-to-br from-emerald-600 to-emerald-700 rounded-2xl shadow-sm p-6 text-left hover:shadow-md transition-all group"
+              >
+                <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
+                  <Star className="w-6 h-6 text-white" />
+                </div>
+                <h3 className="font-bold text-white mb-1">Unlock Premium</h3>
+                <p className="text-sm text-emerald-100 mb-3">Full checklist, detailed timeline, AI document verification, and expert support.</p>
+                <span className="inline-flex items-center gap-1 text-sm font-semibold text-white group-hover:gap-2 transition-all">
+                  See all features <ArrowRight className="w-4 h-4" />
+                </span>
+              </button>
+            </div>
+          </FadeIn>
+
+          {/* Social proof */}
+          <FadeIn delay={0.3}>
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 sm:p-6 text-center">
+              <div className="flex items-center justify-center gap-2 mb-3">
+                <Users className="w-5 h-5 text-blue-600" />
+                <h3 className="font-semibold text-gray-900">Trusted by thousands</h3>
+              </div>
+              <div className="grid grid-cols-3 gap-4 mb-4">
+                <div>
+                  <p className="text-2xl font-bold text-blue-900">1,000+</p>
+                  <p className="text-xs text-gray-500">Applicants guided</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-emerald-600">94%</p>
+                  <p className="text-xs text-gray-500">Success rate</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-blue-900">4.8★</p>
+                  <p className="text-xs text-gray-500">Average rating</p>
+                </div>
+              </div>
+              <p className="text-sm text-gray-500 italic">
+                &ldquo;VisaBud told me exactly what I needed. Got my spouse visa approved first time.&rdquo;
+                <span className="text-gray-400 not-italic"> — Priya S.</span>
+              </p>
+            </div>
+          </FadeIn>
+        </div>
+
+        {/* Mobile Sticky CTA */}
+        <div className="sm:hidden sticky-bottom-mobile">
+          <button
+            onClick={() => setShowPaywall(true)}
+            className="w-full flex items-center justify-center gap-2 px-6 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-lg transition-all btn-hover"
+          >
+            <Zap className="w-4 h-4" />
+            Unlock Premium — See All Features
+          </button>
+        </div>
+
+        <PaywallModal isOpen={showPaywall} onClose={() => setShowPaywall(false)} visaType="UK Visa" />
+      </div>
+    </PageFadeIn>
+  );
+}
+
+// ─── Full Dashboard (existing, for users who completed wizard) ─────────────
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function FullDashboard({
+  store,
+  showPaywall,
+  setShowPaywall,
+}: {
+  store: any;
+  showPaywall: boolean;
+  setShowPaywall: (v: boolean) => void;
+}) {
+  const { visaType, urgency, annualIncomeRange, currentlyInUk, relationshipDurationMonths, unlocked } = store;
+
   const [activeTab, setActiveTab] = useState<TabId>('checklist');
 
   useEffect(() => {
@@ -141,7 +500,6 @@ function DashboardContent() {
     return {};
   });
   const [expandedWeeks, setExpandedWeeks] = useState<Record<number, boolean>>({ 1: true });
-  const [showPaywall, setShowPaywall] = useState(false);
 
   const validVisaType = (visaType && visaType !== 'unsure' ? visaType : null) as VisaTypeKey | null;
   const validUrgency = urgency as UrgencyKey | null;
@@ -164,40 +522,7 @@ function DashboardContent() {
     [validVisaType, annualIncomeRange, validUrgency, currentlyInUk, relationshipDurationMonths]
   );
 
-  if (!hydrated) {
-    return (
-      <div className="min-h-screen bg-[#F9FAFB] flex items-center justify-center">
-        <div className="animate-pulse flex flex-col items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-blue-200" />
-          <div className="h-3 w-32 bg-gray-200 rounded" />
-        </div>
-      </div>
-    );
-  }
-
-  if (currentStep < 5 || !visaType || visaType === 'unsure') {
-    return (
-      <PageFadeIn>
-        <div className="min-h-screen bg-[#F9FAFB] flex flex-col items-center justify-center px-4">
-          <div className="text-center max-w-md">
-            <div className="w-16 h-16 rounded-2xl bg-blue-100 flex items-center justify-center mx-auto mb-6">
-              <Lock className="w-8 h-8 text-blue-600" />
-            </div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">No Application Started</h1>
-            <p className="text-gray-500 mb-8">Complete the wizard first to see your personalised plan.</p>
-            <Link
-              href="/app/start"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-blue-700 text-white rounded-xl font-semibold hover:bg-blue-800 transition-all btn-hover shadow-sm"
-            >
-              <ArrowLeft className="w-4 h-4" /> Start Application
-            </Link>
-          </div>
-        </div>
-      </PageFadeIn>
-    );
-  }
-
-  const visaLabel = VISA_LABELS[visaType] || visaType;
+  const visaLabel = VISA_LABELS[visaType || ''] || visaType || '';
   const urgencyLabel = urgency ? URGENCY_LABELS[urgency] : 'Not set';
 
   const toggleDoc = (id: string) => {
@@ -226,24 +551,29 @@ function DashboardContent() {
         {/* ── Nav ──────────────────────────────────────────────────────── */}
         <nav className="bg-white border-b border-gray-100 sticky top-0 z-30">
           <div className="max-w-5xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
+            <Link href="/" className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-700 to-blue-900 flex items-center justify-center shadow-sm">
                 <span className="text-white text-sm font-bold">V</span>
               </div>
               <span className="font-bold text-blue-900 tracking-tight text-lg hidden sm:inline">VisaBud</span>
-            </div>
+            </Link>
             <div className="flex items-center gap-3">
-              {!unlocked && (
+              {unlocked ? (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full text-xs font-semibold">
+                  <CheckCircle className="w-3.5 h-3.5" />
+                  Premium
+                </span>
+              ) : (
                 <button
                   onClick={() => setShowPaywall(true)}
                   className="hidden sm:inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-xl shadow-sm hover:shadow-md transition-all btn-hover animate-emeraldGlow"
                 >
                   <Lock className="w-3.5 h-3.5" />
-                  Unlock Full Pack — £50
+                  Unlock Full Pack
                 </button>
               )}
               <Link href="/app/start" className="text-sm text-gray-400 hover:text-gray-600 font-medium transition-colors">
-                Start Over
+                Edit Answers
               </Link>
             </div>
           </div>
@@ -255,7 +585,14 @@ function DashboardContent() {
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 sm:p-8 mb-6">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                  <h1 className="text-2xl sm:text-3xl font-bold text-blue-900 mb-1">Your Personalised Plan</h1>
+                  <div className="flex items-center gap-2 mb-1">
+                    <h1 className="text-2xl sm:text-3xl font-bold text-blue-900">Your Personalised Plan</h1>
+                    {!unlocked && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 text-xs font-semibold">
+                        Free
+                      </span>
+                    )}
+                  </div>
                   <p className="text-gray-500">
                     {visaLabel} &middot; {urgencyLabel}
                   </p>
@@ -272,6 +609,22 @@ function DashboardContent() {
               </div>
             </div>
           </FadeIn>
+
+          {/* Free tier banner */}
+          {!unlocked && (
+            <FadeIn delay={0.05}>
+              <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 mb-6 flex items-center gap-3">
+                <Info className="w-5 h-5 text-amber-600 flex-shrink-0" />
+                <p className="text-sm text-amber-800">
+                  <span className="font-semibold">You&apos;re viewing a preview of your checklist.</span>{' '}
+                  <button onClick={() => setShowPaywall(true)} className="text-amber-900 underline hover:no-underline font-semibold">
+                    Unlock Premium
+                  </button>{' '}
+                  for the complete plan with all documents, full timeline, and detailed risk assessment.
+                </p>
+              </div>
+            </FadeIn>
+          )}
 
           {/* ── Tab Navigation ────────────────────────────────────────── */}
           <div className="flex gap-1.5 sm:gap-2 mb-6 overflow-x-auto pb-1 -mx-1 px-1">
@@ -367,7 +720,7 @@ function DashboardContent() {
               className="w-full flex items-center justify-center gap-2 px-6 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-lg transition-all btn-hover"
             >
               <Lock className="w-4 h-4" />
-              Unlock Full Pack — £50
+              Unlock Full Pack
             </button>
           </div>
         )}
@@ -1016,6 +1369,7 @@ function SubmitTab({
           <div className="inline-flex items-center gap-2 bg-emerald-50 text-emerald-700 rounded-full px-4 py-1.5 text-sm font-bold mb-4">
             🔥 Early access pricing — locked in
           </div>
+          <p className="text-sm text-gray-600 mb-2">Starting from</p>
           <p className="text-5xl font-bold text-blue-900 mb-1">£50</p>
           <p className="text-sm text-gray-500 mb-2">One-time payment. No subscription. Yours forever.</p>
           <p className="text-xs text-gray-400 mb-6">💬 1,000+ applicants have already unlocked their plans</p>
@@ -1024,7 +1378,7 @@ function SubmitTab({
             className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-10 py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-lg rounded-xl shadow-lg hover:shadow-xl transition-all btn-hover animate-emeraldGlow"
           >
             <CreditCard className="w-5 h-5" />
-            Get Access Now — £50 Locked In
+            See All Plans
           </button>
           <div className="flex items-center justify-center gap-1.5 mt-4 text-xs text-gray-500">
             <Shield className="w-3.5 h-3.5 text-emerald-500" />

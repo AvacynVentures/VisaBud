@@ -69,6 +69,6 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  // Redirect to the wizard start page
-  return NextResponse.redirect(new URL('/app/start', request.url));
+  // Redirect to the dashboard (freemium flow: show free value first)
+  return NextResponse.redirect(new URL('/dashboard', request.url));
 }

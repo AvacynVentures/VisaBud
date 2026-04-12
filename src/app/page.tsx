@@ -21,7 +21,7 @@ export default function Home() {
               </svg>
               <span className="text-xl font-bold text-blue-900">VisaBud</span>
             </div>
-            <Link href="/auth/login" className="btn-primary text-sm py-2 px-4">
+            <Link href="/auth/signup" className="btn-primary text-sm py-2 px-4">
               Start Free
             </Link>
           </div>
@@ -37,19 +37,19 @@ export default function Home() {
             </FadeIn>
             <FadeIn delay={0.1}>
               <h1 className="text-4xl md:text-5xl font-bold text-slate-900 mb-4 leading-tight">
-                Most applicants miss 2–3<br />critical documents.<br />
-                <span className="text-gradient">We make sure you don&apos;t.</span>
+                Complete your UK visa<br />application with confidence.<br />
+                <span className="text-gradient">We make sure you don&apos;t miss a thing.</span>
               </h1>
             </FadeIn>
             <FadeIn delay={0.15}>
               <p className="text-xl text-slate-600 mb-8 leading-relaxed">
-                Get a personalised checklist for your UK visa — every document, every step, nothing missed. Ready in 3 minutes, not weeks of Googling.
+                Get a personalised checklist, timeline, and guidance in 5 minutes. Free to start.
               </p>
             </FadeIn>
             <FadeIn delay={0.2}>
               <div className="flex flex-col sm:flex-row gap-4 mb-6">
-                <Link href="/auth/login" className="btn-primary flex items-center justify-center gap-2 text-base py-3.5 px-7 shadow-lg shadow-blue-200/50">
-                  Start Free — No Credit Card Needed
+                <Link href="/auth/signup" className="btn-primary flex items-center justify-center gap-2 text-base py-3.5 px-7 shadow-lg shadow-blue-200/50">
+                  Start Free
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
@@ -171,8 +171,8 @@ export default function Home() {
                 </div>
                 <div className="text-5xl font-bold text-blue-600 mb-1">£50</div>
                 <p className="text-slate-500 text-sm mb-6">One-time payment · Instant access · Money-back guarantee</p>
-                <Link href="/auth/login" className="btn-primary w-full block mb-3 py-3.5 text-base shadow-lg shadow-blue-200/50">
-                  Start Free — Preview Your Plan Instantly
+                <Link href="/auth/signup" className="btn-primary w-full block mb-3 py-3.5 text-base shadow-lg shadow-blue-200/50">
+                  Start Free
                 </Link>
                 <p className="text-xs text-slate-500">Preview your checklist free. Unlock everything for £50.</p>
                 <p className="text-xs text-slate-400 mt-2">💬 1,000+ applicants have already unlocked their plans</p>
@@ -187,8 +187,8 @@ export default function Home() {
             <div className="bg-gradient-to-br from-blue-700 to-blue-900 rounded-2xl p-8 md:p-12 text-center text-white">
               <h2 className="text-2xl md:text-3xl font-bold mb-3">Stop guessing. Know exactly what to do.</h2>
               <p className="text-blue-200 mb-6 max-w-lg mx-auto">Join 1,000+ applicants who got their visa right the first time. Your personalised plan is 3 minutes away.</p>
-              <Link href="/auth/login" className="inline-flex items-center gap-2 px-8 py-3.5 bg-white text-blue-800 font-bold rounded-xl hover:bg-blue-50 transition-all duration-200 shadow-lg btn-hover">
-                Start Free — No Credit Card, No Spam
+              <Link href="/auth/signup" className="inline-flex items-center gap-2 px-8 py-3.5 bg-white text-blue-800 font-bold rounded-xl hover:bg-blue-50 transition-all duration-200 shadow-lg btn-hover">
+                Start Free
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
