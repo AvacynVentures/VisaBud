@@ -119,11 +119,28 @@ function DashboardContent() {
       try {
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
-          const { data } = await supabase.from('users').select('unlocked').eq('id', user.id).single();
-          if (data?.unlocked) setUnlocked(true);
+          // Check payments table for completed payment by this user
+          // First get user record by auth_id
+          const { data: userData } = await supabase
+            .from('users')
+            .select('id')
+            .eq('auth_id', user.id)
+            .single();
+          
+          if (userData) {
+            const { data: payment } = await supabase
+              .from('payments')
+              .select('id, product_type, payment_status')
+              .eq('user_id', userData.id)
+              .eq('payment_status', 'completed')
+              .limit(1)
+              .single();
+            
+            if (payment) setUnlocked(true);
+          }
         }
       } catch (err) {
-        console.error('Failed to check unlock status:', err);
+        // No payment found or query error — user stays on free tier (not an error)
       }
     }
     checkUnlockStatus();

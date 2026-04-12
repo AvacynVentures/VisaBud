@@ -156,24 +156,50 @@ export async function POST(req: Request) {
  */
 async function handleCheckoutSessionCompleted(session: any) {
   try {
-    const userId = session.metadata?.userId;
+    const authUserId = session.metadata?.userId; // This is the Supabase auth user ID
     const email = session.customer_email;
     const productType = session.metadata?.productType;
     const tier = session.metadata?.tier;
 
-    if (!userId) {
+    if (!authUserId) {
       console.error('No userId in session metadata');
       return;
     }
 
+    // Resolve the users table ID from auth_id
+    // First try auth_id column, then fallback to id (for backwards compat)
+    let tableUserId = authUserId;
+    const { data: userData } = await supabaseServer
+      .from('users')
+      .select('id')
+      .eq('auth_id', authUserId)
+      .single();
+
+    if (userData) {
+      tableUserId = userData.id;
+    } else {
+      // If no user record exists yet, create one
+      const { data: newUser } = await supabaseServer
+        .from('users')
+        .insert({
+          auth_id: authUserId,
+          email: email || 'unknown@example.com',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        })
+        .select('id')
+        .single();
+      if (newUser) tableUserId = newUser.id;
+    }
+
     // ── Premium Review Purchase ──────────────────────────────────────────
     if (productType === 'premium_review' && tier) {
-      await handlePremiumReviewPurchase(session, userId, email, tier);
+      await handlePremiumReviewPurchase(session, tableUserId, email, tier);
       return;
     }
 
     // ── Standard Full Pack Purchase (existing flow) ─────────────────────
-    await handleFullPackPurchase(session, userId, email);
+    await handleFullPackPurchase(session, tableUserId, email);
   } catch (err) {
     console.error('Error handling checkout session:', err);
   }
@@ -255,50 +281,63 @@ async function handlePremiumReviewPurchase(
  * Handle standard full pack purchase (original flow)
  */
 async function handleFullPackPurchase(session: any, userId: string, _email: string) {
-  // Record payment
+  const tier = session.metadata?.tier || 'standard';
+  const amountPence = session.amount_total || 5000;
+
+  // Record payment in payments table (source of truth for unlock status)
   const { error: paymentError } = await supabaseServer
     .from('payments')
     .insert({
       user_id: userId,
       stripe_session_id: session.id,
-      amount: (session.amount_total || 5000) / 100,
-      status: 'completed',
-      product_type: 'full_pack',
+      amount_pence: amountPence,
+      currency: 'GBP',
+      payment_status: 'completed',
+      product_type: tier === 'standard' ? 'full_pack' : 'premium_review',
       created_at: new Date().toISOString(),
+      completed_at: new Date().toISOString(),
     });
 
   if (paymentError) {
     console.error('Failed to record payment:', paymentError);
-    return;
+    // Try with legacy column names as fallback
+    const { error: fallbackError } = await supabaseServer
+      .from('payments')
+      .insert({
+        user_id: userId,
+        stripe_session_id: session.id,
+        amount: amountPence / 100,
+        status: 'completed',
+        product_type: tier === 'standard' ? 'full_pack' : 'premium_review',
+        created_at: new Date().toISOString(),
+      });
+    if (fallbackError) {
+      console.error('Fallback payment insert also failed:', fallbackError);
+      return;
+    }
   }
 
-  // Update user unlock status
-  const { error: updateError } = await supabaseServer
+  // Update user record (best effort — unlocked column may not exist yet)
+  await supabaseServer
     .from('users')
-    .update({
-      unlocked: true,
-      updated_at: new Date().toISOString(),
-    })
+    .update({ updated_at: new Date().toISOString() })
     .eq('id', userId);
 
-  if (updateError) {
-    console.error('Failed to update user unlock status:', updateError);
-    return;
-  }
-
-  // Add audit log
+  // Add audit log (best effort)
   await supabaseServer
     .from('audit_log')
     .insert({
       user_id: userId,
-      action: 'payment_completed',
+      action: `payment_completed_${tier}`,
       timestamp: new Date().toISOString(),
-    });
+    })
+    .then(() => {})
+    .catch(() => {}); // audit_log may not exist
 
-  console.log(`Payment completed for user ${userId}`);
+  console.log(`Payment completed for user ${userId} (${tier})`);
 
   // Send post-purchase email
-  await sendPostPurchaseEmail(_email, 'standard', (session.amount_total || 5000) / 100);
+  await sendPostPurchaseEmail(_email, tier, amountPence / 100);
 }
 
 /**
