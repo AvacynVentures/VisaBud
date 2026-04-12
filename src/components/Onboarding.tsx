@@ -13,8 +13,8 @@ import EmailCapture from './EmailCapture';
 const VISA_TYPES = [
   { id: 'spouse', icon: '👰', label: 'Spouse / Partner Visa', sub: 'Your partner sponsors you. Income must be £29,000+/year (or savings to compensate)' },
   { id: 'skilled_worker', icon: '💼', label: 'Skilled Worker Visa', sub: 'UK employer sponsors you. Salary must meet threshold (usually £38,700+/year)' },
-  { id: 'citizenship', icon: 'ðŸ›ï¸', label: 'British Citizenship', sub: 'You have lived in UK 5+ years. No salary requirement, but character is strict' },
-  { id: 'unsure', icon: 'â"', label: 'Not sure which visa', sub: 'Answer a few questions and we will help you figure out which applies' },
+  { id: 'citizenship', icon: '🏛️', label: 'British Citizenship', sub: 'You have lived in UK 5+ years. No salary requirement, but character is strict' },
+  { id: 'unsure', icon: '❓', label: 'Not sure which visa', sub: 'Answer a few questions and we will help you figure out which applies' },
 ];
 
 const NATIONALITIES = [
@@ -46,7 +46,7 @@ const UK_YEARS = [
 const TIMELINE_OPTIONS = [
   { id: 'urgent', icon: '🔥', label: 'Urgently', detail: 'Within 4 weeks. Priority processing: +£500–800 fee' },
   { id: 'normal', icon: '📅', label: 'In the next 1–3 months', detail: 'Standard processing. Enough time to prepare without rushing' },
-  { id: 'ahead', icon: '🗓️', label: 'Planning ahead', detail: 'More than 3 months. Time to improve your application' },
+  { id: 'ahead', icon: '🗓️', label: 'Planning ahead', detail: 'More than 3 months. Time to improve your application' },
 ];
 
 const stepVariants = {
@@ -288,7 +288,7 @@ export default function Onboarding() {
                         onClick={() => { setCurrentStep(1); }}
                         className="w-full text-center py-2 px-4 text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors"
                       >
-                        â† Go back and select the option that matches
+                        ← Go back and select the option that matches
                       </button>
                     </div>
                   )}

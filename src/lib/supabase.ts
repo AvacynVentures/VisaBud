@@ -1,16 +1,28 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 
-// Client-side (browser)
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// ─── Singleton pattern to prevent multiple GoTrueClient instances ───────────
+// In dev mode with HMR, modules can re-execute. We cache on globalThis.
 
-// Server-side client (with service key for admin operations)
-export const supabaseServer = supabaseServiceKey 
-  ? createClient(supabaseUrl, supabaseServiceKey)
-  : createClient(supabaseUrl, supabaseAnonKey);
+const globalForSupabase = globalThis as unknown as {
+  __supabase_client?: SupabaseClient;
+  __supabase_server?: SupabaseClient;
+};
+
+// Client-side (browser) — singleton
+export const supabase: SupabaseClient =
+  globalForSupabase.__supabase_client ??
+  (globalForSupabase.__supabase_client = createClient(supabaseUrl, supabaseAnonKey));
+
+// Server-side client (with service key for admin operations) — singleton
+export const supabaseServer: SupabaseClient =
+  globalForSupabase.__supabase_server ??
+  (globalForSupabase.__supabase_server = supabaseServiceKey
+    ? createClient(supabaseUrl, supabaseServiceKey)
+    : createClient(supabaseUrl, supabaseAnonKey));
 
 /**
  * Save wizard answers to Supabase

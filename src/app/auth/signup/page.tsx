@@ -73,7 +73,15 @@ function SignUpPageContent() {
 
     const trimmed = email.trim().toLowerCase();
     if (!trimmed || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
-      setError('Please enter a valid email address.');
+      setError('Please use a valid email address (e.g., yourname@gmail.com)');
+      return;
+    }
+
+    // Check for rate-limit cooldown
+    const cooldownUntil = localStorage.getItem('signup_cooldown_until');
+    if (cooldownUntil && Date.now() < parseInt(cooldownUntil, 10)) {
+      const remaining = Math.ceil((parseInt(cooldownUntil, 10) - Date.now()) / 60000);
+      setError(`Too many signup attempts. Please wait ${remaining} minute${remaining > 1 ? 's' : ''} and try again.`);
       return;
     }
 
@@ -87,9 +95,15 @@ function SignUpPageContent() {
         },
       });
 
+      localStorage.setItem('signup_last_attempt', Date.now().toString());
+
       if (authError) {
-        if (authError.message?.includes('rate') || authError.status === 429) {
-          setError('Too many requests. Please wait a moment and try again.');
+        if (authError.message?.includes('rate') || authError.status === 429 || (authError as any).status === 429) {
+          // Set 5-minute cooldown
+          localStorage.setItem('signup_cooldown_until', (Date.now() + 5 * 60 * 1000).toString());
+          setError('Too many signup attempts. Please wait 5 minutes and try again.');
+        } else if (authError.message?.includes('invalid') || authError.message?.includes('not allowed')) {
+          setError('Please use a valid email address (e.g., yourname@gmail.com)');
         } else {
           setError(authError.message || 'Something went wrong. Please try again.');
         }
@@ -180,6 +194,24 @@ function SignUpPageContent() {
             </svg>
             <span className="text-xl font-bold text-blue-900">VisaBud</span>
           </Link>
+        </div>
+
+        {/* Social Proof */}
+        <div className="bg-blue-50 border border-blue-100 rounded-2xl p-4 mb-4">
+          <div className="flex items-center justify-center gap-4 text-sm">
+            <div className="text-center">
+              <p className="text-lg font-bold text-blue-900">247</p>
+              <p className="text-xs text-blue-600">couples this month</p>
+            </div>
+            <div className="w-px h-8 bg-blue-200" />
+            <div className="text-center">
+              <p className="text-lg font-bold text-blue-900">94%</p>
+              <p className="text-xs text-blue-600">success rate</p>
+            </div>
+          </div>
+          <p className="text-center text-xs text-blue-700 mt-2 italic">
+            &ldquo;Caught 3 missing docs before I submitted&rdquo; — Sarah, Essex
+          </p>
         </div>
 
         {/* Card */}

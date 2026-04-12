@@ -47,6 +47,7 @@ import {
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import PaywallModal from '@/components/PaywallModal';
+import PaymentSuccessBanner from '@/components/PaymentSuccessBanner';
 import DocumentUpload from '@/components/DocumentUpload';
 import { PageFadeIn, FadeIn, ConfettiBurst, CelebrationBanner } from '@/lib/animations';
 
@@ -146,21 +147,27 @@ function DashboardContent() {
   // If wizard not completed, show the freemium welcome dashboard
   if (!hasCompletedWizard) {
     return (
-      <FreemiumWelcomeDashboard
-        showPaywall={showPaywall}
-        setShowPaywall={setShowPaywall}
-        unlocked={unlocked}
-      />
+      <>
+        <PaymentSuccessBanner />
+        <FreemiumWelcomeDashboard
+          showPaywall={showPaywall}
+          setShowPaywall={setShowPaywall}
+          unlocked={unlocked}
+        />
+      </>
     );
   }
 
   // Full dashboard for users who completed the wizard
   return (
-    <FullDashboard
-      store={store}
-      showPaywall={showPaywall}
-      setShowPaywall={setShowPaywall}
-    />
+    <>
+      <PaymentSuccessBanner />
+      <FullDashboard
+        store={store}
+        showPaywall={showPaywall}
+        setShowPaywall={setShowPaywall}
+      />
+    </>
   );
 }
 

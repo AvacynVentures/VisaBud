@@ -2,6 +2,113 @@ import { stripe } from '@/lib/stripe';
 import { supabaseServer } from '@/lib/supabase';
 import { headers } from 'next/headers';
 
+// ─── Post-Purchase Email via Resend ─────────────────────────────────────────
+
+const TIER_LABELS: Record<string, { name: string; features: string[] }> = {
+  standard: {
+    name: 'Standard Pack',
+    features: ['Personalised document checklist', 'Step-by-step timeline', 'Risk assessment & alerts', 'PDF export'],
+  },
+  premium: {
+    name: 'Premium Pack',
+    features: ['AI document verification', 'Preparation templates', 'Email support (24h)', 'Everything in Standard'],
+  },
+  expert: {
+    name: 'Expert Pack',
+    features: ['Expert immigration review', 'Priority support', '24-hour turnaround', 'Everything in Premium'],
+  },
+};
+
+async function sendPostPurchaseEmail(email: string, tier: string, amountGBP: number) {
+  const resendKey = process.env.RESEND_API_KEY;
+  if (!resendKey || !email) {
+    console.log(`[email] Skipping post-purchase email (no RESEND_API_KEY or no email)`);
+    return;
+  }
+
+  const info = TIER_LABELS[tier] || TIER_LABELS.standard;
+  const featureList = info.features.map(f => `<li style="margin-bottom:6px;">✅ ${f}</li>`).join('');
+
+  try {
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${resendKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: 'VisaBud <noreply@visabud.co.uk>',
+        to: [email],
+        subject: `🎉 You've unlocked the ${info.name}!`,
+        html: `
+<!DOCTYPE html>
+<html>
+<head><style>
+body { font-family: Arial, sans-serif; color: #333; margin: 0; padding: 0; }
+.container { max-width: 600px; margin: 0 auto; padding: 24px; }
+.header { text-align: center; padding: 24px; background: linear-gradient(135deg, #059669, #10b981); border-radius: 12px 12px 0 0; }
+.header h1 { color: white; margin: 0; font-size: 24px; }
+.header p { color: #d1fae5; margin: 8px 0 0; font-size: 14px; }
+.body { background: #ffffff; padding: 24px; border: 1px solid #e5e7eb; }
+.amount { text-align: center; font-size: 28px; font-weight: bold; color: #059669; margin: 16px 0; }
+.features { background: #ecfdf5; padding: 16px; border-radius: 8px; margin: 16px 0; }
+.features ul { padding-left: 0; list-style: none; margin: 8px 0; }
+.steps { background: #eff6ff; padding: 16px; border-radius: 8px; margin: 16px 0; }
+.steps ol { padding-left: 20px; margin: 8px 0; }
+.steps li { margin-bottom: 8px; color: #1e40af; }
+.cta { display: block; text-align: center; background: #1e40af; color: white; padding: 14px 24px; border-radius: 8px; text-decoration: none; font-weight: bold; margin: 20px 0; }
+.footer { text-align: center; font-size: 12px; color: #9ca3af; padding: 16px; border-top: 1px solid #e5e7eb; }
+</style></head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>Payment Confirmed! ✅</h1>
+    <p>You've unlocked the ${info.name}</p>
+  </div>
+  <div class="body">
+    <div class="amount">£${amountGBP.toFixed(2)} paid</div>
+    
+    <div class="features">
+      <p style="font-weight:bold; margin:0 0 8px;">What's now unlocked:</p>
+      <ul>${featureList}</ul>
+    </div>
+
+    <div class="steps">
+      <p style="font-weight:bold; margin:0 0 8px; color:#1e40af;">🚀 Here's what to do next:</p>
+      <ol>
+        <li>Log in to your dashboard and personalise your checklist</li>
+        <li>Upload your documents for verification</li>
+        <li>Download your complete application pack</li>
+      </ol>
+    </div>
+
+    <a href="https://visabud.co.uk/dashboard" class="cta">Go to Your Dashboard →</a>
+
+    <p style="font-size:13px; color:#6b7280; text-align:center;">
+      Questions? Reply to this email or contact <a href="mailto:support@visabud.co.uk">support@visabud.co.uk</a>
+    </p>
+  </div>
+  <div class="footer">
+    <p>VisaBud Ltd · Not a law firm · For guidance only</p>
+    <p>Always verify with official Gov.uk guidance before submitting your application.</p>
+  </div>
+</div>
+</body>
+</html>`,
+      }),
+    });
+
+    if (!res.ok) {
+      const errBody = await res.text();
+      console.error(`[email] Resend API error: ${res.status} ${errBody}`);
+    } else {
+      console.log(`[email] Post-purchase email sent to ${email} for ${tier}`);
+    }
+  } catch (err) {
+    console.error('[email] Failed to send post-purchase email:', err);
+  }
+}
+
 /**
  * POST /api/webhooks/stripe
  * Handle Stripe webhook events
@@ -140,8 +247,8 @@ async function handlePremiumReviewPurchase(
 
   console.log(`Premium review (${tier}) purchased by user ${userId}`);
 
-  // TODO: Trigger "Your review has started" email via Resend
-  // await sendPremiumReviewStartedEmail(email, tier);
+  // Send post-purchase email via Resend
+  await sendPostPurchaseEmail(_email, tier, (session.amount_total || 0) / 100);
 }
 
 /**
@@ -189,6 +296,9 @@ async function handleFullPackPurchase(session: any, userId: string, _email: stri
     });
 
   console.log(`Payment completed for user ${userId}`);
+
+  // Send post-purchase email
+  await sendPostPurchaseEmail(_email, 'standard', (session.amount_total || 5000) / 100);
 }
 
 /**

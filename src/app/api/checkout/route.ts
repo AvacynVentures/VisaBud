@@ -1,64 +1,85 @@
 import { stripe, VISABUD_PRODUCT_NAME, VISABUD_PRICE_PENCE, PREMIUM_REVIEW_TIERS } from '@/lib/stripe';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
 
 /**
+ * Tier configuration for checkout
+ */
+const TIER_CONFIG = {
+  standard: {
+    name: VISABUD_PRODUCT_NAME,
+    description: 'Personalised document checklist, timeline, risk assessment & PDF export',
+    unitAmount: VISABUD_PRICE_PENCE, // £50
+  },
+  premium: {
+    name: 'VisaBud Premium Pack',
+    description: 'Everything in Standard + AI document verification, templates & email support',
+    unitAmount: PREMIUM_REVIEW_TIERS.ai_review_149.pricePence, // £149
+  },
+  expert: {
+    name: 'VisaBud Expert Pack',
+    description: 'Everything in Premium + expert immigration review (24h turnaround) & priority support',
+    unitAmount: PREMIUM_REVIEW_TIERS.human_review_199.pricePence, // £299
+  },
+} as const;
+
+type TierKey = keyof typeof TIER_CONFIG;
+
+/**
  * POST /api/checkout
- * Create a Stripe checkout session
- * Body: { tier: 'standard' | 'premium' | 'expert' }
+ * Create a Stripe checkout session for the selected VisaBud tier
+ *
+ * Body: { tier?: "standard" | "premium" | "expert" }
+ * Headers: Authorization: Bearer <supabase_access_token>
+ * Defaults to "standard" if no tier provided (backwards compat)
  */
 export async function POST(req: NextRequest) {
   try {
     // Extract auth token from Authorization header
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    const authHeader = req.headers.get('authorization') || req.headers.get('Authorization');
+    const token = authHeader?.replace('Bearer ', '');
+
+    if (!token) {
       return NextResponse.json(
-        { error: 'Authorization required' },
+        { error: 'Authentication required — no token provided' },
         { status: 401 }
       );
     }
 
-    const token = authHeader.substring('Bearer '.length);
+    // Validate token with Supabase by creating an auth-aware client
+    const supabaseAuth = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        global: {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      }
+    );
 
-    // Validate token and get user
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    const { data: { user }, error: authError } = await supabaseAuth.auth.getUser(token);
 
     if (authError || !user) {
       return NextResponse.json(
-        { error: 'Authentication failed' },
+        { error: 'Invalid or expired session. Please sign in again.' },
         { status: 401 }
       );
     }
 
-    // Parse request body to get tier
-    const body = await req.json();
-    const tier = body.tier || 'standard';
-
     const email = user.email || 'unknown@example.com';
 
-    // Define pricing per tier
-    let productName = '';
-    let description = '';
-    let unitAmount = VISABUD_PRICE_PENCE;
-    let productType = 'standard';
-
-    if (tier === 'premium') {
-      productName = PREMIUM_REVIEW_TIERS.ai_review_149.name;
-      description = PREMIUM_REVIEW_TIERS.ai_review_149.description;
-      unitAmount = PREMIUM_REVIEW_TIERS.ai_review_149.pricePence;
-      productType = 'premium_review';
-    } else if (tier === 'expert') {
-      productName = PREMIUM_REVIEW_TIERS.human_review_199.name;
-      description = PREMIUM_REVIEW_TIERS.human_review_199.description;
-      unitAmount = PREMIUM_REVIEW_TIERS.human_review_199.pricePence;
-      productType = 'expert_review';
-    } else {
-      // Standard tier
-      productName = VISABUD_PRODUCT_NAME;
-      description = 'Full access to personalized visa checklist, timeline, and risk assessment';
-      unitAmount = VISABUD_PRICE_PENCE;
-      productType = 'standard';
+    // Parse tier from request body
+    let tier: TierKey = 'standard';
+    try {
+      const body = await req.json();
+      if (body.tier && body.tier in TIER_CONFIG) {
+        tier = body.tier as TierKey;
+      }
+    } catch {
+      // No body or invalid JSON — default to standard
     }
+
+    const config = TIER_CONFIG[tier];
 
     // Create Stripe checkout session
     const session = await stripe.checkout.sessions.create({
@@ -69,22 +90,22 @@ export async function POST(req: NextRequest) {
           price_data: {
             currency: 'gbp',
             product_data: {
-              name: productName,
-              description,
+              name: config.name,
+              description: config.description,
             },
-            unit_amount: unitAmount,
+            unit_amount: config.unitAmount,
           },
           quantity: 1,
         },
       ],
       mode: 'payment',
-      success_url: `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard?payment=success`,
+      success_url: `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard?payment=success&tier=${tier}`,
       cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard`,
       metadata: {
         userId: user.id,
         email: email,
-        tier,
-        productType,
+        tier: tier,
+        ...(tier !== 'standard' && { productType: 'premium_review' }),
       },
     });
 

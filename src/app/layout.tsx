@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { AuthProvider } from '@/lib/auth-context';
+import CookieConsent from '@/components/CookieConsent';
 
 export const metadata: Metadata = {
   title: 'VisaBud - UK Visa Checklist Generator',
@@ -49,6 +50,7 @@ export default function RootLayout({
       <body className="bg-white text-slate-900 antialiased">
         <AuthProvider>
           {children}
+          <CookieConsent />
         </AuthProvider>
       </body>
     </html>

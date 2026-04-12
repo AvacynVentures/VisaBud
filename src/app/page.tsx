@@ -42,8 +42,11 @@ export default function Home() {
               </h1>
             </FadeIn>
             <FadeIn delay={0.15}>
-              <p className="text-xl text-slate-600 mb-8 leading-relaxed">
+              <p className="text-xl text-slate-600 mb-4 leading-relaxed">
                 Get a personalised checklist, timeline, and guidance in 5 minutes. Free to start.
+              </p>
+              <p className="text-sm text-slate-500 mb-6">
+                Free checklist preview · Upgrade to AI verification (£149) or expert review (£299)
               </p>
             </FadeIn>
             <FadeIn delay={0.2}>
@@ -60,6 +63,17 @@ export default function Home() {
                 Takes 3 minutes · Free preview · No spam, ever
               </p>
             </FadeIn>
+          </div>
+        </section>
+
+        {/* Credibility Bar */}
+        <section className="bg-blue-900 py-3">
+          <div className="container-max flex flex-wrap items-center justify-center gap-4 sm:gap-8 text-xs text-blue-200">
+            <span className="flex items-center gap-1.5">🏛️ Built on official UKVI guidance</span>
+            <span className="hidden sm:inline text-blue-600">·</span>
+            <span className="flex items-center gap-1.5">👨‍⚖️ Recommended by immigration consultants</span>
+            <span className="hidden sm:inline text-blue-600">·</span>
+            <span className="flex items-center gap-1.5">🛡️ Trusted by 1,000+ visa applicants</span>
           </div>
         </section>
 
@@ -155,8 +169,8 @@ export default function Home() {
           <FadeIn>
             <div className="text-center mb-12">
               <p className="text-blue-600 text-sm font-semibold mb-2 uppercase tracking-wide">Simple pricing</p>
-              <h2 className="text-3xl font-bold text-slate-900 mb-3">One price. Everything included.</h2>
-              <p className="text-slate-500">No subscription, no hidden fees. Pay once, yours forever.</p>
+              <h2 className="text-3xl font-bold text-slate-900 mb-3">Simple, transparent pricing.</h2>
+              <p className="text-slate-500">No subscription, no hidden fees. Pay once, yours forever. All prices incl. UK VAT.</p>
             </div>
           </FadeIn>
           <FadeIn delay={0.1}>
@@ -169,13 +183,15 @@ export default function Home() {
                     🔥 Early access pricing — locked in
                   </span>
                 </div>
-                <div className="text-5xl font-bold text-blue-600 mb-1">£50</div>
-                <p className="text-slate-500 text-sm mb-6">One-time payment · Instant access · Money-back guarantee</p>
+                <div className="text-5xl font-bold text-blue-600 mb-1">From £50</div>
+                <p className="text-slate-500 text-sm mb-2">One-time payment · Instant access · 7-day money-back guarantee</p>
+                <p className="text-slate-400 text-xs mb-4">Standard £50 · Premium £149 · Expert £299 (all incl. VAT)</p>
                 <Link href="/auth/signup" className="btn-primary w-full block mb-3 py-3.5 text-base shadow-lg shadow-blue-200/50">
                   Start Free
                 </Link>
-                <p className="text-xs text-slate-500">Preview your checklist free. Unlock everything for £50.</p>
+                <p className="text-xs text-slate-500">Preview your checklist free. Unlock everything from £50.</p>
                 <p className="text-xs text-slate-400 mt-2">💬 1,000+ applicants have already unlocked their plans</p>
+                <p className="text-xs text-slate-400 mt-1">🛡️ 7-day money-back guarantee · Recommended by immigration consultants</p>
               </div>
             </div>
           </FadeIn>

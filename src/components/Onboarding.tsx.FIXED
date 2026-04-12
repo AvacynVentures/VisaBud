@@ -1,0 +1,12 @@
+THIS FILE NEEDS TO BE UPDATED - EMOJI ENCODING ISSUES
+
+LINES TO FIX:
+- Line 17: citizenship icon 'ðŸ›ï¸' → '🏛️'
+- Line 18: unsure icon 'â"' → '❓'
+- Line 48: TIMELINE_OPTIONS urgent icon 'ðŸ"¥' → '🔥'
+- Line 49: TIMELINE_OPTIONS normal icon 'ðŸ"…' → '📅'
+- Line 50: TIMELINE_OPTIONS ahead icon 'ðŸ—"ï¸' → '🗓️'
+
+Ruan, push this to GitHub and I'll deploy immediately.
+
+Actually, let me fix this properly by pushing a clean version to GitHub directly.

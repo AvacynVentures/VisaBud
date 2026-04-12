@@ -3,11 +3,14 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { createClient } from '@supabase/supabase-js';
 import {
   X, CheckCircle, Loader2, Shield,
   Users, Clock, Star, ArrowRight,
 } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
+import { analytics } from '@/lib/analytics';
+import PaywallFAQ from './PaywallFAQ';
+import FeatureComparison from './FeatureComparison';
 
 interface PaywallModalProps {
   isOpen: boolean;
@@ -33,6 +36,7 @@ const TIERS = [
     buttonStyle: 'bg-blue-600 hover:bg-blue-700 text-white',
     cardStyle: 'border-gray-200 bg-white',
     priceId: 'standard',
+    guarantee: 'Satisfaction guaranteed',
   },
   {
     id: 'premium',
@@ -40,7 +44,7 @@ const TIERS = [
     price: 149,
     badge: 'Most Popular',
     color: 'emerald',
-    description: 'Most popular — AI-powered verification to catch mistakes before you submit',
+    description: 'AI-powered verification to catch mistakes before you submit',
     benefits: [
       'Everything in Standard',
       'AI document verification & scoring',
@@ -51,6 +55,7 @@ const TIERS = [
     buttonStyle: 'bg-emerald-600 hover:bg-emerald-700 text-white',
     cardStyle: 'border-emerald-400 bg-emerald-50/30 ring-2 ring-emerald-200 shadow-lg',
     priceId: 'premium',
+    guarantee: 'Satisfaction guaranteed',
   },
   {
     id: 'expert',
@@ -58,7 +63,7 @@ const TIERS = [
     price: 299,
     badge: null,
     color: 'violet',
-    description: 'Peace of mind — human expert review for maximum confidence',
+    description: 'Review by qualified immigration expert for maximum confidence',
     benefits: [
       'Everything in Premium',
       'Expert immigration review',
@@ -69,6 +74,7 @@ const TIERS = [
     buttonStyle: 'bg-violet-600 hover:bg-violet-700 text-white',
     cardStyle: 'border-violet-200 bg-white',
     priceId: 'expert',
+    guarantee: 'Satisfaction guaranteed',
   },
 ] as const;
 
@@ -79,25 +85,29 @@ export default function PaywallModal({ isOpen, onClose, visaType }: PaywallModal
 
   if (!isOpen) return null;
 
+  // Track paywall view
+  if (typeof window !== 'undefined') {
+    analytics.paywallViewed(visaType);
+  }
+
   async function handleCheckout(tierId: string) {
+    const tier = TIERS.find(t => t.id === tierId);
+    if (tier) analytics.tierSelected(tierId, tier.price);
+
     setIsLoading(tierId);
     setError(null);
 
     try {
-      // Get auth token from Supabase
-      const supabase = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-      );
-
-      const { data: { session } } = await supabase.auth.getSession();
-      const token = session?.access_token;
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
 
       if (!token) {
         setError('Please sign in to continue.');
         setIsLoading(null);
         return;
       }
+
+      if (tier) analytics.paymentAttempted(tierId, tier.price);
 
       const res = await fetch('/api/checkout', {
         method: 'POST',
@@ -111,7 +121,11 @@ export default function PaywallModal({ isOpen, onClose, visaType }: PaywallModal
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.error || 'Something went wrong. Please try again.');
+        if (res.status === 401) {
+          setError('Your session has expired. Please sign in again.');
+        } else {
+          setError(data.error || 'Something went wrong. Please try again.');
+        }
         setIsLoading(null);
         return;
       }
@@ -123,7 +137,6 @@ export default function PaywallModal({ isOpen, onClose, visaType }: PaywallModal
         setIsLoading(null);
       }
     } catch (err) {
-      console.error('Checkout error:', err);
       setError('Network error. Check your connection and try again.');
       setIsLoading(null);
     }
@@ -131,7 +144,7 @@ export default function PaywallModal({ isOpen, onClose, visaType }: PaywallModal
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center px-3 sm:px-4"
+      className="fixed inset-0 z-50 flex items-center justify-center px-2 sm:px-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby="paywall-title"
@@ -148,12 +161,12 @@ export default function PaywallModal({ isOpen, onClose, visaType }: PaywallModal
         />
       </AnimatePresence>
 
-      {/* Modal Card */}
+      {/* Modal Card — full width on mobile, max-w-3xl on desktop */}
       <motion.div
         initial={{ opacity: 0, y: 24, scale: 0.97 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-        className="relative w-full max-w-3xl bg-white rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto"
+        className="relative w-full max-w-3xl bg-white rounded-2xl shadow-2xl overflow-hidden max-h-[92vh] overflow-y-auto mx-2 sm:mx-auto"
       >
         {/* Close Button */}
         <button
@@ -165,14 +178,14 @@ export default function PaywallModal({ isOpen, onClose, visaType }: PaywallModal
         </button>
 
         {/* Header */}
-        <div className="bg-gradient-to-br from-blue-700 to-blue-900 px-6 sm:px-8 pt-8 pb-6 text-center relative overflow-hidden">
+        <div className="bg-gradient-to-br from-blue-700 to-blue-900 px-5 sm:px-8 pt-7 pb-5 text-center relative overflow-hidden">
           <div className="absolute inset-0 opacity-5" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '20px 20px' }} />
           <motion.div
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1, duration: 0.3 }}
           >
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/15 rounded-full text-blue-100 text-xs font-medium mb-4">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/15 rounded-full text-blue-100 text-xs font-medium mb-3">
               <Clock className="w-3.5 h-3.5" />
               Early access pricing — locked in for you
             </div>
@@ -185,15 +198,21 @@ export default function PaywallModal({ isOpen, onClose, visaType }: PaywallModal
           </motion.div>
         </div>
 
+        {/* Money-Back Guarantee Banner */}
+        <div className="bg-emerald-50 px-5 sm:px-8 py-2.5 flex items-center justify-center gap-2 border-b border-emerald-100">
+          <Shield className="w-4 h-4 text-emerald-600" />
+          <p className="text-xs font-bold text-emerald-700">🛡️ 7-Day Money-Back Guarantee — No Questions Asked</p>
+        </div>
+
         {/* Social Proof */}
-        <div className="bg-blue-50 px-6 sm:px-8 py-2.5 flex items-center justify-center gap-2 border-b border-blue-100">
+        <div className="bg-blue-50 px-5 sm:px-8 py-2 flex items-center justify-center gap-2 border-b border-blue-100">
           <Users className="w-3.5 h-3.5 text-blue-500" />
           <p className="text-xs font-medium text-blue-700">1,000+ applicants have unlocked their plans</p>
         </div>
 
         {/* Pricing Tiers */}
-        <div className="px-4 sm:px-8 py-6">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="px-3 sm:px-8 py-5">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
             {TIERS.map((tier, i) => {
               const loading = isLoading === tier.id;
               return (
@@ -202,7 +221,7 @@ export default function PaywallModal({ isOpen, onClose, visaType }: PaywallModal
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 + i * 0.08, duration: 0.3 }}
-                  className={`relative flex flex-col rounded-xl border-2 p-5 transition-all ${tier.cardStyle}`}
+                  className={`relative flex flex-col rounded-xl border-2 p-4 sm:p-5 transition-all ${tier.cardStyle}`}
                 >
                   {/* Badge */}
                   {tier.badge && (
@@ -220,19 +239,20 @@ export default function PaywallModal({ isOpen, onClose, visaType }: PaywallModal
                   </h3>
 
                   {/* Price */}
-                  <div className="mt-2 mb-1">
+                  <div className="mt-2 mb-0.5">
                     <span className="text-3xl font-extrabold text-gray-900">£{tier.price}</span>
                     <span className="text-gray-500 text-xs ml-1">.00</span>
                   </div>
-                  <p className="text-xs text-gray-400 mb-4">One-time payment</p>
+                  <p className="text-xs text-gray-400 mb-1">One-time payment</p>
+                  <p className="text-[10px] text-gray-400 mb-3">incl. UK VAT</p>
 
                   {/* Description */}
-                  <p className="text-xs text-gray-600 mb-4 leading-relaxed">
+                  <p className="text-xs text-gray-600 mb-3 leading-relaxed">
                     {tier.description}
                   </p>
 
                   {/* Benefits */}
-                  <ul className="space-y-2.5 mb-5 flex-1">
+                  <ul className="space-y-2 mb-4 flex-1">
                     {tier.benefits.map((b) => (
                       <li key={b} className="flex items-start gap-2 text-xs text-gray-700">
                         <CheckCircle className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0 mt-0.5" />
@@ -240,6 +260,12 @@ export default function PaywallModal({ isOpen, onClose, visaType }: PaywallModal
                       </li>
                     ))}
                   </ul>
+
+                  {/* Guarantee line */}
+                  <p className="text-[10px] text-emerald-600 font-medium mb-3 flex items-center gap-1">
+                    <Shield className="w-3 h-3" />
+                    {tier.guarantee} or full refund
+                  </p>
 
                   {/* CTA Button */}
                   <button
@@ -265,6 +291,16 @@ export default function PaywallModal({ isOpen, onClose, visaType }: PaywallModal
           </div>
         </div>
 
+        {/* Feature Comparison Table */}
+        <div className="px-3 sm:px-8">
+          <FeatureComparison />
+        </div>
+
+        {/* FAQ */}
+        <div className="px-3 sm:px-8">
+          <PaywallFAQ />
+        </div>
+
         {/* Error */}
         <AnimatePresence>
           {error && (
@@ -272,7 +308,7 @@ export default function PaywallModal({ isOpen, onClose, visaType }: PaywallModal
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              className="mx-6 sm:mx-8 mb-4 p-4 bg-amber-50 border border-amber-200 rounded-lg"
+              className="mx-4 sm:mx-8 mb-4 p-4 bg-amber-50 border border-amber-200 rounded-lg"
             >
               <p className="text-sm font-medium text-amber-900 mb-2">{error}</p>
               {error.includes('sign in') && (
@@ -288,7 +324,7 @@ export default function PaywallModal({ isOpen, onClose, visaType }: PaywallModal
         </AnimatePresence>
 
         {/* Footer */}
-        <div className="px-6 sm:px-8 pb-6 space-y-3">
+        <div className="px-5 sm:px-8 pb-5 space-y-3">
           <button
             onClick={onClose}
             disabled={!!isLoading}
@@ -300,10 +336,10 @@ export default function PaywallModal({ isOpen, onClose, visaType }: PaywallModal
           <div className="text-center space-y-1.5 pt-1">
             <div className="flex items-center justify-center gap-1.5 text-xs text-gray-500">
               <Shield className="w-3.5 h-3.5 text-emerald-500" />
-              <span>Money-back guarantee if not satisfied</span>
+              <span>7-day money-back guarantee · No questions asked</span>
             </div>
             <p className="text-[11px] text-gray-400">
-              Secure payment via Stripe · No subscriptions · {' '}
+              Secure payment via Stripe · No subscriptions · All prices incl. UK VAT · {' '}
               <a href="/privacy" className="hover:underline">Privacy policy</a>
             </p>
           </div>
