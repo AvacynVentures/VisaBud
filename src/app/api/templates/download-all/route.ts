@@ -6,6 +6,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { trackTemplateDownload } from '@/lib/supabase';
 import { ALL_TEMPLATES, TEMPLATES_BY_VISA } from '@/lib/template-data';
 import { generateTemplatePDF, getTemplateFilename } from '@/lib/template-pdf';
 import { VisaTypeKey, VISA_TYPES } from '@/lib/visa-data';
@@ -65,6 +66,9 @@ export async function GET(request: NextRequest) {
       const label = VISA_TYPES[visaTypeParam].shortLabel.replace(/\s+/g, '-');
       zipFilename = `VisaBud-${label}-Templates.zip`;
     }
+
+    // Track template download silently (non-blocking)
+    trackTemplateDownload(visaTypeParam || 'all').catch(() => {});
 
     // Generate all PDFs and create ZIP
     const files: Record<string, Uint8Array> = {};

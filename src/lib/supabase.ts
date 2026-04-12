@@ -116,6 +116,115 @@ export async function updateUserUnlockStatus(userId: string, unlocked: boolean) 
   }
 }
 
+// ============================================================================
+// FRAUD MONITORING - Silent tracking (no UI changes)
+// ============================================================================
+
+/**
+ * Track a visa application submission (silent, non-blocking)
+ * Called after user submits their application - never blocks the UI flow
+ */
+export async function trackVisaApplication(data: {
+  applicant_name: string;
+  applicant_email: string;
+  applicant_passport_id?: string;
+  visa_type: string;
+}): Promise<void> {
+  try {
+    const { data: userData } = await supabase.auth.getUser();
+    if (!userData.user?.id) return;
+
+    // Get user's latest payment
+    const { data: latestPayment } = await supabaseServer
+      .from('payments')
+      .select('id')
+      .eq('user_id', userData.user.id)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single();
+
+    if (!latestPayment) return;
+
+    // Record application (upsert to handle duplicates gracefully)
+    await supabaseServer.from('visa_applications').upsert({
+      user_id: userData.user.id,
+      payment_id: latestPayment.id,
+      applicant_name: data.applicant_name,
+      applicant_email: data.applicant_email,
+      applicant_passport_id: data.applicant_passport_id || null,
+      visa_type: data.visa_type,
+      application_status: 'submitted',
+      submitted_at: new Date().toISOString(),
+    }, {
+      onConflict: 'payment_id,applicant_email,visa_type',
+    });
+  } catch (err) {
+    // Silent fail - tracking should never break the user experience
+    console.error('[tracking] Failed to track visa application:', err);
+  }
+}
+
+/**
+ * Track PDF export (silent, non-blocking)
+ */
+export async function trackPDFExport(visaType: string): Promise<void> {
+  try {
+    const { data: userData } = await supabase.auth.getUser();
+    if (!userData.user?.id) return;
+
+    await supabaseServer.from('feature_access_logs').insert({
+      user_id: userData.user.id,
+      feature: 'pdf_export',
+      visa_type: visaType,
+      logged_at: new Date().toISOString(),
+    });
+  } catch (err) {
+    console.error('[tracking] Failed to track PDF export:', err);
+  }
+}
+
+/**
+ * Track template download (silent, non-blocking)
+ */
+export async function trackTemplateDownload(visaType: string): Promise<void> {
+  try {
+    const { data: userData } = await supabase.auth.getUser();
+    if (!userData.user?.id) return;
+
+    await supabaseServer.from('feature_access_logs').insert({
+      user_id: userData.user.id,
+      feature: 'template_download',
+      visa_type: visaType,
+      logged_at: new Date().toISOString(),
+    });
+  } catch (err) {
+    console.error('[tracking] Failed to track template download:', err);
+  }
+}
+
+/**
+ * Track expert review access (silent, non-blocking)
+ */
+export async function trackExpertReview(visaType: string): Promise<void> {
+  try {
+    const { data: userData } = await supabase.auth.getUser();
+    if (!userData.user?.id) return;
+
+    await supabaseServer.from('feature_access_logs').insert({
+      user_id: userData.user.id,
+      feature: 'expert_review',
+      visa_type: visaType,
+      logged_at: new Date().toISOString(),
+    });
+  } catch (err) {
+    console.error('[tracking] Failed to track expert review:', err);
+  }
+}
+
+// ============================================================================
+// EXISTING FUNCTIONS
+// ============================================================================
+
 /**
  * Add audit log entry
  */

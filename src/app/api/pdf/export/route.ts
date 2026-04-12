@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseServer } from '@/lib/supabase';
+import { supabaseServer, trackPDFExport } from '@/lib/supabase';
 import { Application, Document } from '@/lib/types';
 
 // Using a server-side PDF library (we'll implement client-side in component)
@@ -55,6 +55,9 @@ export async function POST(req: NextRequest) {
     if (alertsError) {
       console.error('Risk alerts fetch error:', alertsError);
     }
+
+    // Track PDF export silently (non-blocking)
+    trackPDFExport(application.visa_type).catch(() => {});
 
     // Return data for PDF generation
     return NextResponse.json({

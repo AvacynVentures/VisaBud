@@ -5,6 +5,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { trackTemplateDownload } from '@/lib/supabase';
 import { getTemplate } from '@/lib/template-data';
 import { generateTemplatePDF, getTemplateFilename } from '@/lib/template-pdf';
 import { VisaTypeKey } from '@/lib/visa-data';
@@ -101,6 +102,9 @@ export async function GET(
         { status: 403 }
       );
     }
+
+    // Track template download silently (non-blocking)
+    trackTemplateDownload(visaType).catch(() => {});
 
     // Generate the PDF
     const pdfBuffer = generateTemplatePDF(template);

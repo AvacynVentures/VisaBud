@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getVisionProvider } from '@/lib/get-vision-provider';
+import { trackExpertReview } from '@/lib/supabase';
 
 export const maxDuration = 60; // Premium review can take longer
 
@@ -60,6 +61,9 @@ export async function POST(req: NextRequest) {
     console.log(
       `[premium-review] provider=${result.provider} latency=${result.latencyMs}ms risk=${result.riskLevel} confidence=${result.confidenceScore} doc=${docId}`
     );
+
+    // Track expert review silently (non-blocking)
+    trackExpertReview(visaType || 'spouse').catch(() => {});
 
     return NextResponse.json(result);
   } catch (error) {
