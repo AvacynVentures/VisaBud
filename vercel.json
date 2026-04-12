@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/email/process-drip",
+      "schedule": "0 */6 * * *"
+    }
+  ]
+}

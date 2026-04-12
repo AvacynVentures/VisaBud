@@ -1,0 +1,1593 @@
+// =============================================================================
+// visa-data.ts — VisaBud Complete Content Layer
+// All visa types, checklists, timelines, risk rules, and submission info.
+// Standalone constants — no imports required.
+// =============================================================================
+
+// -----------------------------------------------------------------------------
+// Types (local to this file — consumers can import from types.ts if needed)
+// -----------------------------------------------------------------------------
+
+export type VisaTypeKey = 'spouse' | 'skilled_worker' | 'citizenship';
+export type Priority = 'critical' | 'important' | 'nice-to-have';
+export type UrgencyKey = 'urgent' | 'normal' | 'ahead';
+export type RiskSeverity = 'low' | 'medium' | 'high';
+export type DocumentCategory = 'personal' | 'financial' | 'supporting';
+
+export interface VisaTypeInfo {
+  key: VisaTypeKey;
+  label: string;
+  shortLabel: string;
+  icon: string;
+  description: string;
+  govFee: string;
+  ihsSurcharge: string;
+  processingTime: string;
+  priorityAvailable: boolean;
+  priorityFee: string | null;
+  keyRequirements: string[];
+}
+
+export interface ChecklistItem {
+  id: string;
+  title: string;
+  description: string;
+  category: DocumentCategory;
+  required: boolean;
+  priority: Priority;
+  formatRequired: string;
+  tips: string;
+  displayOrder: number;
+}
+
+export interface TimelineWeek {
+  week: number;
+  title: string;
+  actions: string[];
+  deadline: string;
+  notes: string;
+}
+
+export interface RiskRule {
+  id: string;
+  title: string;
+  description: string;
+  severity: RiskSeverity;
+  recommendation: string;
+  conditions: {
+    visaTypes: VisaTypeKey[];
+    incomeRange?: string[];
+    urgency?: UrgencyKey[];
+    currentlyInUk?: boolean;
+    relationshipDurationMonths?: { max?: number; min?: number };
+    employmentStatus?: string[];
+    nationality?: string[];
+  };
+}
+
+export interface SubmissionStep {
+  order: number;
+  title: string;
+  description: string;
+  icon: string;
+}
+
+export interface SubmissionInfo {
+  visaType: VisaTypeKey;
+  summaryIntro: string;
+  applicationUrl: string;
+  steps: SubmissionStep[];
+  importantNotes: string[];
+  contactInfo: {
+    name: string;
+    url: string;
+    phone: string;
+    hours: string;
+  };
+}
+
+// -----------------------------------------------------------------------------
+// VISA TYPES — Core reference for each route
+// -----------------------------------------------------------------------------
+
+export const VISA_TYPES: Record<VisaTypeKey, VisaTypeInfo> = {
+  spouse: {
+    key: 'spouse',
+    label: 'Spouse / Partner Visa',
+    shortLabel: 'Spouse Visa',
+    icon: '💑',
+    description:
+      'For partners of British citizens or settled persons. Your UK-based partner sponsors your application. The minimum income threshold is £29,000/year (as of April 2024) or equivalent savings.',
+    govFee: '£1,846',
+    ihsSurcharge: '£1,035/year (£2,587.50 for 2.5 years)',
+    processingTime: '24 weeks (standard) / 5–10 working days (priority)',
+    priorityAvailable: true,
+    priorityFee: '£500–£800',
+    keyRequirements: [
+      'Sponsor earns £29,000+/year or has £62,500+ in savings',
+      'Genuine and subsisting relationship',
+      'Adequate accommodation (not overcrowded)',
+      'English language at A1 level or above',
+      'No unspent criminal convictions',
+      'TB test certificate (if from listed country)',
+    ],
+  },
+
+  skilled_worker: {
+    key: 'skilled_worker',
+    label: 'Skilled Worker Visa',
+    shortLabel: 'Skilled Worker',
+    icon: '💼',
+    description:
+      'For people with a confirmed job offer from a UK employer who holds a valid sponsor licence. The general salary threshold is £38,700/year, though some occupations have lower going rates.',
+    govFee: '£719–£1,420 (depending on duration and skill level)',
+    ihsSurcharge: '£1,035/year',
+    processingTime: '3 weeks (standard) / 5 working days (priority)',
+    priorityAvailable: true,
+    priorityFee: '£500',
+    keyRequirements: [
+      'Valid Certificate of Sponsorship (CoS) from licensed employer',
+      'Job at RQF Level 3+ (A-level equivalent or above)',
+      'Salary meets £38,700+ threshold (or going rate for occupation)',
+      'English language at B1 level (CEFR)',
+      'Maintenance funds of £1,270 held for 28+ consecutive days (unless employer certifies)',
+      'Criminal record certificate (if role involves vulnerable persons)',
+    ],
+  },
+
+  citizenship: {
+    key: 'citizenship',
+    label: 'British Citizenship (Naturalisation)',
+    shortLabel: 'Citizenship',
+    icon: '🏛️',
+    description:
+      'For people who have lived in the UK for 5+ years (or 3 years if married to a British citizen). No income requirement, but strict character and residency tests apply.',
+    govFee: '£1,580',
+    ihsSurcharge: 'N/A',
+    processingTime: '6 months (standard)',
+    priorityAvailable: false,
+    priorityFee: null,
+    keyRequirements: [
+      '5 years continuous lawful residence (3 if married to British citizen)',
+      'No more than 450 days outside UK in 5-year period',
+      'No more than 90 days outside UK in final 12 months',
+      'Indefinite Leave to Remain (ILR) or equivalent status',
+      'Good character — no serious criminal convictions',
+      'Life in the UK test passed',
+      'English language at B1 level or above',
+    ],
+  },
+};
+
+// -----------------------------------------------------------------------------
+// CHECKLISTS — Per visa type, every document needed
+// -----------------------------------------------------------------------------
+
+export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
+  // =========================================================================
+  // SPOUSE / PARTNER VISA
+  // =========================================================================
+  spouse: [
+    // --- Personal Documents ---
+    {
+      id: 'sp-passport',
+      title: 'Valid Passport',
+      description:
+        'Your current passport with at least 6 months validity remaining. Include all previous passports showing travel history.',
+      category: 'personal',
+      required: true,
+      priority: 'critical',
+      formatRequired: 'Original + colour copy of every page (including blank pages)',
+      tips: 'If your passport expires within 6 months of your intended travel date, renew it before applying. Old passports help show travel history.',
+      displayOrder: 1,
+    },
+    {
+      id: 'sp-biometrics',
+      title: 'Biometric Enrolment Confirmation',
+      description:
+        'Proof you have enrolled your fingerprints and photograph at a Visa Application Centre (VAC) or via the UK Immigration: ID Check app.',
+      category: 'personal',
+      required: true,
+      priority: 'critical',
+      formatRequired: 'Digital confirmation or appointment receipt',
+      tips: 'Book your biometrics appointment as soon as you submit online. Slots fill up fast — especially in peak months (Jan–Mar).',
+      displayOrder: 2,
+    },
+    {
+      id: 'sp-photos',
+      title: 'Passport-Style Photographs',
+      description:
+        '2 passport-style photos (45mm × 35mm) with white background, taken within the last 6 months.',
+      category: 'personal',
+      required: true,
+      priority: 'critical',
+      formatRequired: '2 physical photos + digital copy',
+      tips: 'Use a professional photo service or the Post Office. Do NOT use selfies or cropped photos.',
+      displayOrder: 3,
+    },
+    {
+      id: 'sp-tb-test',
+      title: 'TB Test Certificate',
+      description:
+        'Tuberculosis test result from an approved clinic. Required if you are applying from a listed country (most of Africa, South Asia, etc.).',
+      category: 'personal',
+      required: true,
+      priority: 'critical',
+      formatRequired: 'Original certificate from approved clinic',
+      tips: 'Check gov.uk for the list of countries requiring TB tests. The certificate is valid for 6 months from the test date.',
+      displayOrder: 4,
+    },
+    {
+      id: 'sp-english-lang',
+      title: 'English Language Certificate',
+      description:
+        'Evidence of English at A1 level (speaking and listening). Accepted: IELTS Life Skills A1, Trinity GESE Grade 2, or nationality exemption.',
+      category: 'personal',
+      required: true,
+      priority: 'critical',
+      formatRequired: 'Original certificate from approved SELT provider',
+      tips: 'Citizens of majority English-speaking countries (USA, Australia, etc.) are exempt. Degrees taught in English may also qualify — check with your university.',
+      displayOrder: 5,
+    },
+    {
+      id: 'sp-marriage-cert',
+      title: 'Marriage or Civil Partnership Certificate',
+      description:
+        'Official marriage/civil partnership certificate. If in a language other than English, include a certified translation.',
+      category: 'personal',
+      required: true,
+      priority: 'critical',
+      formatRequired: 'Original + certified English translation if applicable',
+      tips: 'Unmarried partners: provide evidence of 2+ years of cohabitation instead (utility bills, joint tenancy, etc.).',
+      displayOrder: 6,
+    },
+    {
+      id: 'sp-previous-visas',
+      title: 'Previous UK Visa / Immigration History',
+      description:
+        'Copies of all previous UK visas, BRPs, entry stamps, and any refusal letters. Disclose everything — undisclosed refusals are a common reason for rejection.',
+      category: 'personal',
+      required: true,
+      priority: 'important',
+      formatRequired: 'Colour copies of all relevant documents',
+      tips: 'Include refusals and curtailments from ANY country, not just the UK. Honesty is critical — omissions are treated as deception.',
+      displayOrder: 7,
+    },
+
+    // --- Financial Documents ---
+    {
+      id: 'sp-sponsor-payslips',
+      title: "Sponsor's Payslips (6 months)",
+      description:
+        'Your UK partner\'s last 6 months of payslips showing a gross annual salary of at least £29,000.',
+      category: 'financial',
+      required: true,
+      priority: 'critical',
+      formatRequired: 'Original payslips or employer-issued copies (not screenshots)',
+      tips: 'If your partner started a new job recently, you need 6 months in that role OR a combination of Cat A (6 months same employer) and Cat B (variable income) evidence.',
+      displayOrder: 10,
+    },
+    {
+      id: 'sp-sponsor-employer-letter',
+      title: "Sponsor's Employer Letter",
+      description:
+        'Letter from sponsor\'s employer on headed paper confirming: job title, salary, start date, and type of contract (permanent/fixed). Must be dated within 28 days of application.',
+      category: 'financial',
+      required: true,
+      priority: 'critical',
+      formatRequired: 'Original letter on company letterhead, signed and dated',
+      tips: 'The letter MUST include: employee name, job title, gross annual salary, employment start date, and contract type. Missing any of these = refusal risk.',
+      displayOrder: 11,
+    },
+    {
+      id: 'sp-sponsor-bank-statements',
+      title: "Sponsor's Bank Statements (6 months)",
+      description:
+        'Last 6 months of bank statements showing salary credits that match the payslips. Must show the account holder name, sort code, and account number.',
+      category: 'financial',
+      required: true,
+      priority: 'critical',
+      formatRequired: 'Official bank statements (stamped or digitally verified by the bank)',
+      tips: 'Online printouts are NOT accepted unless stamped by the bank. Request official statements from your branch or use the bank\'s certified PDF service.',
+      displayOrder: 12,
+    },
+    {
+      id: 'sp-savings-evidence',
+      title: 'Cash Savings Evidence (if income below £29,000)',
+      description:
+        'If your sponsor earns below £29,000, you need cash savings of £62,500+ held for 28 consecutive days. Provide bank statements covering 28+ days plus the date of application.',
+      category: 'financial',
+      required: false,
+      priority: 'important',
+      formatRequired: 'Official bank statements covering the full 28-day period',
+      tips: 'The formula is: (£29,000 − actual income) × 2.5 = required savings. Funds must be accessible (not locked in pensions, property, or investments).',
+      displayOrder: 13,
+    },
+    {
+      id: 'sp-self-employed-accounts',
+      title: 'Self-Employment Evidence (if self-employed sponsor)',
+      description:
+        'If your sponsor is self-employed: last 2 years of tax returns (SA302 + tax year overviews), accountant letter, business bank statements, and evidence of ongoing trading.',
+      category: 'financial',
+      required: false,
+      priority: 'important',
+      formatRequired: 'HMRC SA302 + tax year overviews + accountant letter on headed paper',
+      tips: 'Self-employed applications are more complex and have higher refusal rates. Consider getting an immigration solicitor to review before submitting.',
+      displayOrder: 14,
+    },
+
+    // --- Supporting / Relationship Evidence ---
+    {
+      id: 'sp-relationship-photos',
+      title: 'Relationship Photographs',
+      description:
+        'Selection of photographs showing you together at different times and places. Include dates and descriptions on the back or in an index.',
+      category: 'supporting',
+      required: true,
+      priority: 'important',
+      formatRequired: 'Printed photos with written dates/descriptions, or a digital album with captions',
+      tips: 'Quality over quantity. 15–20 photos spanning your entire relationship. Show: holidays, family events, daily life. Metadata-intact digital photos are strongest.',
+      displayOrder: 20,
+    },
+    {
+      id: 'sp-communication-evidence',
+      title: 'Communication History',
+      description:
+        'Evidence of regular communication: WhatsApp/message screenshots, call logs, video call records. Essential for couples who lived apart.',
+      category: 'supporting',
+      required: true,
+      priority: 'important',
+      formatRequired: 'Printed screenshots with dates visible, organised chronologically',
+      tips: 'Show consistent communication across the relationship timeline. Gaps of 2+ weeks without contact may raise questions. Include a mix of message types.',
+      displayOrder: 21,
+    },
+    {
+      id: 'sp-cohabitation-proof',
+      title: 'Cohabitation / Shared Address Proof',
+      description:
+        'Evidence you live together (or will): joint tenancy agreement, utility bills in both names, council tax bill, GP registration at same address.',
+      category: 'supporting',
+      required: true,
+      priority: 'important',
+      formatRequired: 'Original documents or certified copies showing shared address',
+      tips: 'The more overlap in names + address, the better. Even if you don\'t have joint bills, both having separate bills at the same address helps.',
+      displayOrder: 22,
+    },
+    {
+      id: 'sp-accommodation-evidence',
+      title: 'Accommodation Evidence',
+      description:
+        'Proof that you have adequate housing in the UK that is not overcrowded. Tenancy agreement, mortgage statement, or letter from landlord/property owner.',
+      category: 'supporting',
+      required: true,
+      priority: 'important',
+      formatRequired: 'Tenancy agreement or property ownership documents + council tax bill',
+      tips: 'If living with family, get a letter from the homeowner confirming you can stay and the number of rooms/occupants. Include a property inspection report if possible.',
+      displayOrder: 23,
+    },
+    {
+      id: 'sp-sponsor-id',
+      title: "Sponsor's Identity Documents",
+      description:
+        "Your UK partner's British passport or proof of settled status (ILR/BRP). Must prove they have the right to sponsor you.",
+      category: 'supporting',
+      required: true,
+      priority: 'critical',
+      formatRequired: 'Colour copy of passport bio page + BRP (both sides) if applicable',
+      tips: 'If your sponsor naturalised, include their naturalisation certificate. If they have status under the EU Settlement Scheme, include their share code.',
+      displayOrder: 24,
+    },
+    {
+      id: 'sp-cover-letter',
+      title: 'Cover Letter / Statement of Intent',
+      description:
+        'A clear, concise letter explaining your relationship history, how you met, why you are applying, and your plans in the UK. Not required but strongly recommended.',
+      category: 'supporting',
+      required: false,
+      priority: 'nice-to-have',
+      formatRequired: 'Typed letter, 1–2 pages, signed and dated',
+      tips: 'Keep it factual and chronological. Include: how you met, key milestones (moving in, engagement, marriage), and future plans. Do not make it overly emotional.',
+      displayOrder: 25,
+    },
+    {
+      id: 'sp-third-party-letters',
+      title: 'Letters from Family/Friends',
+      description:
+        'Supporting letters from people who know your relationship. They should describe how they know you, how long, and their observations of your relationship.',
+      category: 'supporting',
+      required: false,
+      priority: 'nice-to-have',
+      formatRequired: 'Signed letters with writer\'s ID copy attached',
+      tips: 'Get 2–4 letters from different people (both sides of the relationship). Each letter should include their full name, relationship to you, and a copy of their ID.',
+      displayOrder: 26,
+    },
+  ],
+
+  // =========================================================================
+  // SKILLED WORKER VISA
+  // =========================================================================
+  skilled_worker: [
+    // --- Personal Documents ---
+    {
+      id: 'sw-passport',
+      title: 'Valid Passport',
+      description:
+        'Current passport with at least 6 months validity. Include all previous passports if available.',
+      category: 'personal',
+      required: true,
+      priority: 'critical',
+      formatRequired: 'Original + colour copy of bio page and all stamped pages',
+      tips: 'Ensure your name on the passport matches exactly what your employer used on the Certificate of Sponsorship. Even minor differences cause delays.',
+      displayOrder: 1,
+    },
+    {
+      id: 'sw-biometrics',
+      title: 'Biometric Enrolment Confirmation',
+      description:
+        'Fingerprints and photograph via VAC appointment or UK Immigration: ID Check app.',
+      category: 'personal',
+      required: true,
+      priority: 'critical',
+      formatRequired: 'Digital confirmation or appointment receipt',
+      tips: 'If applying from inside the UK, the ID Check app is faster. Outside UK, book the VAC appointment immediately after online submission.',
+      displayOrder: 2,
+    },
+    {
+      id: 'sw-photos',
+      title: 'Passport-Style Photographs',
+      description: '2 passport-style photographs (45mm × 35mm), white background, taken within last 6 months.',
+      category: 'personal',
+      required: true,
+      priority: 'critical',
+      formatRequired: '2 physical photos + digital copy',
+      tips: 'Check the specific VAC requirements for your country — some have additional photo specifications.',
+      displayOrder: 3,
+    },
+    {
+      id: 'sw-tb-test',
+      title: 'TB Test Certificate',
+      description:
+        'Required if applying from a listed country. Must be from a government-approved clinic.',
+      category: 'personal',
+      required: true,
+      priority: 'critical',
+      formatRequired: 'Original certificate',
+      tips: 'Valid for 6 months. Schedule this early — some clinics have long wait times.',
+      displayOrder: 4,
+    },
+    {
+      id: 'sw-english-lang',
+      title: 'English Language Certificate (B1)',
+      description:
+        'Evidence of English at CEFR B1 level. Accepted: IELTS for UKVI (min 4.0 in each component), degree taught in English, or national exemption.',
+      category: 'personal',
+      required: true,
+      priority: 'critical',
+      formatRequired: 'Original SELT certificate or degree certificate + ECCTIS/ENIC confirmation',
+      tips: 'A UK degree automatically satisfies this. Non-UK degrees need confirmation from ECCTIS (formerly NARIC) that the degree was taught in English.',
+      displayOrder: 5,
+    },
+    {
+      id: 'sw-criminal-record',
+      title: 'Criminal Record Certificate',
+      description:
+        'Required for roles working with children or vulnerable adults (healthcare, education, social work). From each country you have lived in for 12+ months in the last 10 years.',
+      category: 'personal',
+      required: false,
+      priority: 'important',
+      formatRequired: 'Original + certified English translation',
+      tips: 'Processing times vary wildly by country (2 weeks to 3 months). Start this early. Your employer\'s HR team should confirm whether this applies to your role.',
+      displayOrder: 6,
+    },
+    {
+      id: 'sw-previous-visas',
+      title: 'Previous UK Visa / Immigration History',
+      description:
+        'All previous UK visas, BRPs, and any refusal/curtailment letters from any country.',
+      category: 'personal',
+      required: true,
+      priority: 'important',
+      formatRequired: 'Colour copies',
+      tips: 'Disclose everything. Undisclosed refusals — even from other countries — count as deception and can lead to a 10-year ban.',
+      displayOrder: 7,
+    },
+
+    // --- Financial / Employment Documents ---
+    {
+      id: 'sw-cos',
+      title: 'Certificate of Sponsorship (CoS)',
+      description:
+        'Your employer assigns this via the Sponsor Management System. Contains your CoS reference number, job details, salary, and SOC code. You do NOT receive a physical document.',
+      category: 'financial',
+      required: true,
+      priority: 'critical',
+      formatRequired: 'CoS reference number (provided by employer)',
+      tips: 'Your CoS is valid for 3 months from date of assignment. Apply BEFORE it expires. Confirm your employer has included the correct SOC code and salary.',
+      displayOrder: 10,
+    },
+    {
+      id: 'sw-employment-contract',
+      title: 'Employment Contract / Offer Letter',
+      description:
+        'Written job offer or contract showing: job title, salary (matching CoS), start date, working hours, and location. Must be on company letterhead.',
+      category: 'financial',
+      required: true,
+      priority: 'critical',
+      formatRequired: 'Signed contract or offer letter on company letterhead',
+      tips: 'The salary on the contract MUST exactly match the CoS. Any discrepancy = refusal. If there\'s a signing bonus or allowances, these usually cannot count toward the threshold.',
+      displayOrder: 11,
+    },
+    {
+      id: 'sw-maintenance-funds',
+      title: 'Maintenance Funds Evidence',
+      description:
+        'Bank statements showing £1,270+ held for 28 consecutive days ending no more than 31 days before application date. Not required if your employer certifies maintenance on the CoS.',
+      category: 'financial',
+      required: false,
+      priority: 'important',
+      formatRequired: 'Official bank statements (28-day period)',
+      tips: 'Most employers will certify maintenance — check with your HR. If they don\'t, ensure the £1,270 is in YOUR name (not a family member\'s) and don\'t dip below the threshold.',
+      displayOrder: 12,
+    },
+    {
+      id: 'sw-sponsor-licence-check',
+      title: 'Employer Sponsor Licence Verification',
+      description:
+        'Confirm your employer holds a valid Skilled Worker sponsor licence. Check the public register on gov.uk.',
+      category: 'financial',
+      required: true,
+      priority: 'critical',
+      formatRequired: 'Screenshot or printout from the public register',
+      tips: 'Search at: gov.uk/government/publications/register-of-licensed-sponsors-workers. If your employer is NOT on the list, they cannot sponsor you. Period.',
+      displayOrder: 13,
+    },
+    {
+      id: 'sw-qualifications',
+      title: 'Academic / Professional Qualifications',
+      description:
+        'Degree certificates, professional qualifications, or trade certifications relevant to your role. Include ECCTIS statement if degree is non-UK.',
+      category: 'financial',
+      required: false,
+      priority: 'important',
+      formatRequired: 'Original certificates + ECCTIS/ENIC confirmation for non-UK qualifications',
+      tips: 'Not always required but strengthens your application, especially if salary is near the threshold. ECCTIS takes 10–15 working days to process.',
+      displayOrder: 14,
+    },
+
+    // --- Supporting Documents ---
+    {
+      id: 'sw-atas-certificate',
+      title: 'ATAS Certificate (if applicable)',
+      description:
+        'Academic Technology Approval Scheme certificate. Required for certain PhD-level research roles in sensitive subjects (engineering, tech, some sciences).',
+      category: 'supporting',
+      required: false,
+      priority: 'important',
+      formatRequired: 'Original ATAS certificate',
+      tips: 'Processing takes up to 20 working days. Check if your SOC code requires ATAS at gov.uk. Your employer should know if this applies.',
+      displayOrder: 20,
+    },
+    {
+      id: 'sw-cover-letter',
+      title: 'Cover Letter',
+      description:
+        'Brief letter explaining your application: role, employer, why you\'re qualified, and your career intentions in the UK.',
+      category: 'supporting',
+      required: false,
+      priority: 'nice-to-have',
+      formatRequired: 'Typed, 1 page, signed and dated',
+      tips: 'Particularly useful if your career path isn\'t obvious from the documents (e.g., career change, unusual qualification route).',
+      displayOrder: 21,
+    },
+    {
+      id: 'sw-cv',
+      title: 'Current CV / Resume',
+      description:
+        'Up-to-date CV showing education, employment history, and skills relevant to the sponsored role.',
+      category: 'supporting',
+      required: false,
+      priority: 'nice-to-have',
+      formatRequired: 'PDF, 2 pages max',
+      tips: 'Ensure job titles and dates match what\'s on your CoS. Inconsistencies between CV and CoS can trigger additional scrutiny.',
+      displayOrder: 22,
+    },
+  ],
+
+  // =========================================================================
+  // BRITISH CITIZENSHIP (NATURALISATION)
+  // =========================================================================
+  citizenship: [
+    // --- Personal Documents ---
+    {
+      id: 'ct-passport',
+      title: 'Current Passport',
+      description:
+        'Your current valid passport. You will also need all previous passports to evidence travel history for the residency calculation.',
+      category: 'personal',
+      required: true,
+      priority: 'critical',
+      formatRequired: 'Original current passport + all previous passports',
+      tips: 'Lost old passports? Request entry/exit records from the Home Office using a Subject Access Request (SAR). This takes 1–3 months.',
+      displayOrder: 1,
+    },
+    {
+      id: 'ct-brp',
+      title: 'Biometric Residence Permit (BRP) / ILR Evidence',
+      description:
+        'Your current BRP showing Indefinite Leave to Remain, or digital proof of settled status. This is the foundation of your citizenship application.',
+      category: 'personal',
+      required: true,
+      priority: 'critical',
+      formatRequired: 'Original BRP (both sides) or settled status share code',
+      tips: 'If your BRP has expired but your ILR hasn\'t, you can still apply. Include a cover letter explaining the BRP expiry.',
+      displayOrder: 2,
+    },
+    {
+      id: 'ct-life-in-uk',
+      title: 'Life in the UK Test Pass Certificate',
+      description:
+        'Certificate proving you passed the Life in the UK test. There is no expiry — once passed, it\'s valid forever.',
+      category: 'personal',
+      required: true,
+      priority: 'critical',
+      formatRequired: 'Original pass notification letter',
+      tips: 'Book at: lifeintheuktest.gov.uk. Cost is £50. Study the official handbook — most questions come directly from it. Pass mark is 75% (18/24).',
+      displayOrder: 3,
+    },
+    {
+      id: 'ct-english-lang',
+      title: 'English Language Evidence (B1+)',
+      description:
+        'Evidence of English at CEFR B1 or above. Accepted: IELTS for UKVI (B1), degree taught in English, nationality exemption, or Life in the UK test (counts for English).',
+      category: 'personal',
+      required: true,
+      priority: 'critical',
+      formatRequired: 'Original certificate or degree + ECCTIS confirmation',
+      tips: 'The Life in the UK test can count as English language evidence if you passed it. A UK degree at any level also satisfies this.',
+      displayOrder: 4,
+    },
+    {
+      id: 'ct-birth-certificate',
+      title: 'Birth Certificate',
+      description:
+        'Your original birth certificate. If not in English, include a certified translation.',
+      category: 'personal',
+      required: true,
+      priority: 'critical',
+      formatRequired: 'Original + certified English translation if applicable',
+      tips: 'If you cannot obtain a birth certificate, provide a statutory declaration explaining why and any alternative evidence of identity.',
+      displayOrder: 5,
+    },
+    {
+      id: 'ct-previous-visas',
+      title: 'Full Immigration History',
+      description:
+        'Complete record of all UK visas, entry stamps, BRPs, and status changes. Include refusal letters from any country.',
+      category: 'personal',
+      required: true,
+      priority: 'critical',
+      formatRequired: 'Colour copies of all documents, chronologically ordered',
+      tips: 'The Home Office will cross-reference everything. Missing information delays processing significantly (sometimes months).',
+      displayOrder: 6,
+    },
+
+    // --- Residency & Character ---
+    {
+      id: 'ct-travel-history',
+      title: 'Travel History (5-Year Record)',
+      description:
+        'Complete record of every trip outside the UK in the qualifying 5-year period (or 3 years if married to a British citizen). Include dates, destinations, and purposes.',
+      category: 'financial',
+      required: true,
+      priority: 'critical',
+      formatRequired: 'Spreadsheet or typed document listing all absences with exact dates',
+      tips: 'Max 450 days outside UK in 5 years AND max 90 days in the final 12 months. Count carefully — even 1 day over = automatic refusal. Use passport stamps + flight bookings to verify.',
+      displayOrder: 10,
+    },
+    {
+      id: 'ct-address-history',
+      title: 'Address History (5 Years)',
+      description:
+        'All UK addresses in the last 5 years with dates of residence. Evidenced by council tax bills, tenancy agreements, utility bills, or bank statements.',
+      category: 'financial',
+      required: true,
+      priority: 'critical',
+      formatRequired: 'Document for each address showing your name and dates',
+      tips: 'Gaps in address history raise questions. If you lived with someone without bills in your name, get a letter from the householder confirming your stay.',
+      displayOrder: 11,
+    },
+    {
+      id: 'ct-tax-records',
+      title: 'Tax and National Insurance Record',
+      description:
+        'Evidence of tax compliance: P60s, tax returns, or HMRC tax summaries for the qualifying period. Shows you\'ve been economically active and law-abiding.',
+      category: 'financial',
+      required: false,
+      priority: 'important',
+      formatRequired: 'HMRC tax summaries or P60s for each qualifying year',
+      tips: 'Access your tax records via your Personal Tax Account on gov.uk. If you have any tax debts or missed filings, resolve them BEFORE applying.',
+      displayOrder: 12,
+    },
+    {
+      id: 'ct-criminal-record',
+      title: 'Criminal Record Declaration',
+      description:
+        'You must declare ALL criminal convictions, cautions, and penalties — including driving offences and overseas convictions. Even spent convictions must be declared for citizenship.',
+      category: 'financial',
+      required: true,
+      priority: 'critical',
+      formatRequired: 'Completed form section + supporting certificates if applicable',
+      tips: 'Unlike visa applications, spent convictions ARE relevant for citizenship. Driving offences (even penalty points) must be declared. Non-disclosure = refusal + potential ban.',
+      displayOrder: 13,
+    },
+
+    // --- Supporting Documents ---
+    {
+      id: 'ct-referees',
+      title: 'Two Referees',
+      description:
+        'Two referees who have known you for 3+ years: one must be a professional (doctor, lawyer, teacher, etc.), the other must be a British citizen. Neither can be related to you or each other.',
+      category: 'supporting',
+      required: true,
+      priority: 'critical',
+      formatRequired: 'Referees complete sections of the application form directly',
+      tips: 'Choose referees carefully. They may be contacted by the Home Office. Ensure they know your application timeline and can respond promptly.',
+      displayOrder: 20,
+    },
+    {
+      id: 'ct-marriage-cert',
+      title: 'Marriage Certificate (if applying via 3-year route)',
+      description:
+        'If applying as the spouse of a British citizen (3-year residence route), provide your marriage certificate proving the relationship.',
+      category: 'supporting',
+      required: false,
+      priority: 'important',
+      formatRequired: 'Original + certified English translation if applicable',
+      tips: 'The marriage must have been in effect for the entire 3-year qualifying period. If you married during this period, the qualifying date changes.',
+      displayOrder: 21,
+    },
+    {
+      id: 'ct-partner-passport',
+      title: "British Citizen Spouse's Passport (if 3-year route)",
+      description:
+        'Colour copy of your British citizen spouse\'s passport to confirm their citizenship status.',
+      category: 'supporting',
+      required: false,
+      priority: 'important',
+      formatRequired: 'Colour copy of bio page',
+      tips: 'If your spouse naturalised, include their naturalisation certificate as well.',
+      displayOrder: 22,
+    },
+    {
+      id: 'ct-ceremony-booking',
+      title: 'Citizenship Ceremony Booking',
+      description:
+        'After approval, you must attend a citizenship ceremony within 3 months. Many councils let you book in advance.',
+      category: 'supporting',
+      required: false,
+      priority: 'nice-to-have',
+      formatRequired: 'Booking confirmation from local council',
+      tips: 'Ceremonies cost £80. You can choose a private ceremony (just you and a guest) or a group ceremony. Book early — popular dates fill up quickly.',
+      displayOrder: 23,
+    },
+    {
+      id: 'ct-name-change',
+      title: 'Name Change Evidence (if applicable)',
+      description:
+        'If your name has changed at any point (marriage, deed poll, etc.), provide evidence of each change.',
+      category: 'supporting',
+      required: false,
+      priority: 'important',
+      formatRequired: 'Original deed poll, marriage certificate, or statutory declaration',
+      tips: 'All name changes must be declared. Ensure your current passport reflects your current legal name.',
+      displayOrder: 24,
+    },
+  ],
+};
+
+// -----------------------------------------------------------------------------
+// TIMELINES — Week-by-week action plans by urgency
+// -----------------------------------------------------------------------------
+
+export const TIMELINES: Record<UrgencyKey, TimelineWeek[]> = {
+  // =========================================================================
+  // URGENT — 4-week sprint
+  // =========================================================================
+  urgent: [
+    {
+      week: 1,
+      title: 'Emergency Preparation',
+      actions: [
+        'Complete online application form on gov.uk (DO NOT SUBMIT YET — save as draft)',
+        'Book biometrics appointment at nearest VAC (earliest available slot)',
+        'Book TB test if required (check gov.uk list of countries)',
+        'Request bank statements from your bank (allow 3–5 working days)',
+        'Ask sponsor/employer for employment letter immediately',
+        'Check passport validity — if expiring within 6 months, start emergency renewal',
+      ],
+      deadline: 'End of Day 7',
+      notes:
+        'Priority processing costs £500–£800 extra but reduces wait from 24 weeks to 5–10 working days. Budget for this. Do NOT submit without all critical documents — a refusal costs more than waiting an extra week.',
+    },
+    {
+      week: 2,
+      title: 'Document Sprint',
+      actions: [
+        'Collect all payslips (6 months) and verify they match bank statement credits',
+        'Obtain English language certificate (or confirm exemption)',
+        'Gather relationship evidence: photos, communication logs, cohabitation proof',
+        'Request accommodation evidence from landlord/mortgage provider',
+        'Order certified translations for any non-English documents',
+        'Start drafting cover letter',
+      ],
+      deadline: 'End of Day 14',
+      notes:
+        'This is the hardest week. You are likely chasing multiple documents simultaneously. Use a shared spreadsheet with your partner to track what\'s received vs outstanding.',
+    },
+    {
+      week: 3,
+      title: 'Review & Quality Check',
+      actions: [
+        'Cross-reference every document against the checklist — no gaps allowed',
+        'Verify all dates, names, and reference numbers match across documents',
+        'Have someone else review the application form for errors',
+        'Attend biometrics appointment',
+        'Attend TB test appointment (if not yet done)',
+        'Finalise cover letter and get it reviewed',
+      ],
+      deadline: 'End of Day 21',
+      notes:
+        'Common errors that cause refusals: name mismatches between documents, bank statements not covering the full period, employer letter older than 28 days. Check everything twice.',
+    },
+    {
+      week: 4,
+      title: 'Submit & Follow Up',
+      actions: [
+        'Submit application online and pay fees (including priority if applicable)',
+        'Upload all supporting documents via the online portal',
+        'Submit physical documents at VAC if required',
+        'Save confirmation email and application reference number',
+        'Set up calendar reminders for expected decision date',
+        'Prepare for potential interview (rare but possible)',
+      ],
+      deadline: 'End of Day 28',
+      notes:
+        'After submission, do NOT travel or change your circumstances without consulting the application guidance. Keep your phone and email accessible — the Home Office may contact you.',
+    },
+  ],
+
+  // =========================================================================
+  // NORMAL — 8-week plan (1–3 months)
+  // =========================================================================
+  normal: [
+    {
+      week: 1,
+      title: 'Research & Planning',
+      actions: [
+        'Read the full visa guidance on gov.uk for your visa type',
+        'Create a master checklist spreadsheet with all required documents',
+        'Check your eligibility against all requirements (income, English, etc.)',
+        'Identify any potential problems early (income gaps, travel history, etc.)',
+        'Set a target submission date and work backwards',
+      ],
+      deadline: 'End of Week 1',
+      notes:
+        'This week is about understanding, not doing. The biggest cause of refusals is misunderstanding the requirements. Read the guidance properly — don\'t rely on forums or hearsay.',
+    },
+    {
+      week: 2,
+      title: 'Personal Documents',
+      actions: [
+        'Check passport validity and renew if needed',
+        'Book TB test appointment',
+        'Book English language test (if needed)',
+        'Request birth certificate / marriage certificate (if not to hand)',
+        'Order any certified translations',
+      ],
+      deadline: 'End of Week 2',
+      notes:
+        'Passport renewals take 3–6 weeks. English language tests need to be booked in advance. Do these early to avoid bottlenecks.',
+    },
+    {
+      week: 3,
+      title: 'Financial Documents',
+      actions: [
+        'Request 6 months of bank statements from your bank',
+        'Gather 6 months of payslips (or request from employer)',
+        'Request employer letter (give them the exact template/requirements)',
+        'If self-employed: request SA302 and tax year overviews from HMRC',
+        'If using savings: ensure funds have been in the account 28+ days',
+      ],
+      deadline: 'End of Week 3',
+      notes:
+        'Financial evidence is the #1 reason for spouse visa refusals. Be meticulous. Every payslip must match a corresponding bank credit. Gaps = refusal risk.',
+    },
+    {
+      week: 4,
+      title: 'Supporting Documents',
+      actions: [
+        'Compile relationship evidence (photos, messages, letters)',
+        'Gather accommodation evidence',
+        'Collect cohabitation proof (utility bills, joint accounts)',
+        'Request reference/support letters from family and friends',
+        'Prepare sponsor\'s identity documents',
+      ],
+      deadline: 'End of Week 4',
+      notes:
+        'For skilled worker applicants, this week focuses on ensuring CoS details match your contract and qualifications. For citizenship, this is travel history compilation week.',
+    },
+    {
+      week: 5,
+      title: 'Application Form',
+      actions: [
+        'Start completing the online application form on gov.uk',
+        'Save progress regularly (forms time out after 60 minutes of inactivity)',
+        'Double-check every answer against your documents',
+        'Note down any questions you\'re unsure about for research',
+      ],
+      deadline: 'End of Week 5',
+      notes:
+        'The online form is long (spouse visa forms can take 2–3 hours). Don\'t rush it. Incorrect answers — even accidental — can be treated as dishonesty.',
+    },
+    {
+      week: 6,
+      title: 'Quality Review',
+      actions: [
+        'Review entire application with fresh eyes',
+        'Cross-reference all document dates, names, and reference numbers',
+        'Have your partner/sponsor review the application independently',
+        'Check that all translations are certified and complete',
+        'Ensure no documents are older than their validity window',
+      ],
+      deadline: 'End of Week 6',
+      notes:
+        'Consider paying for a professional document review at this stage (£150–£300 from an immigration advisor). Much cheaper than a refusal + re-application.',
+    },
+    {
+      week: 7,
+      title: 'Biometrics & Final Prep',
+      actions: [
+        'Book and attend biometrics appointment',
+        'Attend TB test (if not yet done)',
+        'Make final copies of all documents for your own records',
+        'Prepare the physical document package (if submitting in person)',
+        'Check for any last-minute changes to immigration rules',
+      ],
+      deadline: 'End of Week 7',
+      notes:
+        'Keep a complete copy of everything you submit. If the Home Office loses documents (it happens), you need to be able to re-submit quickly.',
+    },
+    {
+      week: 8,
+      title: 'Submit Application',
+      actions: [
+        'Final review of application form and all documents',
+        'Submit application online and pay all fees',
+        'Upload supporting documents to the portal',
+        'Submit biometrics and physical documents at VAC',
+        'Save all confirmation emails and reference numbers',
+        'Set calendar reminders for expected decision timeline',
+      ],
+      deadline: 'End of Week 8',
+      notes:
+        'Congratulations on submitting! Now begins the wait. Standard processing is 8–24 weeks depending on visa type. Do not contact the Home Office for status updates before the published processing time has elapsed.',
+    },
+  ],
+
+  // =========================================================================
+  // AHEAD — 16-week plan (3+ months, planning ahead)
+  // =========================================================================
+  ahead: [
+    {
+      week: 1,
+      title: 'Deep Research',
+      actions: [
+        'Read the complete Immigration Rules for your visa category on legislation.gov.uk',
+        'Research recent refusal trends and common mistakes on forums (but verify with official sources)',
+        'Assess your overall eligibility honestly — identify weaknesses',
+        'Consider whether professional immigration advice is worth the investment',
+      ],
+      deadline: 'End of Week 1',
+      notes:
+        'You have the luxury of time. Use it to build the strongest application possible. The refusal rate for well-prepared applications is under 5%.',
+    },
+    {
+      week: 2,
+      title: 'Address Weaknesses',
+      actions: [
+        'If income is borderline: explore ways to increase salary or build savings',
+        'If English test needed: start studying and book the test for Week 6–8',
+        'If relationship evidence is thin: start building a deliberate evidence trail now',
+        'If travel history is close to limits: stop unnecessary international travel immediately',
+      ],
+      deadline: 'End of Week 4',
+      notes:
+        'This is the biggest advantage of planning ahead. You can actually FIX problems rather than just documenting them.',
+    },
+    {
+      week: 5,
+      title: 'Start Document Collection',
+      actions: [
+        'Request long-form documents (birth certificates, police clearances, etc.)',
+        'Start the certified translation process for non-English documents',
+        'Order ECCTIS qualification assessment if needed (takes 10–15 working days)',
+        'Request Subject Access Request from Home Office if missing immigration records',
+      ],
+      deadline: 'End of Week 6',
+      notes:
+        'Some documents take weeks or months to obtain (especially from overseas governments). Starting early eliminates panic.',
+    },
+    {
+      week: 7,
+      title: 'Financial Evidence Window Opens',
+      actions: [
+        'Begin the 6-month payslip collection period (if changing jobs, wait until you have 6 months)',
+        'If using savings route: transfer funds and start the 28-day holding period',
+        'Request a fresh employer letter (remember: must be dated within 28 days of submission)',
+        'Get self-employment accounts in order (tax returns filed, accountant letter drafted)',
+      ],
+      deadline: 'End of Week 8',
+      notes:
+        'Financial evidence has strict time windows. Plan backwards from your target submission date to ensure everything aligns.',
+    },
+    {
+      week: 9,
+      title: 'Build Supporting Evidence',
+      actions: [
+        'Compile comprehensive relationship evidence package',
+        'Draft and refine your cover letter',
+        'Request letters from referees and supporters',
+        'Prepare accommodation and cohabitation evidence',
+        'Take new relationship photographs at events or outings',
+      ],
+      deadline: 'End of Week 10',
+      notes:
+        'For citizenship applications, this is when you should compile your complete travel history spreadsheet and cross-reference with passport stamps.',
+    },
+    {
+      week: 11,
+      title: 'Application Form & Testing',
+      actions: [
+        'Complete the online application form in full (save as draft)',
+        'Attend English language test',
+        'Attend TB test',
+        'Book Life in the UK test (citizenship applicants)',
+      ],
+      deadline: 'End of Week 12',
+      notes:
+        'Complete the form while everything is fresh in your mind. Some questions require specific dates and details that are easy to look up now but hard to remember later.',
+    },
+    {
+      week: 13,
+      title: 'Professional Review (Recommended)',
+      actions: [
+        'Send complete application to an immigration solicitor or advisor for review',
+        'Address any feedback or concerns they raise',
+        'Obtain any final outstanding documents',
+        'Refresh any documents that may have aged out (employer letter, bank statements)',
+      ],
+      deadline: 'End of Week 14',
+      notes:
+        'An OISC-regulated advisor or solicitor review costs £200–£500 but provides peace of mind. They catch issues you won\'t spot yourself.',
+    },
+    {
+      week: 15,
+      title: 'Final Preparation & Submission',
+      actions: [
+        'Book and attend biometrics appointment',
+        'Final document review — check all dates are within validity windows',
+        'Make copies of everything for your records',
+        'Submit application, pay fees, and upload documents',
+        'Submit physical documents at VAC if required',
+        'Celebrate — you\'ve done everything possible to succeed',
+      ],
+      deadline: 'End of Week 16',
+      notes:
+        'A well-prepared application submitted with time to spare is the gold standard. You\'ve maximised your chances of success.',
+    },
+  ],
+};
+
+// -----------------------------------------------------------------------------
+// RISK RULES — Dynamic risk engine
+// -----------------------------------------------------------------------------
+
+export const RISKS: RiskRule[] = [
+  // =========================================================================
+  // Income & Financial Risks
+  // =========================================================================
+  {
+    id: 'RISK_INCOME_BELOW_THRESHOLD',
+    title: 'Income Below Minimum Threshold',
+    description:
+      'Your sponsor\'s income appears to be below the £29,000 minimum threshold for a spouse visa. Without sufficient savings to compensate, this will result in automatic refusal.',
+    severity: 'high',
+    recommendation:
+      'Either increase income above £29,000 before applying, or demonstrate cash savings of at least £62,500 held for 28+ days. Formula: (£29,000 − actual income) × 2.5 = savings needed.',
+    conditions: {
+      visaTypes: ['spouse'],
+      incomeRange: ['under29k'],
+    },
+  },
+  {
+    id: 'RISK_SKILLED_SALARY_LOW',
+    title: 'Salary Below Skilled Worker Threshold',
+    description:
+      'Your offered salary may be below the £38,700 general threshold for Skilled Worker visas. Unless your occupation has a lower "going rate", this application will be refused.',
+    severity: 'high',
+    recommendation:
+      'Confirm with your employer that your salary meets the threshold for your specific SOC code. Some occupations (healthcare, education) have lower thresholds. Check the going rates table on gov.uk.',
+    conditions: {
+      visaTypes: ['skilled_worker'],
+      incomeRange: ['under30k', '30to38k'],
+    },
+  },
+  {
+    id: 'RISK_SELF_EMPLOYED_COMPLEXITY',
+    title: 'Self-Employment Evidence Complexity',
+    description:
+      'Self-employed sponsors face significantly higher refusal rates because the evidence requirements are more complex. Missing even one document from the self-employment pack can lead to refusal.',
+    severity: 'medium',
+    recommendation:
+      'Ensure you have: 2 full years of SA302 tax calculations + tax year overviews from HMRC, accountant\'s letter on headed paper, business bank statements, and evidence of ongoing trading. Consider professional review before submission.',
+    conditions: {
+      visaTypes: ['spouse'],
+      employmentStatus: ['self-employed'],
+    },
+  },
+
+  // =========================================================================
+  // Timeline Risks
+  // =========================================================================
+  {
+    id: 'RISK_URGENT_TIMELINE',
+    title: 'Very Tight Application Timeline',
+    description:
+      'You have selected an urgent timeline (under 4 weeks). This significantly increases the risk of submitting incomplete or inconsistent documents.',
+    severity: 'high',
+    recommendation:
+      'Budget for priority processing fees (£500–£800). Start ALL document requests immediately — do not wait. Consider whether delaying by 2–4 weeks would meaningfully improve your application quality.',
+    conditions: {
+      visaTypes: ['spouse', 'skilled_worker', 'citizenship'],
+      urgency: ['urgent'],
+    },
+  },
+  {
+    id: 'RISK_CITIZENSHIP_TIMING',
+    title: 'Citizenship Residency Timing Risk',
+    description:
+      'Citizenship applications are automatically refused if you apply even 1 day before your qualifying date. The 5-year (or 3-year) period must be COMPLETE at the date of application.',
+    severity: 'high',
+    recommendation:
+      'Calculate your exact qualifying date carefully. Add a buffer of at least 1 week. Double-check your absence calculations: max 450 days in 5 years, max 90 days in the final 12 months.',
+    conditions: {
+      visaTypes: ['citizenship'],
+    },
+  },
+
+  // =========================================================================
+  // Relationship & Character Risks
+  // =========================================================================
+  {
+    id: 'RISK_SHORT_RELATIONSHIP',
+    title: 'Short Relationship Duration',
+    description:
+      'Relationships under 2 years may face additional scrutiny. The Home Office may question whether the relationship is genuine and subsisting.',
+    severity: 'medium',
+    recommendation:
+      'Strengthen your relationship evidence: include more photographs, communication logs, third-party letters, and evidence of future plans together. A detailed cover letter explaining your relationship history is essential.',
+    conditions: {
+      visaTypes: ['spouse'],
+      relationshipDurationMonths: { max: 24 },
+    },
+  },
+  {
+    id: 'RISK_NO_COHABITATION',
+    title: 'No Evidence of Living Together',
+    description:
+      'If you have never lived at the same address, you will need to provide stronger evidence of a genuine relationship through other means.',
+    severity: 'medium',
+    recommendation:
+      'Focus on: frequent visits (flight bookings, entry stamps), extensive communication records, evidence of joint financial commitments (e.g., joint savings), and detailed letters from family/friends who have witnessed the relationship.',
+    conditions: {
+      visaTypes: ['spouse'],
+    },
+  },
+
+  // =========================================================================
+  // Application-Specific Risks
+  // =========================================================================
+  {
+    id: 'RISK_PREVIOUS_REFUSAL',
+    title: 'Previous Visa Refusal Detected',
+    description:
+      'Any previous visa refusal (from any country) must be declared and explained. Failure to disclose = automatic refusal and potential 10-year re-entry ban for deception.',
+    severity: 'high',
+    recommendation:
+      'Declare ALL previous refusals honestly. Provide a clear explanation of the circumstances and what has changed since. If the refusal was from another country, include a copy of the refusal letter with a certified translation.',
+    conditions: {
+      visaTypes: ['spouse', 'skilled_worker', 'citizenship'],
+    },
+  },
+  {
+    id: 'RISK_OVERSTAY_HISTORY',
+    title: 'Possible Overstay on Previous Visa',
+    description:
+      'If you have ever overstayed a visa in the UK (even by 1 day), this must be declared and will be scrutinised. Overstays can result in a re-entry ban of 1–10 years.',
+    severity: 'high',
+    recommendation:
+      'Declare the overstay and explain the circumstances. If the overstay was brief and unintentional, explain what happened. If you received a removal notice, include it in your application. Professional legal advice is strongly recommended.',
+    conditions: {
+      visaTypes: ['spouse', 'skilled_worker', 'citizenship'],
+    },
+  },
+  {
+    id: 'RISK_APPLYING_FROM_OUTSIDE_UK',
+    title: 'Applying From Outside the UK',
+    description:
+      'Applications from outside the UK have a different process (VAC-based) and potentially longer processing times. You cannot enter the UK until the visa is granted.',
+    severity: 'low',
+    recommendation:
+      'Plan your travel and accommodation around the processing time. Do not book non-refundable travel. Ensure you have access to a Visa Application Centre in your country.',
+    conditions: {
+      visaTypes: ['spouse', 'skilled_worker'],
+      currentlyInUk: false,
+    },
+  },
+  {
+    id: 'RISK_CITIZENSHIP_TRAVEL_EXCESS',
+    title: 'Excessive Travel During Qualifying Period',
+    description:
+      'If you have been outside the UK for more than 450 days in the 5-year qualifying period (or more than 90 days in the final 12 months), your citizenship application will be refused.',
+    severity: 'high',
+    recommendation:
+      'Compile a complete travel log using passport stamps, flight bookings, and entry/exit records. If you are close to the limits, consider delaying your application to start a new qualifying window with fewer absences.',
+    conditions: {
+      visaTypes: ['citizenship'],
+    },
+  },
+  {
+    id: 'RISK_EMPLOYER_LICENCE_REVOKED',
+    title: 'Employer Sponsor Licence Risk',
+    description:
+      'If your employer\'s sponsor licence is revoked or suspended after you apply, your application may be refused or your visa curtailed. This has happened to several large employers recently.',
+    severity: 'medium',
+    recommendation:
+      'Check the public register of sponsors regularly. If your employer is under investigation, consider whether this is the right time to apply. If your licence is curtailed after grant, you have 60 days to find a new sponsor.',
+    conditions: {
+      visaTypes: ['skilled_worker'],
+    },
+  },
+  {
+    id: 'RISK_NHS_SURCHARGE_UNPAID',
+    title: 'Immigration Health Surcharge (IHS) Not Paid',
+    description:
+      'The Immigration Health Surcharge must be paid as part of your application. Failure to pay = application cannot be submitted. Current rate is £1,035/year.',
+    severity: 'medium',
+    recommendation:
+      'Budget for the full IHS amount upfront. For a 2.5-year spouse visa, this is £2,587.50. For Skilled Worker, it depends on your visa duration. Payment is made during the online application process.',
+    conditions: {
+      visaTypes: ['spouse', 'skilled_worker'],
+    },
+  },
+  {
+    id: 'RISK_DOCUMENT_AGE',
+    title: 'Documents May Expire Before Submission',
+    description:
+      'Some documents have strict validity windows. Employer letters must be dated within 28 days, bank statements within 28 days, and TB test certificates within 6 months.',
+    severity: 'medium',
+    recommendation:
+      'Plan your document gathering backwards from your target submission date. Request time-sensitive documents (employer letter, bank statements) last, ideally within 1–2 weeks of submission.',
+    conditions: {
+      visaTypes: ['spouse', 'skilled_worker', 'citizenship'],
+    },
+  },
+];
+
+// -----------------------------------------------------------------------------
+// SUBMISSION INFO — What happens after the checklist is complete & payment made
+// -----------------------------------------------------------------------------
+
+export const SUBMISSION_INFO: SubmissionInfo[] = [
+  {
+    visaType: 'spouse',
+    summaryIntro:
+      'Your Spouse/Partner Visa checklist is complete. Here\'s what happens next — follow these steps in order to submit your application to the Home Office.',
+    applicationUrl: 'https://www.gov.uk/uk-family-visa/partner-spouse',
+    steps: [
+      {
+        order: 1,
+        title: 'Complete Online Application',
+        description:
+          'Fill in the online application form on gov.uk. The form asks detailed questions about your relationship, finances, accommodation, and immigration history. Save your progress regularly.',
+        icon: '📝',
+      },
+      {
+        order: 2,
+        title: 'Pay Application Fees',
+        description:
+          'Pay the visa fee (£1,846) and Immigration Health Surcharge (£1,035/year × visa length) online. You can optionally pay for priority processing (£500–£800) for a 5–10 day decision.',
+        icon: '💳',
+      },
+      {
+        order: 3,
+        title: 'Book & Attend Biometrics',
+        description:
+          'Book a biometrics appointment at your nearest Visa Application Centre (or use the UK Immigration: ID Check app if applying from inside the UK). Bring your passport and appointment confirmation.',
+        icon: '🖐️',
+      },
+      {
+        order: 4,
+        title: 'Upload Supporting Documents',
+        description:
+          'Upload all documents from your checklist via the online portal. Scan or photograph clearly — blurry documents may be rejected. Organise by category for faster processing.',
+        icon: '📤',
+      },
+      {
+        order: 5,
+        title: 'Wait for Decision',
+        description:
+          'Standard processing takes up to 24 weeks. Priority processing takes 5–10 working days. You\'ll receive a decision by email. Do not contact the Home Office before the published processing time elapses.',
+        icon: '⏳',
+      },
+      {
+        order: 6,
+        title: 'Collect BRP / Confirm eVisa',
+        description:
+          'If approved, you\'ll receive a vignette (sticker) in your passport or a digital decision letter. Collect your Biometric Residence Permit from the Post Office within 10 days of arrival in the UK.',
+        icon: '✅',
+      },
+    ],
+    importantNotes: [
+      'Do NOT travel to the UK before your visa is granted (if applying from outside the UK).',
+      'Keep a complete copy of all submitted documents for your records.',
+      'If you are asked for additional information, respond within the deadline given.',
+      'Your visa will initially be granted for 2 years 9 months. You will need to apply for an extension before it expires.',
+      'After 5 years on a spouse visa, you can apply for Indefinite Leave to Remain (ILR).',
+    ],
+    contactInfo: {
+      name: 'UK Visas and Immigration (UKVI)',
+      url: 'https://www.gov.uk/contact-ukvi-inside-outside-uk',
+      phone: '+44 300 123 2241 (inside UK) / +44 203 481 1736 (outside UK)',
+      hours: 'Monday to Friday, 9:00–17:30 GMT',
+    },
+  },
+
+  {
+    visaType: 'skilled_worker',
+    summaryIntro:
+      'Your Skilled Worker Visa checklist is complete. Here\'s the submission process — coordinate closely with your employer\'s HR team, as they play a key role.',
+    applicationUrl: 'https://www.gov.uk/skilled-worker-visa/apply',
+    steps: [
+      {
+        order: 1,
+        title: 'Confirm CoS Assignment',
+        description:
+          'Ensure your employer has assigned your Certificate of Sponsorship (CoS) in the Sponsor Management System. You\'ll need the CoS reference number to start your application. The CoS is valid for 3 months.',
+        icon: '📋',
+      },
+      {
+        order: 2,
+        title: 'Complete Online Application',
+        description:
+          'Fill in the Skilled Worker visa application form on gov.uk using your CoS reference number. Ensure all details (job title, salary, SOC code) match what your employer entered on the CoS.',
+        icon: '📝',
+      },
+      {
+        order: 3,
+        title: 'Pay Fees',
+        description:
+          'Pay the visa fee (£719–£1,420) and Immigration Health Surcharge (£1,035/year). Some employers cover these costs — check your offer terms. Priority processing is available for £500.',
+        icon: '💳',
+      },
+      {
+        order: 4,
+        title: 'Book & Attend Biometrics',
+        description:
+          'Book a biometrics appointment. If in the UK, you can use the smartphone app. Outside the UK, attend your nearest VAC. Bring passport, confirmation, and any physical documents.',
+        icon: '🖐️',
+      },
+      {
+        order: 5,
+        title: 'Upload Documents',
+        description:
+          'Upload your supporting documents via the portal. At minimum: passport, English language evidence, and any criminal record certificates. Your CoS details are already in the system.',
+        icon: '📤',
+      },
+      {
+        order: 6,
+        title: 'Receive Decision',
+        description:
+          'Standard processing: 3 weeks. Priority: 5 working days. Once approved, you\'ll receive a vignette or digital status. Your employer will be notified via the SMS. You can start work on the start date listed on your CoS.',
+        icon: '✅',
+      },
+    ],
+    importantNotes: [
+      'You can only start working for the employer on your CoS — not any other employer.',
+      'If you want to change jobs, your new employer must sponsor you with a new CoS.',
+      'Your visa length depends on your CoS: usually up to 5 years.',
+      'After 5 years, you can apply for Indefinite Leave to Remain (ILR) if you still meet the salary threshold.',
+      'If your employer\'s sponsor licence is revoked, you have 60 days to find a new sponsor or leave the UK.',
+    ],
+    contactInfo: {
+      name: 'UK Visas and Immigration (UKVI)',
+      url: 'https://www.gov.uk/contact-ukvi-inside-outside-uk',
+      phone: '+44 300 123 2241 (inside UK) / +44 203 481 1736 (outside UK)',
+      hours: 'Monday to Friday, 9:00–17:30 GMT',
+    },
+  },
+
+  {
+    visaType: 'citizenship',
+    summaryIntro:
+      'Your British Citizenship checklist is complete. The naturalisation process is different from visa applications — here\'s exactly what to do.',
+    applicationUrl: 'https://www.gov.uk/apply-citizenship-indefinite-leave-to-remain',
+    steps: [
+      {
+        order: 1,
+        title: 'Verify Qualifying Date',
+        description:
+          'Triple-check your qualifying date. You must have completed 5 years of continuous residence (or 3 years if married to a British citizen) on the date you submit the form. Not before — exactly on or after.',
+        icon: '📅',
+      },
+      {
+        order: 2,
+        title: 'Complete Form AN',
+        description:
+          'Fill in Form AN (Application for Naturalisation). This is a comprehensive form covering your personal details, residency, travel, character, and referees. It can be completed online or on paper.',
+        icon: '📝',
+      },
+      {
+        order: 3,
+        title: 'Gather Referee Details',
+        description:
+          'Your two referees must complete their sections of the form. One must be a professional person, the other a British citizen. Neither can be related to you, each other, or your solicitor.',
+        icon: '👥',
+      },
+      {
+        order: 4,
+        title: 'Pay Application Fee',
+        description:
+          'The fee is £1,580 (non-refundable, even if refused). There is no priority processing for citizenship applications. Payment is made online at the time of submission.',
+        icon: '💳',
+      },
+      {
+        order: 5,
+        title: 'Attend Biometrics',
+        description:
+          'Book and attend a biometrics appointment after submitting the form. You\'ll receive instructions by email.',
+        icon: '🖐️',
+      },
+      {
+        order: 6,
+        title: 'Wait for Decision (≈6 months)',
+        description:
+          'Citizenship applications typically take 6 months. The Home Office may contact you for additional information or an interview. Do not travel extensively during this period.',
+        icon: '⏳',
+      },
+      {
+        order: 7,
+        title: 'Attend Citizenship Ceremony',
+        description:
+          'If approved, you must attend a citizenship ceremony within 3 months. You\'ll take an oath/affirmation of allegiance and receive your certificate of naturalisation. You are then a British citizen!',
+        icon: '🇬🇧',
+      },
+    ],
+    importantNotes: [
+      'The £1,580 fee is non-refundable — ensure you meet all requirements before applying.',
+      'There is NO priority service for citizenship. Plan for a 6-month wait.',
+      'You cannot apply for a British passport until after your citizenship ceremony.',
+      'Your existing nationality may be affected — check your home country\'s dual nationality rules.',
+      'If refused, you can re-apply but will need to pay the full fee again.',
+      'Citizenship ceremonies cost £80 and must be attended within 3 months of approval.',
+    ],
+    contactInfo: {
+      name: 'UK Visas and Immigration — Nationality Contact Centre',
+      url: 'https://www.gov.uk/contact-ukvi-inside-outside-uk',
+      phone: '+44 300 123 2241',
+      hours: 'Monday to Friday, 9:00–17:30 GMT',
+    },
+  },
+];
+
+// -----------------------------------------------------------------------------
+// Helper: Get checklist items by category for a visa type
+// -----------------------------------------------------------------------------
+
+export function getChecklistByCategory(visaType: VisaTypeKey): Record<DocumentCategory, ChecklistItem[]> {
+  const items = CHECKLISTS[visaType] || [];
+  return {
+    personal: items.filter((i) => i.category === 'personal').sort((a, b) => a.displayOrder - b.displayOrder),
+    financial: items.filter((i) => i.category === 'financial').sort((a, b) => a.displayOrder - b.displayOrder),
+    supporting: items.filter((i) => i.category === 'supporting').sort((a, b) => a.displayOrder - b.displayOrder),
+  };
+}
+
+// -----------------------------------------------------------------------------
+// Helper: Get applicable risks for a given application profile
+// -----------------------------------------------------------------------------
+
+export function getApplicableRisks(profile: {
+  visaType: VisaTypeKey;
+  incomeRange?: string;
+  urgency?: UrgencyKey;
+  currentlyInUk?: boolean;
+  relationshipDurationMonths?: number;
+  employmentStatus?: string;
+}): RiskRule[] {
+  return RISKS.filter((risk) => {
+    // Must match visa type
+    if (!risk.conditions.visaTypes.includes(profile.visaType)) return false;
+
+    // Income range check
+    if (risk.conditions.incomeRange && profile.incomeRange) {
+      if (!risk.conditions.incomeRange.includes(profile.incomeRange)) return false;
+    } else if (risk.conditions.incomeRange && !profile.incomeRange) {
+      return false;
+    }
+
+    // Urgency check
+    if (risk.conditions.urgency && profile.urgency) {
+      if (!risk.conditions.urgency.includes(profile.urgency)) return false;
+    } else if (risk.conditions.urgency && !profile.urgency) {
+      return false;
+    }
+
+    // Currently in UK check
+    if (risk.conditions.currentlyInUk !== undefined && profile.currentlyInUk !== undefined) {
+      if (risk.conditions.currentlyInUk !== profile.currentlyInUk) return false;
+    } else if (risk.conditions.currentlyInUk !== undefined && profile.currentlyInUk === undefined) {
+      return false;
+    }
+
+    // Relationship duration check
+    if (risk.conditions.relationshipDurationMonths && profile.relationshipDurationMonths !== undefined) {
+      const { max, min } = risk.conditions.relationshipDurationMonths;
+      if (max !== undefined && profile.relationshipDurationMonths > max) return false;
+      if (min !== undefined && profile.relationshipDurationMonths < min) return false;
+    } else if (risk.conditions.relationshipDurationMonths && profile.relationshipDurationMonths === undefined) {
+      return false;
+    }
+
+    // Employment status check
+    if (risk.conditions.employmentStatus && profile.employmentStatus) {
+      if (!risk.conditions.employmentStatus.includes(profile.employmentStatus)) return false;
+    } else if (risk.conditions.employmentStatus && !profile.employmentStatus) {
+      return false;
+    }
+
+    return true;
+  });
+}
+
+// -----------------------------------------------------------------------------
+// Helper: Get submission info for a visa type
+// -----------------------------------------------------------------------------
+
+export function getSubmissionInfo(visaType: VisaTypeKey): SubmissionInfo | undefined {
+  return SUBMISSION_INFO.find((s) => s.visaType === visaType);
+}
+
+// -----------------------------------------------------------------------------
+// Helper: Get timeline for an urgency level
+// -----------------------------------------------------------------------------
+
+export function getTimeline(urgency: UrgencyKey): TimelineWeek[] {
+  return TIMELINES[urgency] || [];
+}
+
+// -----------------------------------------------------------------------------
+// Stats helpers for the dashboard
+// -----------------------------------------------------------------------------
+
+export function getChecklistStats(visaType: VisaTypeKey) {
+  const items = CHECKLISTS[visaType] || [];
+  return {
+    total: items.length,
+    critical: items.filter((i) => i.priority === 'critical').length,
+    important: items.filter((i) => i.priority === 'important').length,
+    niceToHave: items.filter((i) => i.priority === 'nice-to-have').length,
+    required: items.filter((i) => i.required).length,
+    optional: items.filter((i) => !i.required).length,
+  };
+}

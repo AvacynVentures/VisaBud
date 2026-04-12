@@ -1,0 +1,1062 @@
+'use client';
+
+import { useState, useMemo, useEffect, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import AuthGate from '@/components/AuthGate';
+import { useAuth } from '@/lib/auth-context';
+import { useApplicationStore } from '@/lib/store';
+import {
+  CHECKLISTS,
+  TIMELINES,
+  getApplicableRisks,
+  getChecklistByCategory,
+  ChecklistItem,
+  Priority,
+  TimelineWeek,
+  RiskRule,
+  UrgencyKey,
+  VisaTypeKey,
+  DocumentCategory,
+} from '@/lib/visa-data';
+import {
+  CheckCircle,
+  AlertCircle,
+  Calendar,
+  FileText,
+  ArrowLeft,
+  ChevronDown,
+  Shield,
+  ShieldAlert,
+  ShieldCheck,
+  Clock,
+  Lock,
+  Download,
+  Mail,
+  BookOpen,
+  CheckSquare,
+  Square,
+  Sparkles,
+  AlertTriangle,
+  Info,
+  CreditCard,
+  PartyPopper,
+} from 'lucide-react';
+import Link from 'next/link';
+import { supabase } from '@/lib/supabase';
+import PaywallModal from '@/components/PaywallModal';
+import DocumentUpload from '@/components/DocumentUpload';
+import { PageFadeIn, FadeIn, ConfettiBurst, CelebrationBanner } from '@/lib/animations';
+
+// ─── Types ──────────────────────────────────────────────────────────────────
+
+type TabId = 'checklist' | 'timeline' | 'risks' | 'submit';
+
+const TABS: { id: TabId; label: string; icon: typeof FileText; color: string }[] = [
+  { id: 'checklist', label: 'Checklist', icon: FileText, color: 'text-blue-600' },
+  { id: 'timeline', label: 'Timeline', icon: Calendar, color: 'text-emerald-600' },
+  { id: 'risks', label: 'Risks', icon: AlertCircle, color: 'text-amber-600' },
+  { id: 'submit', label: 'Submit', icon: CheckCircle, color: 'text-violet-600' },
+];
+
+const VISA_LABELS: Record<string, string> = {
+  spouse: 'Spouse / Partner Visa',
+  skilled_worker: 'Skilled Worker Visa',
+  citizenship: 'British Citizenship',
+};
+
+const URGENCY_LABELS: Record<string, string> = {
+  urgent: 'Urgent (within 4 weeks)',
+  normal: 'Standard (1–3 months)',
+  ahead: 'Planning ahead (3+ months)',
+};
+
+const PRIORITY_CONFIG: Record<Priority, { label: string; color: string; bg: string; ring: string }> = {
+  critical: { label: 'Critical', color: 'text-red-700', bg: 'bg-red-50', ring: 'ring-red-200' },
+  important: { label: 'Important', color: 'text-amber-700', bg: 'bg-amber-50', ring: 'ring-amber-200' },
+  'nice-to-have': { label: 'Nice to Have', color: 'text-gray-600', bg: 'bg-gray-50', ring: 'ring-gray-200' },
+};
+
+const SEVERITY_CONFIG: Record<string, { label: string; color: string; bg: string; icon: typeof ShieldAlert }> = {
+  high: { label: 'High', color: 'text-red-700', bg: 'bg-red-50', icon: ShieldAlert },
+  medium: { label: 'Medium', color: 'text-amber-700', bg: 'bg-amber-50', icon: Shield },
+  low: { label: 'Low', color: 'text-emerald-700', bg: 'bg-emerald-50', icon: ShieldCheck },
+};
+
+const CATEGORY_CONFIG: Record<DocumentCategory, { label: string; icon: string }> = {
+  personal: { label: 'Personal Documents', icon: '📋' },
+  financial: { label: 'Financial Evidence', icon: '💰' },
+  supporting: { label: 'Supporting Evidence', icon: '📎' },
+};
+
+// ─── Main Component ─────────────────────────────────────────────────────────
+
+export default function DashboardPage() {
+  return (
+    <AuthGate>
+      <DashboardContent />
+    </AuthGate>
+  );
+}
+
+function DashboardContent() {
+  const { user } = useAuth();
+  const store = useApplicationStore();
+  const { visaType, currentStep, urgency, annualIncomeRange, currentlyInUk, relationshipDurationMonths, unlocked, setUnlocked, setUserEmail } = store;
+
+  useEffect(() => {
+    if (user?.email) setUserEmail(user.email);
+  }, [user, setUserEmail]);
+
+  const [hydrated, setHydrated] = useState(false);
+  useEffect(() => { setHydrated(true); }, []);
+
+  useEffect(() => {
+    async function checkUnlockStatus() {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data } = await supabase.from('users').select('unlocked').eq('id', user.id).single();
+          if (data?.unlocked) setUnlocked(true);
+        }
+      } catch (err) {
+        console.error('Failed to check unlock status:', err);
+      }
+    }
+    checkUnlockStatus();
+  }, [setUnlocked]);
+
+  const [activeTab, setActiveTab] = useState<TabId>('checklist');
+
+  useEffect(() => {
+    if (unlocked) setActiveTab('checklist');
+  }, [unlocked]);
+
+  const [checkedDocs, setCheckedDocs] = useState<Record<string, boolean>>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('VisaBud_checked_docs');
+        return saved ? JSON.parse(saved) : {};
+      } catch { return {}; }
+    }
+    return {};
+  });
+  const [expandedWeeks, setExpandedWeeks] = useState<Record<number, boolean>>({ 1: true });
+  const [showPaywall, setShowPaywall] = useState(false);
+
+  const validVisaType = (visaType && visaType !== 'unsure' ? visaType : null) as VisaTypeKey | null;
+  const validUrgency = urgency as UrgencyKey | null;
+
+  const checklist = validVisaType ? (CHECKLISTS[validVisaType] || []) : [];
+  const checklistByCategory = validVisaType ? getChecklistByCategory(validVisaType) : { personal: [], financial: [], supporting: [] };
+  const timeline = validUrgency ? (TIMELINES[validUrgency] || []) : [];
+  const risks = useMemo(
+    () =>
+      validVisaType
+        ? getApplicableRisks({
+            visaType: validVisaType,
+            incomeRange: annualIncomeRange || undefined,
+            urgency: validUrgency || undefined,
+            currentlyInUk: currentlyInUk ?? undefined,
+            relationshipDurationMonths: relationshipDurationMonths ?? undefined,
+            employmentStatus: undefined,
+          })
+        : [],
+    [validVisaType, annualIncomeRange, validUrgency, currentlyInUk, relationshipDurationMonths]
+  );
+
+  if (!hydrated) {
+    return (
+      <div className="min-h-screen bg-[#F9FAFB] flex items-center justify-center">
+        <div className="animate-pulse flex flex-col items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-blue-200" />
+          <div className="h-3 w-32 bg-gray-200 rounded" />
+        </div>
+      </div>
+    );
+  }
+
+  if (currentStep < 5 || !visaType || visaType === 'unsure') {
+    return (
+      <PageFadeIn>
+        <div className="min-h-screen bg-[#F9FAFB] flex flex-col items-center justify-center px-4">
+          <div className="text-center max-w-md">
+            <div className="w-16 h-16 rounded-2xl bg-blue-100 flex items-center justify-center mx-auto mb-6">
+              <Lock className="w-8 h-8 text-blue-600" />
+            </div>
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">No Application Started</h1>
+            <p className="text-gray-500 mb-8">Complete the wizard first to see your personalised plan.</p>
+            <Link
+              href="/app/start"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-blue-700 text-white rounded-xl font-semibold hover:bg-blue-800 transition-all btn-hover shadow-sm"
+            >
+              <ArrowLeft className="w-4 h-4" /> Start Application
+            </Link>
+          </div>
+        </div>
+      </PageFadeIn>
+    );
+  }
+
+  const visaLabel = VISA_LABELS[visaType] || visaType;
+  const urgencyLabel = urgency ? URGENCY_LABELS[urgency] : 'Not set';
+
+  const toggleDoc = (id: string) => {
+    setCheckedDocs((prev) => {
+      const updated = { ...prev, [id]: !prev[id] };
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('VisaBud_checked_docs', JSON.stringify(updated));
+      }
+      return updated;
+    });
+  };
+  const checkedCount = checklist.filter((d) => checkedDocs[d.id]).length;
+  const progressPct = checklist.length > 0 ? Math.round((checkedCount / checklist.length) * 100) : 0;
+
+  const grouped: Record<Priority, ChecklistItem[]> = { critical: [], important: [], 'nice-to-have': [] };
+  checklist.forEach((item) => {
+    if (grouped[item.priority]) grouped[item.priority].push(item);
+  });
+
+  const toggleWeek = (week: number) => setExpandedWeeks((prev) => ({ ...prev, [week]: !prev[week] }));
+  const highRisks = risks.filter((r) => r.severity === 'high').length;
+
+  return (
+    <PageFadeIn>
+      <div className="min-h-screen bg-[#F9FAFB]">
+        {/* ── Nav ──────────────────────────────────────────────────────── */}
+        <nav className="bg-white border-b border-gray-100 sticky top-0 z-30">
+          <div className="max-w-5xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-700 to-blue-900 flex items-center justify-center shadow-sm">
+                <span className="text-white text-sm font-bold">V</span>
+              </div>
+              <span className="font-bold text-blue-900 tracking-tight text-lg hidden sm:inline">VisaBud</span>
+            </div>
+            <div className="flex items-center gap-3">
+              {!unlocked && (
+                <button
+                  onClick={() => setShowPaywall(true)}
+                  className="hidden sm:inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-xl shadow-sm hover:shadow-md transition-all btn-hover animate-emeraldGlow"
+                >
+                  <Lock className="w-3.5 h-3.5" />
+                  Unlock Full Pack — £50
+                </button>
+              )}
+              <Link href="/app/start" className="text-sm text-gray-400 hover:text-gray-600 font-medium transition-colors">
+                Start Over
+              </Link>
+            </div>
+          </div>
+        </nav>
+
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8 pb-24 sm:pb-8">
+          {/* ── Header Card ──────────────────────────────────────────── */}
+          <FadeIn>
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 sm:p-8 mb-6">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                  <h1 className="text-2xl sm:text-3xl font-bold text-blue-900 mb-1">Your Personalised Plan</h1>
+                  <p className="text-gray-500">
+                    {visaLabel} &middot; {urgencyLabel}
+                  </p>
+                </div>
+                {highRisks > 0 && (
+                  <button
+                    onClick={() => setActiveTab('risks')}
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-red-50 text-red-700 rounded-xl text-sm font-semibold border border-red-200 hover:bg-red-100 transition-all animate-pulse-ring self-start btn-hover"
+                  >
+                    <AlertTriangle className="w-4 h-4" />
+                    {highRisks} high-risk alert{highRisks > 1 ? 's' : ''}
+                  </button>
+                )}
+              </div>
+            </div>
+          </FadeIn>
+
+          {/* ── Tab Navigation ────────────────────────────────────────── */}
+          <div className="flex gap-1.5 sm:gap-2 mb-6 overflow-x-auto pb-1 -mx-1 px-1">
+            {TABS.map((tab) => {
+              const isActive = activeTab === tab.id;
+              const Icon = tab.icon;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2.5 sm:py-3 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap transition-all duration-200 touch-target ${
+                    isActive
+                      ? 'bg-white text-blue-900 shadow-sm border border-gray-200 scale-[1.02]'
+                      : 'text-gray-500 hover:text-gray-700 hover:bg-white/60'
+                  }`}
+                >
+                  <Icon className={`w-4 h-4 ${isActive ? tab.color : 'text-gray-400'} transition-colors`} />
+                  <span className={isActive ? 'text-sm sm:text-base' : ''}>{tab.label}</span>
+                  {tab.id === 'risks' && highRisks > 0 && (
+                    <span className="ml-0.5 w-5 h-5 rounded-full bg-red-100 text-red-700 text-xs font-bold flex items-center justify-center">
+                      {highRisks}
+                    </span>
+                  )}
+                  {tab.id === 'checklist' && (
+                    <span className="ml-0.5 text-xs text-gray-400 font-normal">
+                      {checkedCount}/{checklist.length}
+                    </span>
+                  )}
+                  {!unlocked && tab.id !== 'submit' && (
+                    <Lock className="w-3 h-3 text-amber-500 ml-0.5" />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* ── Tab Content with animation ────────────────────────────── */}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.25, ease: 'easeOut' }}
+              className="min-h-[500px]"
+            >
+              {activeTab === 'checklist' && (
+                <ChecklistTab
+                  grouped={grouped}
+                  byCategory={checklistByCategory}
+                  checkedDocs={checkedDocs}
+                  toggleDoc={toggleDoc}
+                  checkedCount={checkedCount}
+                  total={checklist.length}
+                  progressPct={progressPct}
+                  unlocked={unlocked}
+                  onUnlock={() => setShowPaywall(true)}
+                />
+              )}
+              {activeTab === 'timeline' && (
+                <TimelineTab
+                  weeks={timeline}
+                  expanded={expandedWeeks}
+                  toggle={toggleWeek}
+                  unlocked={unlocked}
+                  onUnlock={() => setShowPaywall(true)}
+                />
+              )}
+              {activeTab === 'risks' && (
+                <RisksTab risks={risks} unlocked={unlocked} onUnlock={() => setShowPaywall(true)} />
+              )}
+              {activeTab === 'submit' && (
+                <SubmitTab
+                  visaLabel={visaLabel}
+                  urgencyLabel={urgencyLabel}
+                  checkedCount={checkedCount}
+                  total={checklist.length}
+                  riskCount={risks.length}
+                  highRisks={highRisks}
+                  onUnlock={() => setShowPaywall(true)}
+                  unlocked={unlocked}
+                />
+              )}
+            </motion.div>
+          </AnimatePresence>
+        </div>
+
+        {/* Mobile Sticky Unlock Button */}
+        {!unlocked && (
+          <div className="sm:hidden sticky-bottom-mobile">
+            <button
+              onClick={() => setShowPaywall(true)}
+              className="w-full flex items-center justify-center gap-2 px-6 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-lg transition-all btn-hover"
+            >
+              <Lock className="w-4 h-4" />
+              Unlock Full Pack — £50
+            </button>
+          </div>
+        )}
+
+        <PaywallModal isOpen={showPaywall} onClose={() => setShowPaywall(false)} visaType={visaLabel} />
+      </div>
+    </PageFadeIn>
+  );
+}
+
+// ─── Locked Section Banner ──────────────────────────────────────────────────
+
+function LockedSectionBanner({ message, onUnlock }: { message: string; onUnlock: () => void }) {
+  return (
+    <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+      <div className="flex items-center gap-3 flex-1 min-w-0">
+        <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center flex-shrink-0">
+          <Lock className="w-5 h-5 text-amber-600" />
+        </div>
+        <div>
+          <p className="text-sm font-semibold text-amber-900">🔒 Locked</p>
+          <p className="text-sm text-amber-700">{message}</p>
+        </div>
+      </div>
+      <button
+        onClick={onUnlock}
+        className="inline-flex items-center gap-2 px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white text-sm font-bold rounded-xl shadow-sm hover:shadow-md transition-all btn-hover flex-shrink-0 w-full sm:w-auto justify-center"
+      >
+        <Lock className="w-3.5 h-3.5" />
+        Unlock Full Pack
+      </button>
+    </div>
+  );
+}
+
+// ─── Checklist Tab ──────────────────────────────────────────────────────────
+
+function ChecklistTab({
+  grouped,
+  byCategory,
+  checkedDocs,
+  toggleDoc,
+  checkedCount,
+  total,
+  progressPct,
+  unlocked,
+  onUnlock,
+}: {
+  grouped: Record<Priority, ChecklistItem[]>;
+  byCategory: Record<DocumentCategory, ChecklistItem[]>;
+  checkedDocs: Record<string, boolean>;
+  toggleDoc: (id: string) => void;
+  checkedCount: number;
+  total: number;
+  progressPct: number;
+  unlocked: boolean;
+  onUnlock: () => void;
+}) {
+  const { documentUploads } = useApplicationStore();
+  const verifiedCount = Object.values(documentUploads).filter((u) => u.status === 'valid').length;
+
+  if (unlocked) {
+    return (
+      <div className="space-y-6">
+        <ProgressCard checkedCount={checkedCount} total={total} progressPct={progressPct} verifiedCount={verifiedCount} />
+
+        {/* 100% celebration */}
+        <CelebrationBanner show={progressPct === 100}>
+          <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-5 flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center flex-shrink-0 animate-bounceIn">
+              <PartyPopper className="w-6 h-6 text-emerald-600" />
+            </div>
+            <div>
+              <h3 className="font-bold text-emerald-900 text-lg">You&apos;re all set! Ready to apply? 🎉</h3>
+              <p className="text-sm text-emerald-700">All documents collected. Head to the Submit tab for next steps.</p>
+            </div>
+          </div>
+        </CelebrationBanner>
+
+        {(['critical', 'important', 'nice-to-have'] as Priority[]).map((priority) => {
+          const items = grouped[priority];
+          if (!items || items.length === 0) return null;
+          const cfg = PRIORITY_CONFIG[priority];
+          const groupChecked = items.filter((i) => checkedDocs[i.id]).length;
+          return (
+            <motion.div
+              key={priority}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+              className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden"
+            >
+              <div className={`px-5 sm:px-6 py-4 border-b border-gray-100 flex items-center justify-between ${cfg.bg}`}>
+                <div className="flex items-center gap-2">
+                  <span className={`w-2.5 h-2.5 rounded-full ${priority === 'critical' ? 'bg-red-500' : priority === 'important' ? 'bg-amber-500' : 'bg-gray-400'}`} />
+                  <h3 className={`font-semibold ${cfg.color}`}>{cfg.label}</h3>
+                  <span className="text-xs text-gray-400 ml-1">{groupChecked}/{items.length}</span>
+                </div>
+              </div>
+              <div className="divide-y divide-gray-50">
+                {items.map((item) => (
+                  <ChecklistItemRow key={item.id} item={item} checked={!!checkedDocs[item.id]} onToggle={() => toggleDoc(item.id)} unlocked={unlocked} />
+                ))}
+              </div>
+            </motion.div>
+          );
+        })}
+      </div>
+    );
+  }
+
+  // ── LOCKED VIEW ──
+  const personalItems = byCategory.personal;
+  const financialItems = byCategory.financial;
+  const supportingItems = byCategory.supporting;
+  const personalTeaser = personalItems.slice(0, 4);
+  const personalLockedCount = Math.max(0, personalItems.length - 4);
+  const lockedDocCount = financialItems.length + supportingItems.length + personalLockedCount;
+
+  return (
+    <div className="space-y-6">
+      <ProgressCard checkedCount={checkedCount} total={total} progressPct={progressPct} verifiedCount={verifiedCount} />
+
+      {/* Personal Documents — teaser */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="px-5 sm:px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-blue-50/50">
+          <div className="flex items-center gap-2">
+            <span className="text-lg">{CATEGORY_CONFIG.personal.icon}</span>
+            <h3 className="font-semibold text-blue-900">{CATEGORY_CONFIG.personal.label}</h3>
+            <span className="text-xs text-gray-400 ml-1">{personalItems.length} documents</span>
+          </div>
+        </div>
+        <div className="divide-y divide-gray-50">
+          {personalTeaser.map((item) => (
+            <ChecklistItemRow key={item.id} item={item} checked={!!checkedDocs[item.id]} onToggle={() => toggleDoc(item.id)} unlocked={unlocked} />
+          ))}
+          {personalLockedCount > 0 && (
+            <div className="px-5 sm:px-6 py-3 bg-amber-50/50 text-sm text-amber-700 flex items-center gap-2">
+              <Lock className="w-3.5 h-3.5" />
+              <span>+{personalLockedCount} more documents — unlock to view</span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Financial Evidence — locked */}
+      <div className="bg-white rounded-2xl border border-amber-200 shadow-sm overflow-hidden">
+        <div className="px-5 sm:px-6 py-4 border-b border-amber-200 flex items-center justify-between bg-amber-50">
+          <div className="flex items-center gap-2">
+            <span className="text-lg">{CATEGORY_CONFIG.financial.icon}</span>
+            <h3 className="font-semibold text-amber-900">{CATEGORY_CONFIG.financial.label}</h3>
+            <span className="inline-flex items-center gap-1 ml-2 px-2 py-0.5 rounded-full bg-amber-200 text-amber-800 text-xs font-bold">
+              <Lock className="w-3 h-3" /> Locked
+            </span>
+          </div>
+          <span className="text-xs text-amber-600">{financialItems.length} documents</span>
+        </div>
+        <div className="px-5 sm:px-6 py-6 bg-amber-50/30">
+          <div className="space-y-2 mb-4 select-none">
+            {financialItems.slice(0, 2).map((item) => (
+              <div key={item.id} className="flex items-center gap-3 opacity-40 blur-[2px] pointer-events-none">
+                <Square className="w-5 h-5 text-gray-300 flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-medium text-gray-700">{item.title}</p>
+                  <p className="text-xs text-gray-400 truncate max-w-md">{item.description.slice(0, 60)}…</p>
+                </div>
+              </div>
+            ))}
+          </div>
+          <LockedSectionBanner
+            message={`${lockedDocCount} documents locked — Unlock Full Pack to upload and verify`}
+            onUnlock={onUnlock}
+          />
+        </div>
+      </div>
+
+      {/* Supporting Evidence — locked */}
+      <div className="bg-white rounded-2xl border border-amber-200 shadow-sm overflow-hidden">
+        <div className="px-5 sm:px-6 py-4 border-b border-amber-200 flex items-center justify-between bg-amber-50">
+          <div className="flex items-center gap-2">
+            <span className="text-lg">{CATEGORY_CONFIG.supporting.icon}</span>
+            <h3 className="font-semibold text-amber-900">{CATEGORY_CONFIG.supporting.label}</h3>
+            <span className="inline-flex items-center gap-1 ml-2 px-2 py-0.5 rounded-full bg-amber-200 text-amber-800 text-xs font-bold">
+              <Lock className="w-3 h-3" /> Locked
+            </span>
+          </div>
+          <span className="text-xs text-amber-600">{supportingItems.length} documents</span>
+        </div>
+        <div className="px-5 sm:px-6 py-6 bg-amber-50/30">
+          <div className="space-y-2 mb-4 select-none">
+            {supportingItems.slice(0, 2).map((item) => (
+              <div key={item.id} className="flex items-center gap-3 opacity-40 blur-[2px] pointer-events-none">
+                <Square className="w-5 h-5 text-gray-300 flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-medium text-gray-700">{item.title}</p>
+                  <p className="text-xs text-gray-400 truncate max-w-md">{item.description.slice(0, 60)}…</p>
+                </div>
+              </div>
+            ))}
+          </div>
+          <LockedSectionBanner
+            message="Unlock Full Pack to access all supporting evidence requirements"
+            onUnlock={onUnlock}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ProgressCard({ checkedCount, total, progressPct, verifiedCount }: { checkedCount: number; total: number; progressPct: number; verifiedCount?: number }) {
+  return (
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 sm:p-6">
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <Sparkles className="w-5 h-5 text-blue-600 icon-hover-spin" />
+          <h3 className="font-semibold text-gray-900">Document Progress</h3>
+        </div>
+        <span className="text-2xl sm:text-3xl font-extrabold text-blue-700">{progressPct}%</span>
+      </div>
+      <div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden">
+        <motion.div
+          className="h-full rounded-full"
+          initial={{ width: 0 }}
+          animate={{ width: `${progressPct}%` }}
+          transition={{ duration: 0.6, ease: 'easeOut' }}
+          style={{
+            background: progressPct === 100 ? '#059669' : 'linear-gradient(90deg, #1d4ed8, #3b82f6)',
+          }}
+        />
+      </div>
+      <div className="flex items-center justify-between mt-2">
+        <p className="text-sm text-gray-500">
+          <span className="font-bold text-lg text-gray-900">{checkedCount}</span> of <span className="font-bold text-lg text-gray-900">{total}</span> documents ready
+          {progressPct === 100 && <span className="ml-2 text-emerald-600 font-medium">✓ All done!</span>}
+        </p>
+        {typeof verifiedCount === 'number' && verifiedCount > 0 && (
+          <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full">
+            <CheckCircle className="w-3 h-3" />
+            {verifiedCount} verified
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ChecklistItemRow({ item, checked, onToggle, unlocked = false }: { item: ChecklistItem; checked: boolean; onToggle: () => void; unlocked?: boolean }) {
+  const [justChecked, setJustChecked] = useState(false);
+
+  const handleToggle = useCallback(() => {
+    if (!checked) {
+      setJustChecked(true);
+      setTimeout(() => setJustChecked(false), 1200);
+    }
+    onToggle();
+  }, [checked, onToggle]);
+
+  return (
+    <div className={`px-5 sm:px-6 py-4 hover:bg-gray-50/50 transition-all duration-200 ${checked ? 'bg-emerald-50/30' : ''} ${justChecked ? 'animate-greenFlash' : ''}`}>
+      <button onClick={handleToggle} className="w-full text-left flex items-start gap-4 touch-target">
+        <div className="pt-0.5 flex-shrink-0">
+          {checked ? (
+            <motion.div
+              initial={justChecked ? { scale: 0 } : { scale: 1 }}
+              animate={{ scale: 1 }}
+              transition={{ type: 'spring', stiffness: 500, damping: 15 }}
+              className={justChecked ? 'animate-greenGlow rounded-full' : ''}
+            >
+              <CheckSquare className="w-5 h-5 text-emerald-600" />
+            </motion.div>
+          ) : (
+            <Square className="w-5 h-5 text-gray-300" />
+          )}
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className={`font-medium text-sm ${checked ? 'text-gray-400 line-through' : 'text-gray-900'}`}>
+            {item.title}
+          </p>
+          <p className={`text-sm mt-0.5 ${checked ? 'text-gray-300' : 'text-gray-500'}`}>
+            {item.description}
+          </p>
+          {item.tips && !checked && (
+            <div className="flex items-start gap-1.5 mt-2 text-xs text-blue-600">
+              <Info className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
+              <span>{item.tips}</span>
+            </div>
+          )}
+        </div>
+        {justChecked && (
+          <div className="relative flex-shrink-0">
+            <ConfettiBurst active={true} />
+          </div>
+        )}
+      </button>
+      <div className="ml-9">
+        <DocumentUpload docId={item.id} requirement={`${item.title}: ${item.description}`} locked={!unlocked} />
+      </div>
+    </div>
+  );
+}
+
+// ─── Timeline Tab ───────────────────────────────────────────────────────────
+
+function TimelineTab({
+  weeks,
+  expanded,
+  toggle,
+  unlocked,
+  onUnlock,
+}: {
+  weeks: TimelineWeek[];
+  expanded: Record<number, boolean>;
+  toggle: (w: number) => void;
+  unlocked: boolean;
+  onUnlock: () => void;
+}) {
+  if (weeks.length === 0) {
+    return (
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 text-center">
+        <Clock className="w-10 h-10 text-gray-300 mx-auto mb-4" />
+        <h3 className="font-semibold text-gray-900 mb-2">No Timeline Available</h3>
+        <p className="text-gray-500 text-sm">Please complete the urgency step in the wizard to generate your timeline.</p>
+      </div>
+    );
+  }
+
+  const TEASER_WEEKS = 2;
+  const visibleWeeks = unlocked ? weeks : weeks.slice(0, TEASER_WEEKS);
+  const lockedWeeks = unlocked ? [] : weeks.slice(TEASER_WEEKS);
+
+  return (
+    <div className="space-y-0">
+      <div className="bg-white rounded-t-2xl border border-b-0 border-gray-100 shadow-sm px-5 sm:px-6 py-5">
+        <div className="flex items-center gap-2 mb-1">
+          <Calendar className="w-5 h-5 text-emerald-600 icon-hover-spin" />
+          <h3 className="font-semibold text-gray-900">Your {weeks.length}-Week Action Plan</h3>
+        </div>
+        <p className="text-sm text-gray-500">Follow this week-by-week to stay on track.</p>
+      </div>
+
+      <div className="bg-white border border-gray-100 shadow-sm overflow-hidden" style={{ borderRadius: unlocked ? '0 0 1rem 1rem' : '0' }}>
+        {visibleWeeks.map((week, idx) => {
+          const isExpanded = !!expanded[week.week];
+          const isLast = idx === visibleWeeks.length - 1 && unlocked;
+          return (
+            <div key={week.week} className={!isLast ? 'border-b border-gray-100' : ''}>
+              <button
+                onClick={() => toggle(week.week)}
+                className="w-full text-left px-5 sm:px-6 py-4 flex items-center gap-4 hover:bg-gray-50/50 transition-all touch-target"
+              >
+                <div className="flex flex-col items-center flex-shrink-0">
+                  <div className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold transition-all ${isExpanded ? 'bg-blue-700 text-white shadow-sm scale-110' : 'bg-gray-100 text-gray-500'}`}>
+                    {week.week}
+                  </div>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-gray-900 text-sm">{week.title}</p>
+                  <p className="text-sm text-gray-500 truncate">{week.actions[0]}</p>
+                </div>
+                <div className="flex-shrink-0">
+                  <motion.div animate={{ rotate: isExpanded ? 180 : 0 }} transition={{ duration: 0.2 }}>
+                    <ChevronDown className="w-5 h-5 text-gray-400" />
+                  </motion.div>
+                </div>
+              </button>
+
+              <AnimatePresence>
+                {isExpanded && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.25, ease: 'easeOut' }}
+                    className="overflow-hidden"
+                  >
+                    <div className="px-5 sm:px-6 pb-5 pl-[4.25rem]">
+                      <div className="border-l-2 border-blue-200 pl-4 space-y-3">
+                        {week.actions.map((action, i) => (
+                          <div key={i} className="flex items-start gap-3">
+                            <div className="w-6 h-6 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0 mt-0.5">
+                              <span className="text-xs font-semibold text-blue-700">{i + 1}</span>
+                            </div>
+                            <p className="text-sm text-gray-700">{action}</p>
+                          </div>
+                        ))}
+                        {week.notes && (
+                          <div className="mt-3 p-3 bg-amber-50 rounded-lg text-xs text-amber-800">
+                            <strong>Note:</strong> {week.notes}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          );
+        })}
+      </div>
+
+      {!unlocked && lockedWeeks.length > 0 && (
+        <div className="relative">
+          <div className="bg-white border border-t-0 border-gray-100 shadow-sm overflow-hidden rounded-b-2xl">
+            {lockedWeeks.map((week, idx) => (
+              <div key={week.week} className={`${idx < lockedWeeks.length - 1 ? 'border-b border-gray-100' : ''}`}>
+                <div className="px-5 sm:px-6 py-4 flex items-center gap-4 opacity-30 pointer-events-none select-none">
+                  <div className="flex flex-col items-center flex-shrink-0">
+                    <div className="w-9 h-9 rounded-full bg-gray-100 text-gray-400 flex items-center justify-center text-sm font-bold">
+                      {week.week}
+                    </div>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-gray-500 text-sm">{week.title}</p>
+                    <p className="text-sm text-gray-400 truncate">{week.actions[0]}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/70 to-white flex items-end justify-center pb-6 rounded-b-2xl">
+              <div className="w-full px-4 sm:px-6">
+                <LockedSectionBanner message={`Unlock to see full ${weeks.length}-week timeline`} onUnlock={onUnlock} />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Risks Tab ──────────────────────────────────────────────────────────────
+
+function RisksTab({ risks, unlocked, onUnlock }: { risks: RiskRule[]; unlocked: boolean; onUnlock: () => void }) {
+  if (risks.length === 0) {
+    return (
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 text-center">
+        <ShieldCheck className="w-10 h-10 text-emerald-400 mx-auto mb-4" />
+        <h3 className="font-semibold text-gray-900 mb-2">Looking Good!</h3>
+        <p className="text-gray-500 text-sm">No specific risks detected. Keep following the checklist.</p>
+      </div>
+    );
+  }
+
+  const highRisks = risks.filter((r) => r.severity === 'high');
+  const otherRisks = risks.filter((r) => r.severity !== 'high');
+
+  const TEASER_HIGH = 3;
+  const visibleHighRisks = unlocked ? highRisks : highRisks.slice(0, TEASER_HIGH);
+  const lockedRiskCount = unlocked ? 0 : Math.max(0, highRisks.length - TEASER_HIGH) + otherRisks.length;
+
+  return (
+    <div className="space-y-6">
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 sm:p-6">
+        <div className="flex items-center gap-2 mb-1">
+          <AlertTriangle className="w-5 h-5 text-amber-500 icon-hover-spin" />
+          <h3 className="font-semibold text-gray-900">Risk Assessment</h3>
+        </div>
+        <p className="text-sm text-gray-500">
+          {risks.length} risk{risks.length !== 1 ? 's' : ''} identified.
+          {highRisks.length > 0 && (
+            <span className="text-red-600 font-medium"> {highRisks.length} require immediate attention.</span>
+          )}
+        </p>
+        <div className="flex gap-3 mt-4 flex-wrap">
+          {(['high', 'medium', 'low'] as const).map((sev) => {
+            const count = risks.filter((r) => r.severity === sev).length;
+            if (count === 0) return null;
+            const cfg = SEVERITY_CONFIG[sev];
+            return (
+              <span key={sev} className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold ${cfg.bg} ${cfg.color}`}>
+                {cfg.label}: {count}
+              </span>
+            );
+          })}
+        </div>
+      </div>
+
+      {visibleHighRisks.length > 0 && (
+        <div className="space-y-3">
+          {visibleHighRisks.map((risk, i) => (
+            <motion.div
+              key={risk.id}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.05, duration: 0.25 }}
+            >
+              <RiskCard risk={risk} />
+            </motion.div>
+          ))}
+        </div>
+      )}
+
+      {unlocked && otherRisks.length > 0 && (
+        <div className="space-y-3">
+          {otherRisks.map((risk) => (
+            <RiskCard key={risk.id} risk={risk} />
+          ))}
+        </div>
+      )}
+
+      {!unlocked && lockedRiskCount > 0 && (
+        <LockedSectionBanner
+          message={`${lockedRiskCount} more risk${lockedRiskCount !== 1 ? 's' : ''} identified — see all when unlocked`}
+          onUnlock={onUnlock}
+        />
+      )}
+    </div>
+  );
+}
+
+function RiskCard({ risk }: { risk: RiskRule }) {
+  const cfg = SEVERITY_CONFIG[risk.severity];
+  const Icon = cfg.icon;
+  const isHigh = risk.severity === 'high';
+
+  return (
+    <div className={`bg-white rounded-2xl border shadow-sm overflow-hidden ${isHigh ? 'border-red-200' : 'border-gray-100'}`}>
+      <div className={`px-5 sm:px-6 py-4 flex items-start gap-4 ${isHigh ? 'bg-red-50/50' : ''}`}>
+        <div className={`w-9 h-9 rounded-xl ${cfg.bg} flex items-center justify-center flex-shrink-0 mt-0.5 ${isHigh ? 'animate-pulse-soft' : ''}`}>
+          <Icon className={`w-5 h-5 ${cfg.color}`} />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-1 flex-wrap">
+            <h4 className="font-semibold text-gray-900 text-sm">{risk.title}</h4>
+            <span className={`px-2 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wide ${cfg.bg} ${cfg.color}`}>
+              {cfg.label}
+            </span>
+          </div>
+          <p className="text-sm text-gray-600 mb-3">{risk.description}</p>
+          <div className="flex items-start gap-2 bg-blue-50 rounded-lg px-3 py-2.5">
+            <ShieldCheck className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
+            <p className="text-sm text-blue-800">{risk.recommendation}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Submit Tab ─────────────────────────────────────────────────────────────
+
+function SubmitTab({
+  visaLabel,
+  urgencyLabel,
+  checkedCount,
+  total,
+  riskCount,
+  highRisks,
+  onUnlock,
+  unlocked,
+}: {
+  visaLabel: string;
+  urgencyLabel: string;
+  checkedCount: number;
+  total: number;
+  riskCount: number;
+  highRisks: number;
+  onUnlock: () => void;
+  unlocked: boolean;
+}) {
+  const readiness = total > 0 ? Math.round((checkedCount / total) * 100) : 0;
+
+  if (unlocked) {
+    return (
+      <div className="space-y-6">
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 sm:p-6">
+          <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <BookOpen className="w-5 h-5 text-blue-600" />
+            Application Summary
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <SummaryRow label="Visa Type" value={visaLabel} />
+            <SummaryRow label="Timeline" value={urgencyLabel} />
+            <SummaryRow label="Documents Ready" value={`${checkedCount} of ${total} (${readiness}%)`} highlight={readiness < 80} />
+            <SummaryRow label="Risk Alerts" value={`${riskCount} identified${highRisks > 0 ? ` (${highRisks} high)` : ''}`} highlight={highRisks > 0} />
+          </div>
+        </div>
+
+        <div className="rounded-2xl border shadow-sm p-5 sm:p-6 bg-emerald-50 border-emerald-200">
+          <div className="flex items-start gap-4">
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 bg-emerald-100">
+              <CheckCircle className="w-6 h-6 text-emerald-600" />
+            </div>
+            <div>
+              <h3 className="font-bold text-lg text-emerald-900">Full Plan Unlocked</h3>
+              <p className="text-sm mt-1 text-emerald-700">
+                You have full access to your personalised checklist, timeline, and risk assessment. Use the tabs above to review everything.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 sm:p-6">
+        <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <BookOpen className="w-5 h-5 text-blue-600" />
+          Your Plan is Ready
+        </h3>
+        <p className="text-gray-500 text-sm mb-4">
+          We&apos;ve built a personalised plan based on your answers. Unlock to access everything.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <SummaryRow label="Visa Type" value={visaLabel} />
+          <SummaryRow label="Timeline" value={urgencyLabel} />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {[
+          { icon: FileText, label: 'Document Checklist', desc: `${total} documents identified`, color: 'blue' },
+          { icon: Calendar, label: 'Action Timeline', desc: 'Week-by-week plan', color: 'emerald' },
+          { icon: AlertCircle, label: 'Risk Assessment', desc: `${riskCount} risks identified`, color: 'amber' },
+        ].map((item) => (
+          <div key={item.label} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 text-center relative overflow-hidden">
+            <div className="absolute inset-0 bg-gray-50/80 backdrop-blur-[1px] flex items-center justify-center z-10">
+              <div className="flex flex-col items-center gap-1">
+                <Lock className="w-5 h-5 text-gray-400" />
+                <span className="text-xs text-gray-400 font-medium">Unlock to view</span>
+              </div>
+            </div>
+            <div className="opacity-30">
+              <item.icon className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+              <h4 className="font-semibold text-gray-900 text-sm">{item.label}</h4>
+              <p className="text-xs text-gray-500 mt-1">{item.desc}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 sm:p-6">
+        <h3 className="font-semibold text-gray-900 mb-4">What&apos;s included</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <FeatureCard icon={Download} title="PDF Checklist" description="Personalised, printable document checklist tailored to your visa type." />
+          <FeatureCard icon={Mail} title="Email Support" description="Direct email access for questions about your specific application." />
+          <FeatureCard icon={BookOpen} title="Step-by-Step Guide" description="How to fill in the form, book biometrics, and submit." />
+        </div>
+      </div>
+
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 sm:p-8 text-center">
+        <div className="max-w-md mx-auto">
+          <div className="inline-flex items-center gap-2 bg-emerald-50 text-emerald-700 rounded-full px-4 py-1.5 text-sm font-bold mb-4">
+            🔥 Early access pricing — locked in
+          </div>
+          <p className="text-5xl font-bold text-blue-900 mb-1">£50</p>
+          <p className="text-sm text-gray-500 mb-2">One-time payment. No subscription. Yours forever.</p>
+          <p className="text-xs text-gray-400 mb-6">💬 1,000+ applicants have already unlocked their plans</p>
+          <button
+            onClick={onUnlock}
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-10 py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-lg rounded-xl shadow-lg hover:shadow-xl transition-all btn-hover animate-emeraldGlow"
+          >
+            <CreditCard className="w-5 h-5" />
+            Get Access Now — £50 Locked In
+          </button>
+          <div className="flex items-center justify-center gap-1.5 mt-4 text-xs text-gray-500">
+            <Shield className="w-3.5 h-3.5 text-emerald-500" />
+            Money-back guarantee if not satisfied
+          </div>
+          <p className="text-xs text-gray-400 mt-2">
+            Secure payment via Stripe ·{' '}
+            <Link href="/privacy" className="text-blue-500 hover:underline">Privacy policy</Link>
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SummaryRow({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
+  return (
+    <div className="flex flex-col gap-0.5 px-4 py-3 bg-gray-50 rounded-xl">
+      <span className="text-xs text-gray-400 uppercase tracking-wide font-medium">{label}</span>
+      <span className={`text-sm font-semibold ${highlight ? 'text-amber-700' : 'text-gray-900'}`}>{value}</span>
+    </div>
+  );
+}
+
+function FeatureCard({ icon: Icon, title, description }: { icon: typeof Download; title: string; description: string }) {
+  return (
+    <div className="flex flex-col items-center text-center p-4 rounded-xl bg-gray-50 card-hover">
+      <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center mb-3">
+        <Icon className="w-5 h-5 text-blue-700" />
+      </div>
+      <h4 className="font-semibold text-gray-900 text-sm mb-1">{title}</h4>
+      <p className="text-xs text-gray-500">{description}</p>
+    </div>
+  );
+}
