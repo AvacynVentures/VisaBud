@@ -40,8 +40,6 @@ export async function POST(req: NextRequest) {
 
     // Try to create the helper function using raw SQL via fetch to PostgREST
     // Actually, we can use the Supabase REST endpoint for SQL directly
-    const sqlEndpoint = `${supabaseUrl}/rest/v1/rpc/exec_ddl`;
-    
     // First, try to create the exec_ddl function via the Supabase internal endpoint
     const createFnResponse = await fetch(`${supabaseUrl}/rest/v1/rpc/query`, {
       method: 'POST',
