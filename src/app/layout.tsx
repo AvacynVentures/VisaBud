@@ -3,10 +3,34 @@ import './globals.css';
 import { AuthProvider } from '@/lib/auth-context';
 
 export const metadata: Metadata = {
-  title: 'VisaBud - UK Visa Application Guidance',
-  description: 'Get your UK visa ready without the stress. Personalized checklist, documents, and step-by-step guidance.',
+  title: 'VisaBud - UK Visa Checklist Generator',
+  description: 'Get a personalized UK visa checklist in 5 minutes. Stop missing documents. Start applying with confidence.',
   icons: {
     icon: '/favicon.svg',
+  },
+  openGraph: {
+    title: 'VisaBud - UK Visa Checklist',
+    description: 'Personalized visa checklists for Spouse, Skilled Worker, and Citizenship visas. Never miss a document again.',
+    url: 'https://visabud.co.uk',
+    siteName: 'VisaBud',
+    images: [
+      {
+        url: 'https://visabud.co.uk/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'VisaBud - Your Complete UK Visa Guide',
+      },
+    ],
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'VisaBud - UK Visa Checklist',
+    description: 'Personalized visa checklists for Spouse, Skilled Worker, and Citizenship visas.',
+    images: ['https://visabud.co.uk/og-image.png'],
+  },
+  alternates: {
+    canonical: 'https://visabud.co.uk',
   },
 };
 
