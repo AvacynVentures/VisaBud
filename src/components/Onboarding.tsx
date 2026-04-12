@@ -10,29 +10,29 @@ import { PageFadeIn } from '@/lib/animations';
 import EmailCapture from './EmailCapture';
 
 const VISA_TYPES = [
-  { id: 'spouse', icon: '💑', label: 'Spouse / Partner Visa', sub: 'Your partner sponsors you. Income must be £29,000+/year (or savings to compensate)' },
-  { id: 'skilled_worker', icon: '💼', label: 'Skilled Worker Visa', sub: 'UK employer sponsors you. Salary must meet threshold (usually £38,700+/year)' },
-  { id: 'citizenship', icon: '🏛️', label: 'British Citizenship', sub: 'You have lived in UK 5+ years. No salary requirement, but character is strict' },
-  { id: 'unsure', icon: '❓', label: 'Not sure which visa', sub: 'Answer a few questions and we will help you figure out which applies' },
+  { id: 'spouse', icon: 'ðŸ’‘', label: 'Spouse / Partner Visa', sub: 'Your partner sponsors you. Income must be Â£29,000+/year (or savings to compensate)' },
+  { id: 'skilled_worker', icon: 'ðŸ’¼', label: 'Skilled Worker Visa', sub: 'UK employer sponsors you. Salary must meet threshold (usually Â£38,700+/year)' },
+  { id: 'citizenship', icon: 'ðŸ›ï¸', label: 'British Citizenship', sub: 'You have lived in UK 5+ years. No salary requirement, but character is strict' },
+  { id: 'unsure', icon: 'â“', label: 'Not sure which visa', sub: 'Answer a few questions and we will help you figure out which applies' },
 ];
 
 const NATIONALITIES = [
   'EU/EEA Citizen', 'Indian', 'Pakistani', 'Nigerian', 'American', 'Australian', 'Filipino', 'Chinese', 'Other'
 ];
 
-const PARTNER_STATUSES = ['Married', 'Civil Partnership', 'Unmarried Partners (2+ yrs)', 'Fiancé/Fiancée'];
+const PARTNER_STATUSES = ['Married', 'Civil Partnership', 'Unmarried Partners (2+ yrs)', 'FiancÃ©/FiancÃ©e'];
 
 const SPONSOR_INCOMES = [
-  { id: 'under29k', label: 'Under £29,000', detail: 'Below the minimum threshold. You will need £16,000+ savings to bridge the gap' },
-  { id: 'over29k', label: '£29,000+', detail: 'Meets income threshold (as of April 2024). No savings needed' },
+  { id: 'under29k', label: 'Under Â£29,000', detail: 'Below the minimum threshold. You will need Â£16,000+ savings to bridge the gap' },
+  { id: 'over29k', label: 'Â£29,000+', detail: 'Meets income threshold (as of April 2024). No savings needed' },
   { id: 'selfemployed', label: 'Self-employed', detail: 'Needs 2 years of tax returns + business bank statements' },
   { id: 'unsure', label: 'Not sure yet', detail: 'Ask your partner to check their payslips or request an employer letter' },
 ];
 
 const SALARY_BANDS = [
-  { id: 'under30k', label: 'Under £30,000', detail: '⚠️ Below minimum for most roles. Application will likely be refused unless a specific exemption applies' },
-  { id: '30to38k', label: '£30,000 – £38,699', detail: 'In the grey zone. Confirm with your employer: minimum is £38,700+ for most roles' },
-  { id: '38700plus', label: '£38,700+', detail: 'Meets or exceeds standard minimum salary threshold' },
+  { id: 'under30k', label: 'Under Â£30,000', detail: 'âš ï¸ Below minimum for most roles. Application will likely be refused unless a specific exemption applies' },
+  { id: '30to38k', label: 'Â£30,000 â€“ Â£38,699', detail: 'In the grey zone. Confirm with your employer: minimum is Â£38,700+ for most roles' },
+  { id: '38700plus', label: 'Â£38,700+', detail: 'Meets or exceeds standard minimum salary threshold' },
   { id: 'unsure', label: 'Not confirmed yet', detail: 'Salary must be confirmed in writing by your employer before applying' },
 ];
 
@@ -43,9 +43,9 @@ const UK_YEARS = [
 ];
 
 const TIMELINE_OPTIONS = [
-  { id: 'urgent', icon: '🔥', label: 'Urgently', detail: 'Within 4 weeks. Priority processing: +£500–800 fee' },
-  { id: 'normal', icon: '📅', label: 'In the next 1–3 months', detail: 'Standard processing. Enough time to prepare without rushing' },
-  { id: 'ahead', icon: '🗓️', label: 'Planning ahead', detail: 'More than 3 months. Time to improve your application' },
+  { id: 'urgent', icon: 'ðŸ”¥', label: 'Urgently', detail: 'Within 4 weeks. Priority processing: +Â£500â€“800 fee' },
+  { id: 'normal', icon: 'ðŸ“…', label: 'In the next 1â€“3 months', detail: 'Standard processing. Enough time to prepare without rushing' },
+  { id: 'ahead', icon: 'ðŸ—“ï¸', label: 'Planning ahead', detail: 'More than 3 months. Time to improve your application' },
 ];
 
 const stepVariants = {
@@ -205,7 +205,7 @@ export default function Onboarding() {
                   <p className="text-sm text-gray-500 mb-6">
                     {currentStep === 1 && "We'll personalise everything to your situation"}
                     {currentStep === 2 && 'This affects document requirements and TB test needs'}
-                    {currentStep === 3 && 'Almost there — this helps us tailor your plan'}
+                    {currentStep === 3 && 'Almost there â€” this helps us tailor your plan'}
                     {currentStep === 4 && 'Used to identify any risks before you apply'}
                     {currentStep === 5 && "We'll structure your timeline around this"}
                   </p>
@@ -219,7 +219,7 @@ export default function Onboarding() {
                           initial={{ opacity: 0, y: 8 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: i * 0.05, duration: 0.2 }}
-                          onClick={() => setVisaType(v.id)}
+                          onClick={() => setVisaType(v.id as VisaType)}
                           className={`w-full flex items-center gap-4 p-4 rounded-xl border-2 text-left transition-all duration-200 touch-target
                             ${visaType === v.id
                               ? 'border-blue-600 bg-blue-50 shadow-sm'
@@ -278,16 +278,16 @@ export default function Onboarding() {
                       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                         <p className="text-sm text-blue-900 font-medium mb-3">Let&apos;s figure out which visa applies to you:</p>
                         <div className="space-y-2 text-sm text-blue-800">
-                          <p>✓ <strong>Spouse/Partner Visa:</strong> You&apos;re married/partnered to a UK citizen or settled person</p>
-                          <p>✓ <strong>Skilled Worker:</strong> You have a job offer from a UK employer</p>
-                          <p>✓ <strong>Citizenship:</strong> You&apos;ve already lived in the UK for 5+ years on a valid visa</p>
+                          <p>âœ“ <strong>Spouse/Partner Visa:</strong> You&apos;re married/partnered to a UK citizen or settled person</p>
+                          <p>âœ“ <strong>Skilled Worker:</strong> You have a job offer from a UK employer</p>
+                          <p>âœ“ <strong>Citizenship:</strong> You&apos;ve already lived in the UK for 5+ years on a valid visa</p>
                         </div>
                       </div>
                       <button
                         onClick={() => { setCurrentStep(1); }}
                         className="w-full text-center py-2 px-4 text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors"
                       >
-                        ← Go back and select the option that matches
+                        â† Go back and select the option that matches
                       </button>
                     </div>
                   )}
@@ -300,7 +300,7 @@ export default function Onboarding() {
                         <div className="space-y-2">
                           {[
                             { id: 'inside', label: 'Currently inside the UK', detail: 'Faster processing. No overseas delay' },
-                            { id: 'outside', label: 'Currently outside the UK', detail: 'Process through visa centre in your country. Add 2–4 weeks' },
+                            { id: 'outside', label: 'Currently outside the UK', detail: 'Process through visa centre in your country. Add 2â€“4 weeks' },
                           ].map((opt) => (
                             <button
                               key={opt.id}
@@ -337,11 +337,11 @@ export default function Onboarding() {
                                 <p className={`font-semibold text-sm ${relationshipStatus === status ? 'text-blue-800' : 'text-gray-800'}`}>
                                   {status}
                                 </p>
-                                {status === 'Fiancé/Fiancée' && (
-                                  <p className="text-xs text-red-600 mt-0.5 font-medium">⚠️ You need a Fiancé visa first. You have 6 months to marry after arrival, then apply for Spouse visa (two separate applications)</p>
+                                {status === 'FiancÃ©/FiancÃ©e' && (
+                                  <p className="text-xs text-red-600 mt-0.5 font-medium">âš ï¸ You need a FiancÃ© visa first. You have 6 months to marry after arrival, then apply for Spouse visa (two separate applications)</p>
                                 )}
                                 {status === 'Unmarried Partners (2+ yrs)' && (
-                                  <p className="text-xs text-amber-600 mt-0.5">⚠️ Must prove 2+ years cohabitation with substantial documentary evidence</p>
+                                  <p className="text-xs text-amber-600 mt-0.5">âš ï¸ Must prove 2+ years cohabitation with substantial documentary evidence</p>
                                 )}
                               </button>
                             ))}
@@ -357,7 +357,7 @@ export default function Onboarding() {
                       {visaType === 'spouse' && (
                         <div className="space-y-2">
                           <p className="text-xs font-semibold text-red-600 mb-4">
-                            ⚠️ Minimum sponsor income is £29,000/year (as of April 2024). This is a common refusal reason.
+                            âš ï¸ Minimum sponsor income is Â£29,000/year (as of April 2024). This is a common refusal reason.
                           </p>
                           {SPONSOR_INCOMES.map((opt, i) => (
                             <motion.button
