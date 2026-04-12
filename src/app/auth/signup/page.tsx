@@ -18,9 +18,7 @@ function GoogleIcon() {
   );
 }
 
-
-
-function LoginPageContent() {
+function SignUpPageContent() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -30,12 +28,11 @@ function LoginPageContent() {
   const [sending, setSending] = useState(false);
   const [oauthLoading, setOauthLoading] = useState<'google' | null>(null);
 
-  // Check for OAuth errors in URL params
   useEffect(() => {
     const errorParam = searchParams.get('error');
     const errorDesc = searchParams.get('error_description');
     if (errorParam) {
-      setError(errorDesc || 'Sign in failed. Please try again.');
+      setError(errorDesc || 'Sign up failed. Please try again.');
     }
   }, [searchParams]);
 
@@ -60,10 +57,9 @@ function LoginPageContent() {
 
       if (authError) {
         console.error(`OAuth ${provider} error:`, authError);
-        setError(authError.message || `Failed to sign in with ${provider}. Please try again.`);
+        setError(authError.message || `Failed to sign up with ${provider}. Please try again.`);
         setOauthLoading(null);
       }
-      // If no error, user will be redirected — no need to reset loading
     } catch (err) {
       console.error(`OAuth ${provider} exception:`, err);
       setError('Network error. Please check your connection and try again.');
@@ -109,7 +105,6 @@ function LoginPageContent() {
     }
   }
 
-  // Show loading while checking auth
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white flex items-center justify-center">
@@ -126,16 +121,17 @@ function LoginPageContent() {
     return (
       <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white flex items-center justify-center px-4">
         <div className="w-full max-w-md text-center">
-          {/* Logo */}
           <div className="flex items-center justify-center gap-2 mb-10">
-            <svg viewBox="0 0 200 200" className="w-8 h-8" xmlns="http://www.w3.org/2000/svg">
-              <path d="M 100 35 Q 70 50 60 80 Q 55 95 65 105" stroke="#D4AF37" strokeWidth="2.5" fill="none" strokeLinecap="round"/>
-              <path d="M 100 35 Q 130 50 140 80 Q 145 95 135 105" stroke="#D4AF37" strokeWidth="2.5" fill="none" strokeLinecap="round"/>
-              <path d="M 85 105 L 100 140" stroke="#D4AF37" strokeWidth="3.5" fill="none" strokeLinecap="round"/>
-              <path d="M 115 105 L 100 140" stroke="#D4AF37" strokeWidth="3.5" fill="none" strokeLinecap="round"/>
-              <line x1="88" y1="120" x2="112" y2="120" stroke="#D4AF37" strokeWidth="2.5" strokeLinecap="round"/>
-            </svg>
-            <span className="text-xl font-bold text-blue-900">VisaBud</span>
+            <Link href="/" className="flex items-center gap-2">
+              <svg viewBox="0 0 200 200" className="w-8 h-8" xmlns="http://www.w3.org/2000/svg">
+                <path d="M 100 35 Q 70 50 60 80 Q 55 95 65 105" stroke="#D4AF37" strokeWidth="2.5" fill="none" strokeLinecap="round"/>
+                <path d="M 100 35 Q 130 50 140 80 Q 145 95 135 105" stroke="#D4AF37" strokeWidth="2.5" fill="none" strokeLinecap="round"/>
+                <path d="M 85 105 L 100 140" stroke="#D4AF37" strokeWidth="3.5" fill="none" strokeLinecap="round"/>
+                <path d="M 115 105 L 100 140" stroke="#D4AF37" strokeWidth="3.5" fill="none" strokeLinecap="round"/>
+                <line x1="88" y1="120" x2="112" y2="120" stroke="#D4AF37" strokeWidth="2.5" strokeLinecap="round"/>
+              </svg>
+              <span className="text-xl font-bold text-blue-900">VisaBud</span>
+            </Link>
           </div>
 
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8">
@@ -150,7 +146,7 @@ function LoginPageContent() {
             </p>
             <p className="font-semibold text-blue-700 mb-4">{email}</p>
             <p className="text-sm text-slate-500 mb-6">
-              Click the link in the email to sign in and start your visa application. The link expires in 1 hour.
+              Click the link in the email to create your account and access your free visa checklist. The link expires in 1 hour.
             </p>
             <button
               onClick={() => { setSubmitted(false); setEmail(''); }}
@@ -162,40 +158,36 @@ function LoginPageContent() {
 
           <p className="text-xs text-slate-400 mt-6">
             Didn&apos;t receive it? Check your spam folder or{' '}
-            <button
-              onClick={() => setSubmitted(false)}
-              className="text-blue-500 hover:underline"
-            >
-              try again
-            </button>
+            <button onClick={() => setSubmitted(false)} className="text-blue-500 hover:underline">try again</button>
           </p>
         </div>
       </div>
     );
   }
 
-  // Email entry form
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="flex items-center justify-center gap-2 mb-10">
-          <svg viewBox="0 0 200 200" className="w-8 h-8" xmlns="http://www.w3.org/2000/svg">
-            <path d="M 100 35 Q 70 50 60 80 Q 55 95 65 105" stroke="#D4AF37" strokeWidth="2.5" fill="none" strokeLinecap="round"/>
-            <path d="M 100 35 Q 130 50 140 80 Q 145 95 135 105" stroke="#D4AF37" strokeWidth="2.5" fill="none" strokeLinecap="round"/>
-            <path d="M 85 105 L 100 140" stroke="#D4AF37" strokeWidth="3.5" fill="none" strokeLinecap="round"/>
-            <path d="M 115 105 L 100 140" stroke="#D4AF37" strokeWidth="3.5" fill="none" strokeLinecap="round"/>
-            <line x1="88" y1="120" x2="112" y2="120" stroke="#D4AF37" strokeWidth="2.5" strokeLinecap="round"/>
-          </svg>
-          <span className="text-xl font-bold text-blue-900">VisaBud</span>
+          <Link href="/" className="flex items-center gap-2">
+            <svg viewBox="0 0 200 200" className="w-8 h-8" xmlns="http://www.w3.org/2000/svg">
+              <path d="M 100 35 Q 70 50 60 80 Q 55 95 65 105" stroke="#D4AF37" strokeWidth="2.5" fill="none" strokeLinecap="round"/>
+              <path d="M 100 35 Q 130 50 140 80 Q 145 95 135 105" stroke="#D4AF37" strokeWidth="2.5" fill="none" strokeLinecap="round"/>
+              <path d="M 85 105 L 100 140" stroke="#D4AF37" strokeWidth="3.5" fill="none" strokeLinecap="round"/>
+              <path d="M 115 105 L 100 140" stroke="#D4AF37" strokeWidth="3.5" fill="none" strokeLinecap="round"/>
+              <line x1="88" y1="120" x2="112" y2="120" stroke="#D4AF37" strokeWidth="2.5" strokeLinecap="round"/>
+            </svg>
+            <span className="text-xl font-bold text-blue-900">VisaBud</span>
+          </Link>
         </div>
 
         {/* Card */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8">
           <div className="text-center mb-6">
-            <h1 className="text-2xl font-bold text-slate-900 mb-2">Get Started Free</h1>
+            <h1 className="text-2xl font-bold text-slate-900 mb-2">Create Your VisaBud Account</h1>
             <p className="text-slate-600">
-              Start your personalised UK visa checklist in seconds.
+              Get instant access to your personalised visa checklist
             </p>
           </div>
 
@@ -220,8 +212,6 @@ function LoginPageContent() {
               )}
               Continue with Google
             </button>
-
-
           </div>
 
           {/* Divider */}
@@ -278,7 +268,7 @@ function LoginPageContent() {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                   </svg>
-                  Sending link…
+                  Creating account…
                 </span>
               ) : (
                 'Continue with Email'
@@ -287,13 +277,13 @@ function LoginPageContent() {
           </form>
 
           <div className="mt-6 pt-6 border-t border-gray-100">
-            <p className="text-center text-sm text-slate-600 mb-3">
-              Don&apos;t have an account?{' '}
-              <Link href="/auth/signup" className="text-blue-600 hover:text-blue-800 font-semibold">
-                Create one free
+            <p className="text-center text-sm text-slate-600">
+              Already have an account?{' '}
+              <Link href="/auth/login" className="text-blue-600 hover:text-blue-800 font-semibold">
+                Sign in here
               </Link>
             </p>
-            <p className="text-center text-xs text-slate-400">
+            <p className="text-center text-xs text-slate-400 mt-3">
               We&apos;ll send you a magic link — no password needed.
               <br />
               By continuing, you agree to our{' '}
@@ -317,12 +307,30 @@ function LoginPageContent() {
           <span>·</span>
           <span>Free to start</span>
         </div>
+
+        {/* What you get */}
+        <div className="mt-8 bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+          <h3 className="text-sm font-semibold text-slate-900 mb-4 text-center">What you get for free</h3>
+          <div className="space-y-3">
+            {[
+              { icon: '📋', text: 'Personalised document checklist preview' },
+              { icon: '📅', text: 'Timeline with first 3 milestones' },
+              { icon: '⚠️', text: 'Basic risk assessment summary' },
+              { icon: '📊', text: 'Processing time & fee estimates' },
+            ].map((item) => (
+              <div key={item.text} className="flex items-center gap-3">
+                <span className="text-lg">{item.icon}</span>
+                <span className="text-sm text-slate-600">{item.text}</span>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );
 }
 
-export default function LoginPage() {
+export default function SignUpPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white flex items-center justify-center">
@@ -332,7 +340,7 @@ export default function LoginPage() {
         </div>
       </div>
     }>
-      <LoginPageContent />
+      <SignUpPageContent />
     </Suspense>
   );
 }
