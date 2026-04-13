@@ -251,7 +251,7 @@ export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
       formatRequired: 'Original certificate from approved SELT provider',
       tips: 'Citizens of majority English-speaking countries (USA, Australia, etc.) are exempt. Degrees taught in English may also qualify — check with your university.',
       displayOrder: 5,
-      govLink: 'https://www.gov.uk/prove-you-know-english',
+      govLink: 'https://www.gov.uk/english-language',
       officialRequirement: 'You must prove your knowledge of the English language when you apply. For spouse visa initial application, you need A1 level (speaking and listening).',
       commonMistakes: ['Taking wrong test (must be on approved SELT list)', 'Test certificate expired', 'Not checking nationality exemptions'],
       bestPractices: ['Check if exempt by nationality first', 'Book IELTS Life Skills A1 specifically', 'Certificate must be within 2 years of test date'],
@@ -530,7 +530,7 @@ export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
       formatRequired: 'Original SELT certificate or degree certificate + ECCTIS/ENIC confirmation',
       tips: 'A UK degree automatically satisfies this. Non-UK degrees need confirmation from ECCTIS (formerly NARIC) that the degree was taught in English.',
       displayOrder: 5,
-      govLink: 'https://www.gov.uk/prove-you-know-english',
+      govLink: 'https://www.gov.uk/english-language',
     },
     {
       id: 'sw-criminal-record',
@@ -729,7 +729,7 @@ export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
       formatRequired: 'Original certificate or degree + ECCTIS confirmation',
       tips: 'The Life in the UK test can count as English language evidence if you passed it. A UK degree at any level also satisfies this.',
       displayOrder: 4,
-      govLink: 'https://www.gov.uk/prove-you-know-english',
+      govLink: 'https://www.gov.uk/english-language',
     },
     {
       id: 'ct-birth-certificate',
