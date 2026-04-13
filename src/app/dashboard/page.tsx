@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useState, useMemo, useEffect, useCallback, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import AuthGate from '@/components/AuthGate';
 import { useAuth } from '@/lib/auth-context';
@@ -97,7 +98,16 @@ const CATEGORY_CONFIG: Record<DocumentCategory, { label: string; icon: string }>
 export default function DashboardPage() {
   return (
     <AuthGate>
-      <DashboardContent />
+      <Suspense fallback={
+        <div className="min-h-screen bg-[#F9FAFB] flex items-center justify-center">
+          <div className="animate-pulse flex flex-col items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-blue-200" />
+            <div className="h-3 w-32 bg-gray-200 rounded" />
+          </div>
+        </div>
+      }>
+        <DashboardContent />
+      </Suspense>
     </AuthGate>
   );
 }
@@ -106,6 +116,8 @@ function DashboardContent() {
   const { user } = useAuth();
   const store = useApplicationStore();
   const { visaType, currentStep, unlocked, setUnlocked, setUserEmail } = store;
+  const searchParams = useSearchParams();
+  const isPaymentReturn = searchParams.get('payment') === 'success';
 
   useEffect(() => {
     if (user?.email) setUserEmail(user.email);
@@ -114,11 +126,15 @@ function DashboardContent() {
   const [hydrated, setHydrated] = useState(false);
   useEffect(() => { setHydrated(true); }, []);
 
+  // Check unlock status — runs on mount AND polls when returning from payment
   useEffect(() => {
-    async function checkUnlockStatus() {
+    let pollCount = 0;
+    let pollTimer: ReturnType<typeof setTimeout> | null = null;
+
+    async function checkUnlockStatus(): Promise<boolean> {
       try {
         const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return;
+        if (!user) return false;
 
         // Get user record by auth_id
         const { data: userData } = await supabase
@@ -136,14 +152,38 @@ function DashboardContent() {
             .eq('payment_status', 'completed')
             .limit(1);
           
-          if (payments && payments.length > 0) setUnlocked(true);
+          if (payments && payments.length > 0) {
+            setUnlocked(true);
+            return true;
+          }
         }
+        return false;
       } catch (err) {
         // No payment found or query error — user stays on free tier (not an error)
+        return false;
       }
     }
-    checkUnlockStatus();
-  }, [setUnlocked]);
+
+    // Initial check
+    checkUnlockStatus().then((found) => {
+      // If returning from payment and not yet unlocked, poll for webhook completion
+      if (isPaymentReturn && !found && !unlocked) {
+        const poll = async () => {
+          pollCount++;
+          const unlockFound = await checkUnlockStatus();
+          if (!unlockFound && pollCount < 10) {
+            // Poll every 2 seconds for up to 20 seconds
+            pollTimer = setTimeout(poll, 2000);
+          }
+        };
+        pollTimer = setTimeout(poll, 2000);
+      }
+    });
+
+    return () => {
+      if (pollTimer) clearTimeout(pollTimer);
+    };
+  }, [setUnlocked, isPaymentReturn, unlocked]);
 
   const [showPaywall, setShowPaywall] = useState(false);
 

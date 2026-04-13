@@ -36,10 +36,10 @@ function SignUpPageContent() {
     }
   }, [searchParams]);
 
-  // If already authenticated, redirect to dashboard
+  // If already authenticated, redirect to visa selection wizard
   useEffect(() => {
     if (!loading && user) {
-      router.replace('/dashboard');
+      router.replace('/app/start');
     }
   }, [user, loading, router]);
 

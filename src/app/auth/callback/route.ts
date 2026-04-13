@@ -69,6 +69,51 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  // Redirect to the dashboard (freemium flow: show free value first)
-  return NextResponse.redirect(new URL('/dashboard', request.url));
+  // Redirect new users to visa selection wizard, existing users to dashboard
+  // Check if user has completed the onboarding wizard (has a session record)
+  if (code) {
+    try {
+      const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+      if (serviceKey) {
+        const supabaseAdmin = createClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          serviceKey
+        );
+        const supabaseAuth = createClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+        );
+        const { data: { user: currentUser } } = await supabaseAuth.auth.getUser();
+        
+        if (currentUser) {
+          // Check if user has any payments (returning paying customer → dashboard)
+          const { data: userData } = await supabaseAdmin
+            .from('users')
+            .select('id')
+            .eq('auth_id', currentUser.id)
+            .maybeSingle();
+          
+          if (userData) {
+            const { data: payments } = await supabaseAdmin
+              .from('payments')
+              .select('id')
+              .eq('user_id', userData.id)
+              .eq('payment_status', 'completed')
+              .limit(1);
+            
+            if (payments && payments.length > 0) {
+              // Returning paid user → dashboard
+              return NextResponse.redirect(new URL('/dashboard', request.url));
+            }
+          }
+        }
+      }
+    } catch (err) {
+      // If check fails, fall through to /app/start (safe default for new users)
+      console.error('Auth callback user check error:', err);
+    }
+  }
+
+  // New or free users → visa selection wizard
+  return NextResponse.redirect(new URL('/app/start', request.url));
 }

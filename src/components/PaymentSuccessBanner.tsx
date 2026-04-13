@@ -6,10 +6,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle, ArrowRight, X } from 'lucide-react';
 import { ConfettiBurst } from '@/lib/animations';
 import { analytics } from '@/lib/analytics';
+import { useApplicationStore } from '@/lib/store';
 
 /**
  * Payment success overlay — shows when user returns to /dashboard?payment=success
  * Displays tier info, confetti, and next steps.
+ * Also proactively unlocks the dashboard since Stripe confirmed success.
  */
 export default function PaymentSuccessBanner({ onDismiss }: { onDismiss?: () => void }) {
   const searchParams = useSearchParams();
@@ -53,8 +55,12 @@ export default function PaymentSuccessBanner({ onDismiss }: { onDismiss?: () => 
 
   const info = tierInfo[tier] || tierInfo.standard;
 
+  const { setUnlocked } = useApplicationStore();
+
   useEffect(() => {
     if (isSuccess) {
+      // Proactively unlock — Stripe confirmed success, webhook may still be processing
+      setUnlocked(true);
       setVisible(true);
       setConfettiActive(true);
       analytics.paymentSucceeded(tier, parseFloat(info.price.replace('£', '')));
@@ -62,7 +68,7 @@ export default function PaymentSuccessBanner({ onDismiss }: { onDismiss?: () => 
       const timer = setTimeout(() => setConfettiActive(false), 3000);
       return () => clearTimeout(timer);
     }
-  }, [isSuccess]);
+  }, [isSuccess, setUnlocked]);
 
   function handleDismiss() {
     setVisible(false);
