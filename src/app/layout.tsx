@@ -4,6 +4,7 @@ import { AuthProvider } from '@/lib/auth-context';
 import CookieConsent from '@/components/CookieConsent';
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://visabud.co.uk'),
   title: 'VisaBud - UK Visa Checklist Generator',
   description: 'Get a personalized UK visa checklist in 5 minutes. Stop missing documents. Start applying with confidence.',
   icons: {
