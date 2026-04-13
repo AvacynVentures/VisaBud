@@ -41,79 +41,53 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(loginUrl);
     }
 
-    if (data.user) {
-      // Ensure user profile exists in the users table
-      const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-      if (serviceKey) {
-        const supabaseAdmin = createClient(supabaseUrl, serviceKey);
-        
-        // Get display name from OAuth metadata if available
-        const displayName = data.user.user_metadata?.full_name 
-          || data.user.user_metadata?.name 
-          || null;
-        
-        // Upsert user record (create if doesn't exist, update if it does)
-        await supabaseAdmin
-          .from('users')
-          .upsert(
-            {
-              auth_id: data.user.id,
-              email: data.user.email,
-              display_name: displayName,
-              auth_provider: data.user.app_metadata?.provider || 'email',
-              updated_at: new Date().toISOString(),
-            },
-            { onConflict: 'auth_id' }
-          );
-      }
+    if (!data.user) {
+      // No user from exchange — redirect to signup
+      return NextResponse.redirect(new URL('/auth/signup', request.url));
     }
+
+    // Ensure user profile exists in the users table
+    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    let isPaid = false;
+
+    if (serviceKey) {
+      const supabaseAdmin = createClient(supabaseUrl, serviceKey);
+      
+      // Get display name from OAuth metadata if available
+      const displayName = data.user.user_metadata?.full_name 
+        || data.user.user_metadata?.name 
+        || null;
+      
+      // Upsert user record (create if doesn't exist, update if it does)
+      await supabaseAdmin
+        .from('users')
+        .upsert(
+          {
+            auth_id: data.user.id,
+            email: data.user.email,
+            display_name: displayName,
+            auth_provider: data.user.app_metadata?.provider || 'email',
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: 'auth_id' }
+        );
+
+      // Check if user has a completed payment
+      const { data: paymentData } = await supabaseAdmin
+        .from('payments')
+        .select('id')
+        .eq('user_id', data.user.id)
+        .eq('status', 'completed')
+        .limit(1);
+
+      isPaid = !!(paymentData && paymentData.length > 0);
+    }
+
+    // Route based on payment status
+    const redirectPath = isPaid ? '/dashboard' : '/app/start';
+    return NextResponse.redirect(new URL(redirectPath, request.url));
   }
 
-  // Redirect new users to visa selection wizard, existing users to dashboard
-  // Check if user has completed the onboarding wizard (has a session record)
-  if (code) {
-    try {
-      const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-      if (serviceKey) {
-        const supabaseAdmin = createClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL!,
-          serviceKey
-        );
-        const supabaseAuth = createClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL!,
-          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-        );
-        const { data: { user: currentUser } } = await supabaseAuth.auth.getUser();
-        
-        if (currentUser) {
-          // Check if user has any payments (returning paying customer → dashboard)
-          const { data: userData } = await supabaseAdmin
-            .from('users')
-            .select('id')
-            .eq('auth_id', currentUser.id)
-            .maybeSingle();
-          
-          if (userData) {
-            const { data: payments } = await supabaseAdmin
-              .from('payments')
-              .select('id')
-              .eq('user_id', userData.id)
-              .eq('payment_status', 'completed')
-              .limit(1);
-            
-            if (payments && payments.length > 0) {
-              // Returning paid user → dashboard
-              return NextResponse.redirect(new URL('/dashboard', request.url));
-            }
-          }
-        }
-      }
-    } catch (err) {
-      // If check fails, fall through to /app/start (safe default for new users)
-      console.error('Auth callback user check error:', err);
-    }
-  }
-
-  // New or free users → visa selection wizard
-  return NextResponse.redirect(new URL('/app/start', request.url));
+  // No code provided — redirect to signup
+  return NextResponse.redirect(new URL('/auth/signup', request.url));
 }

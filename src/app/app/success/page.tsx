@@ -297,7 +297,7 @@ function SuccessContent() {
               Try Again
             </button>
             <Link
-              href="/app/dashboard"
+              href="/dashboard"
               className="block w-full py-3 px-6 border border-slate-300 text-slate-700 rounded-lg font-medium hover:bg-slate-50 transition-colors"
             >
               Back to Dashboard
@@ -446,7 +446,7 @@ function SuccessContent() {
       <div className="px-4 pb-16">
         <div className="max-w-lg mx-auto space-y-3">
           <Link
-            href="/app/dashboard"
+            href="/dashboard"
             className="block w-full py-3 px-6 bg-slate-900 text-white text-center rounded-xl font-semibold hover:bg-slate-800 transition-colors"
           >
             Go to Dashboard
