@@ -15,6 +15,24 @@ export interface DocumentUploadState {
 
 export type PurchasedTier = 'none' | 'standard' | 'premium' | 'expert';
 
+// AI Report types
+export interface AIReportData {
+  id?: string;
+  documentId: string;
+  documentName: string;
+  confidence: number;
+  flags: Array<{ text: string; severity: string }>;
+  swot: {
+    strengths: string[];
+    weaknesses: string[];
+    opportunities: string[];
+    threats: string[];
+  };
+  recommendations: Array<{ step: string; description: string }>;
+  generatedAt: string;
+  version: number;
+}
+
 // Premium review types
 export type PremiumTier = 'free' | 'ai_review_149' | 'human_review_199';
 export type ReviewStatus = 'none' | 'pending' | 'in_progress' | 'complete';
@@ -71,6 +89,9 @@ interface AppState {
   // Premium review state
   premiumReview: PremiumReviewState;
 
+  // AI Reports (per-document)
+  documentReports: Record<string, AIReportData>;
+
   // Auth state
   userEmail: string | null;
 
@@ -101,6 +122,11 @@ interface AppState {
   setPremiumReviewStatus: (status: ReviewStatus) => void;
   setPremiumReviewResults: (results: Partial<PremiumReviewState>) => void;
   resetPremiumReview: () => void;
+
+  // AI Report actions
+  setDocumentReport: (documentId: string, report: AIReportData) => void;
+  getDocumentReport: (documentId: string) => AIReportData | undefined;
+  clearDocumentReport: (documentId: string) => void;
   
   reset: () => void;
   getApplicationData: () => Partial<Application>;
@@ -133,6 +159,7 @@ const initialState = {
     summaryFeedback: null,
     reviewedAt: null,
   } as PremiumReviewState,
+  documentReports: {} as Record<string, AIReportData>,
   userEmail: null as string | null,
 };
 
@@ -196,6 +223,24 @@ export const useApplicationStore = create<AppState>()(
           premiumReview: { ...initialState.premiumReview },
         })),
 
+      // AI Report actions
+      setDocumentReport: (documentId, report) =>
+        set((state) => ({
+          documentReports: {
+            ...state.documentReports,
+            [documentId]: report,
+          },
+        })),
+      getDocumentReport: (documentId) => {
+        return get().documentReports[documentId];
+      },
+      clearDocumentReport: (documentId) =>
+        set((state) => {
+          const updated = { ...state.documentReports };
+          delete updated[documentId];
+          return { documentReports: updated };
+        }),
+
       reset: () => set(initialState),
 
       getApplicationData: (): Partial<Application> => {
@@ -240,6 +285,7 @@ export const useApplicationStore = create<AppState>()(
           ])
         ),
         premiumReview: state.premiumReview,
+        documentReports: state.documentReports,
         userEmail: state.userEmail,
       }),
     }

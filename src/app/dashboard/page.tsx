@@ -52,6 +52,9 @@ import PaywallModal from '@/components/PaywallModal';
 import PaymentSuccessBanner from '@/components/PaymentSuccessBanner';
 import DocumentUpload from '@/components/DocumentUpload';
 import TierFeatureButtons from '@/components/TierFeatureButtons';
+import AIReportModal from '@/components/AIReportModal';
+import type { AIReportData } from '@/lib/store';
+import { getTemplate } from '@/lib/template-data';
 import { PageFadeIn, FadeIn, ConfettiBurst, CelebrationBanner } from '@/lib/animations';
 // PurchasedTier type used via store
 
@@ -1069,6 +1072,19 @@ function ProgressCard({ checkedCount, total, progressPct, verifiedCount }: { che
 
 function ChecklistItemRow({ item, checked, onToggle, unlocked = false }: { item: ChecklistItem; checked: boolean; onToggle: () => void; unlocked?: boolean }) {
   const [justChecked, setJustChecked] = useState(false);
+  const [showAIModal, setShowAIModal] = useState(false);
+  const [isAILoading, setIsAILoading] = useState(false);
+
+  const { documentUploads, documentReports, setDocumentReport, purchasedTier, visaType } = useApplicationStore();
+  const upload = documentUploads[item.id];
+  const report = documentReports[item.id] || null;
+  const hasFileData = !!upload?.fileData;
+  const isPremiumPlus = purchasedTier === 'premium' || purchasedTier === 'expert';
+
+  // Check if a template exists for this document (templates use different IDs)
+  // Try exact match first, then fuzzy match by visa type
+  const template = getTemplate(item.id);
+  const hasTemplate = !!template || isPremiumPlus; // Show template button if premium (templates page has all)
 
   const handleToggle = useCallback(() => {
     if (!checked) {
@@ -1078,59 +1094,273 @@ function ChecklistItemRow({ item, checked, onToggle, unlocked = false }: { item:
     onToggle();
   }, [checked, onToggle]);
 
+  // Confidence KPI display
+  const getConfidenceDisplay = () => {
+    if (!isPremiumPlus) {
+      return { text: '🔒', className: 'text-gray-400 cursor-not-allowed', clickable: false };
+    }
+    if (!report) {
+      return { text: 'Not assessed', className: 'text-gray-400 hover:text-gray-600 cursor-pointer', clickable: true };
+    }
+    const score = report.confidence;
+    if (score >= 70) return { text: `${score}% 🟢`, className: 'text-emerald-600 hover:text-emerald-700 cursor-pointer font-semibold', clickable: true };
+    if (score >= 40) return { text: `${score}% 🟡`, className: 'text-amber-600 hover:text-amber-700 cursor-pointer font-semibold', clickable: true };
+    return { text: `${score}% 🔴`, className: 'text-red-600 hover:text-red-700 cursor-pointer font-semibold', clickable: true };
+  };
+
+  const confidenceDisplay = getConfidenceDisplay();
+
+  // AI Ready Check handler
+  const handleAIReadyCheck = async (forceNew = false) => {
+    if (!isPremiumPlus) return;
+    if (!hasFileData && !report) return;
+
+    // If report exists and not forcing new, show cached
+    if (report && !forceNew) {
+      setShowAIModal(true);
+      return;
+    }
+
+    // Generate new report
+    setShowAIModal(true);
+    setIsAILoading(true);
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        throw new Error('Not authenticated');
+      }
+
+      const response = await fetch('/api/ai-confidence', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          image: upload?.fileData,
+          requirement: `${item.title}: ${item.description}`,
+          mimeType: upload?.mimeType || 'image/jpeg',
+          docTitle: item.title,
+          visaType: visaType || 'spouse',
+        }),
+      });
+
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.error || `API error: ${response.status}`);
+      }
+
+      const result = await response.json();
+
+      // Transform API response to AIReportData format
+      const reportData: AIReportData = {
+        documentId: item.id,
+        documentName: item.title,
+        confidence: result.confidence,
+        flags: Array.isArray(result.flags)
+          ? result.flags.map((f: string | { text: string; severity: string }) =>
+              typeof f === 'string' ? { text: f, severity: 'medium' } : f
+            )
+          : [],
+        swot: result.swot || { strengths: [], weaknesses: [], opportunities: [], threats: [] },
+        recommendations: Array.isArray(result.recommendations)
+          ? result.recommendations.map((r: string | { step: string; description: string }) =>
+              typeof r === 'string' ? { step: '', description: r } : r
+            )
+          : [],
+        generatedAt: new Date().toISOString(),
+        version: report ? report.version + 1 : 1,
+      };
+
+      setDocumentReport(item.id, reportData);
+    } catch (err) {
+      console.error('AI confidence check failed:', err);
+    } finally {
+      setIsAILoading(false);
+    }
+  };
+
+  // Template download handler — opens templates page filtered by visa type
+  const handleTemplateDownload = () => {
+    if (!isPremiumPlus) return;
+    // Try direct template API first, fallback to templates page
+    if (template) {
+      window.open(`/api/templates/${visaType || 'spouse'}/${template.id}`, '_blank');
+    } else {
+      window.open('/templates', '_blank');
+    }
+  };
+
+  // Document download handler
+  const handleDocumentDownload = () => {
+    if (!upload?.fileData) return;
+    const data = upload.fileData;
+    const mime = upload.mimeType || 'application/octet-stream';
+    const name = upload.fileName || 'document';
+    const byteChars = atob(data);
+    const byteNums = new Array(byteChars.length);
+    for (let i = 0; i < byteChars.length; i++) byteNums[i] = byteChars.charCodeAt(i);
+    const blob = new Blob([new Uint8Array(byteNums)], { type: mime });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = name;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
-    <div className={`px-5 sm:px-6 py-4 hover:bg-gray-50/50 transition-all duration-200 ${checked ? 'bg-emerald-50/30' : ''} ${justChecked ? 'animate-greenFlash' : ''}`}>
-      <button onClick={handleToggle} className="w-full text-left flex items-start gap-4 touch-target">
-        <div className="pt-0.5 flex-shrink-0">
-          {checked ? (
-            <motion.div
-              initial={justChecked ? { scale: 0 } : { scale: 1 }}
-              animate={{ scale: 1 }}
-              transition={{ type: 'spring', stiffness: 500, damping: 15 }}
-              className={justChecked ? 'animate-greenGlow rounded-full' : ''}
-            >
-              <CheckSquare className="w-5 h-5 text-emerald-600" />
-            </motion.div>
-          ) : (
-            <Square className="w-5 h-5 text-gray-300" />
-          )}
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className={`font-medium text-sm ${checked ? 'text-gray-400 line-through' : 'text-gray-900'}`}>
-            {item.title}
-          </p>
-          <p className={`text-sm mt-0.5 ${checked ? 'text-gray-300' : 'text-gray-500'}`}>
-            {item.description}
-          </p>
-          {item.tips && !checked && (
-            <div className="flex items-start gap-1.5 mt-2 text-xs text-blue-600">
-              <Info className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
-              <span>{item.tips}</span>
+    <>
+      <div className={`px-5 sm:px-6 py-4 hover:bg-gray-50/50 transition-all duration-200 ${checked ? 'bg-emerald-50/30' : ''} ${justChecked ? 'animate-greenFlash' : ''}`}>
+        <button onClick={handleToggle} className="w-full text-left flex items-start gap-4 touch-target">
+          <div className="pt-0.5 flex-shrink-0">
+            {checked ? (
+              <motion.div
+                initial={justChecked ? { scale: 0 } : { scale: 1 }}
+                animate={{ scale: 1 }}
+                transition={{ type: 'spring', stiffness: 500, damping: 15 }}
+                className={justChecked ? 'animate-greenGlow rounded-full' : ''}
+              >
+                <CheckSquare className="w-5 h-5 text-emerald-600" />
+              </motion.div>
+            ) : (
+              <Square className="w-5 h-5 text-gray-300" />
+            )}
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className={`font-medium text-sm ${checked ? 'text-gray-400 line-through' : 'text-gray-900'}`}>
+              {item.title}
+            </p>
+            <p className={`text-sm mt-0.5 ${checked ? 'text-gray-300' : 'text-gray-500'}`}>
+              {item.description}
+            </p>
+            {item.tips && !checked && (
+              <div className="flex items-start gap-1.5 mt-2 text-xs text-blue-600">
+                <Info className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
+                <span>{item.tips}</span>
+              </div>
+            )}
+          </div>
+          {justChecked && (
+            <div className="relative flex-shrink-0">
+              <ConfettiBurst active={true} />
             </div>
           )}
-          {item.govLink && !checked && (
+        </button>
+
+        {/* Per-item action buttons row */}
+        <div className="ml-9 mt-3 flex flex-wrap items-center gap-2">
+          {/* Gov.uk link — always visible */}
+          {item.govLink && (
             <a
               href={item.govLink}
               target="_blank"
               rel="noopener noreferrer"
-              onClick={(e) => e.stopPropagation()}
-              className="inline-flex items-center gap-1.5 mt-2 px-3 py-1.5 text-xs font-medium text-white bg-blue-700 hover:bg-blue-800 rounded-lg transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-blue-700 hover:bg-blue-800 rounded-lg transition-colors"
             >
               <ExternalLink className="w-3 h-3" />
-              Gov.uk guidance
+              Gov.uk 🔗
             </a>
           )}
+
+          {/* Confidence KPI — Premium+ */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              if (confidenceDisplay.clickable) {
+                if (report) {
+                  setShowAIModal(true);
+                } else if (hasFileData) {
+                  handleAIReadyCheck();
+                }
+              }
+            }}
+            disabled={!confidenceDisplay.clickable}
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg border transition-colors ${
+              confidenceDisplay.clickable
+                ? 'border-gray-200 hover:bg-gray-50'
+                : 'border-gray-100 bg-gray-50 cursor-not-allowed'
+            } ${confidenceDisplay.className}`}
+          >
+            <Sparkles className="w-3 h-3" />
+            {confidenceDisplay.text}
+          </button>
+
+          {/* Templates — Premium+ */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleTemplateDownload();
+            }}
+            disabled={!isPremiumPlus || !hasTemplate}
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
+              isPremiumPlus && hasTemplate
+                ? 'bg-violet-50 text-violet-700 hover:bg-violet-100 border border-violet-200'
+                : 'bg-gray-50 text-gray-400 border border-gray-100 cursor-not-allowed'
+            }`}
+            title={!isPremiumPlus ? 'Premium feature' : !hasTemplate ? 'No template available' : 'Download preparation template'}
+          >
+            <FileText className="w-3 h-3" />
+            Templates
+            {!isPremiumPlus && <Lock className="w-2.5 h-2.5" />}
+          </button>
+
+          {/* AI Ready Check — Premium+ */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleAIReadyCheck();
+            }}
+            disabled={!isPremiumPlus || (!hasFileData && !report)}
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
+              isPremiumPlus && (hasFileData || report)
+                ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200'
+                : 'bg-gray-50 text-gray-400 border border-gray-100 cursor-not-allowed'
+            }`}
+            title={!isPremiumPlus ? 'Premium feature' : !hasFileData && !report ? 'Upload a document first' : 'Run AI analysis'}
+          >
+            <ShieldCheck className="w-3 h-3" />
+            AI Ready Check
+            {!isPremiumPlus && <Lock className="w-2.5 h-2.5" />}
+          </button>
+
+          {/* Download — visible if document uploaded */}
+          {hasFileData && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDocumentDownload();
+              }}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 hover:text-gray-800 bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-200 transition-colors"
+            >
+              <Download className="w-3 h-3" />
+              Download
+            </button>
+          )}
         </div>
-        {justChecked && (
-          <div className="relative flex-shrink-0">
-            <ConfettiBurst active={true} />
-          </div>
-        )}
-      </button>
-      <div className="ml-9">
-        <DocumentUpload docId={item.id} requirement={`${item.title}: ${item.description}`} locked={!unlocked} />
+
+        {/* Document Upload */}
+        <div className="ml-9 mt-2">
+          <DocumentUpload docId={item.id} requirement={`${item.title}: ${item.description}`} locked={!unlocked} />
+        </div>
       </div>
-    </div>
+
+      {/* AI Report Modal */}
+      <AIReportModal
+        isOpen={showAIModal}
+        onClose={() => setShowAIModal(false)}
+        report={report}
+        documentId={item.id}
+        documentName={item.title}
+        isLoading={isAILoading}
+        onGenerateNew={() => handleAIReadyCheck(true)}
+        onViewFullReport={() => {
+          setShowAIModal(false);
+          window.location.href = `/dashboard/${item.id}/ai-report`;
+        }}
+      />
+    </>
   );
 }
 
