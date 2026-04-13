@@ -50,6 +50,7 @@ import { supabase } from '@/lib/supabase';
 import PaywallModal from '@/components/PaywallModal';
 import PaymentSuccessBanner from '@/components/PaymentSuccessBanner';
 import DocumentUpload from '@/components/DocumentUpload';
+import TierFeatureButtons from '@/components/TierFeatureButtons';
 import { PageFadeIn, FadeIn, ConfettiBurst, CelebrationBanner } from '@/lib/animations';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
@@ -115,9 +116,10 @@ export default function DashboardPage() {
 function DashboardContent() {
   const { user } = useAuth();
   const store = useApplicationStore();
-  const { visaType, currentStep, unlocked, setUnlocked, setUserEmail } = store;
+  const { visaType, currentStep, unlocked, setUnlocked, setUserEmail, setTier } = store;
   const searchParams = useSearchParams();
   const isPaymentReturn = searchParams.get('payment') === 'success';
+  const tierParam = searchParams.get('tier');
 
   useEffect(() => {
     if (user?.email) setUserEmail(user.email);
@@ -144,16 +146,26 @@ function DashboardContent() {
           .maybeSingle();
         
         if (userData) {
-          // Check payments table for completed payment
+          // Check payments table for completed payment — get highest tier
           const { data: payments } = await supabase
             .from('payments')
-            .select('id')
+            .select('id, amount_pence, product_type')
             .eq('user_id', userData.id)
             .eq('payment_status', 'completed')
+            .order('amount_pence', { ascending: false })
             .limit(1);
           
           if (payments && payments.length > 0) {
             setUnlocked(true);
+            // Determine tier from payment amount
+            const amount = payments[0].amount_pence || 0;
+            if (amount >= 29900) {
+              setTier('expert');
+            } else if (amount >= 14900) {
+              setTier('premium');
+            } else {
+              setTier('standard');
+            }
             return true;
           }
         }
@@ -161,6 +173,14 @@ function DashboardContent() {
       } catch (err) {
         // No payment found or query error — user stays on free tier (not an error)
         return false;
+      }
+    }
+
+    // Set tier from URL param immediately for better UX
+    if (isPaymentReturn && tierParam && !unlocked) {
+      const validTiers = ['standard', 'premium', 'expert'] as const;
+      if (validTiers.includes(tierParam as any)) {
+        setTier(tierParam as 'standard' | 'premium' | 'expert');
       }
     }
 
@@ -545,7 +565,7 @@ function FullDashboard({
   showPaywall: boolean;
   setShowPaywall: (v: boolean) => void;
 }) {
-  const { visaType, urgency, annualIncomeRange, currentlyInUk, relationshipDurationMonths, unlocked } = store;
+  const { visaType, urgency, annualIncomeRange, currentlyInUk, relationshipDurationMonths, unlocked, tier } = store;
 
   const [activeTab, setActiveTab] = useState<TabId>('checklist');
 
@@ -622,9 +642,13 @@ function FullDashboard({
             </Link>
             <div className="flex items-center gap-3">
               {unlocked ? (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full text-xs font-semibold">
+                <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${
+                  tier === 'expert' ? 'bg-violet-50 text-violet-700' :
+                  tier === 'premium' ? 'bg-emerald-50 text-emerald-700' :
+                  'bg-blue-50 text-blue-700'
+                }`}>
                   <CheckCircle className="w-3.5 h-3.5" />
-                  Premium
+                  {tier === 'expert' ? 'Expert' : tier === 'premium' ? 'Premium' : 'Standard'}
                 </span>
               ) : (
                 <button
@@ -885,7 +909,7 @@ function ChecklistTab({
               </div>
               <div className="divide-y divide-gray-50">
                 {items.map((item) => (
-                  <ChecklistItemRow key={item.id} item={item} checked={!!checkedDocs[item.id]} onToggle={() => toggleDoc(item.id)} unlocked={unlocked} />
+                  <ChecklistItemRow key={item.id} item={item} checked={!!checkedDocs[item.id]} onToggle={() => toggleDoc(item.id)} unlocked={unlocked} onUpgrade={onUnlock} />
                 ))}
               </div>
             </motion.div>
@@ -1031,8 +1055,9 @@ function ProgressCard({ checkedCount, total, progressPct, verifiedCount }: { che
   );
 }
 
-function ChecklistItemRow({ item, checked, onToggle, unlocked = false }: { item: ChecklistItem; checked: boolean; onToggle: () => void; unlocked?: boolean }) {
+function ChecklistItemRow({ item, checked, onToggle, unlocked = false, onUpgrade }: { item: ChecklistItem; checked: boolean; onToggle: () => void; unlocked?: boolean; onUpgrade?: () => void }) {
   const [justChecked, setJustChecked] = useState(false);
+  const { visaType } = useApplicationStore();
 
   const handleToggle = useCallback(() => {
     if (!checked) {
@@ -1060,9 +1085,22 @@ function ChecklistItemRow({ item, checked, onToggle, unlocked = false }: { item:
           )}
         </div>
         <div className="flex-1 min-w-0">
-          <p className={`font-medium text-sm ${checked ? 'text-gray-400 line-through' : 'text-gray-900'}`}>
-            {item.title}
-          </p>
+          <div className="flex items-center gap-2 flex-wrap">
+            <p className={`font-medium text-sm ${checked ? 'text-gray-400 line-through' : 'text-gray-900'}`}>
+              {item.title}
+            </p>
+            {item.govLink && (
+              <a
+                href={item.govLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-800 text-[11px] font-medium transition-colors border border-blue-100"
+              >
+                Gov.uk 🔗
+              </a>
+            )}
+          </div>
           <p className={`text-sm mt-0.5 ${checked ? 'text-gray-300' : 'text-gray-500'}`}>
             {item.description}
           </p>
@@ -1081,6 +1119,19 @@ function ChecklistItemRow({ item, checked, onToggle, unlocked = false }: { item:
       </button>
       <div className="ml-9">
         <DocumentUpload docId={item.id} requirement={`${item.title}: ${item.description}`} locked={!unlocked} />
+        {unlocked && (
+          <TierFeatureButtons
+            docId={item.id}
+            docTitle={item.title}
+            requirement={`${item.title}: ${item.description}`}
+            visaType={visaType || 'spouse'}
+            govLink={item.govLink}
+            officialRequirement={item.officialRequirement}
+            commonMistakes={item.commonMistakes}
+            bestPractices={item.bestPractices}
+            onUpgrade={onUpgrade || (() => {})}
+          />
+        )}
       </div>
     </div>
   );

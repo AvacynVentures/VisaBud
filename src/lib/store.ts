@@ -9,7 +9,29 @@ export interface DocumentUploadState {
   status: UploadStatus;
   feedback: string | null;
   fileName: string | null;
+  /** Base64-encoded document data (stored in memory for AI analysis) */
+  base64Data?: string;
+  /** MIME type of uploaded document */
+  mimeType?: string;
 }
+
+// AI Confidence Scoring result
+export interface AIConfidenceResult {
+  confidence: number; // 0-100
+  flags: string[];
+  swot: {
+    strengths: string[];
+    weaknesses: string[];
+    opportunities: string[];
+    threats: string[];
+  };
+  recommendations: string[];
+  loading: boolean;
+  error: string | null;
+}
+
+// Subscription tier tracking
+export type SubscriptionTier = 'free' | 'standard' | 'premium' | 'expert';
 
 // Premium review types
 export type PremiumTier = 'free' | 'ai_review_149' | 'human_review_199';
@@ -66,6 +88,12 @@ interface AppState {
   // Premium review state
   premiumReview: PremiumReviewState;
 
+  // Subscription tier
+  tier: SubscriptionTier;
+
+  // AI Confidence Scoring
+  aiConfidenceResults: Record<string, AIConfidenceResult>;
+
   // Auth state
   userEmail: string | null;
 
@@ -89,7 +117,12 @@ interface AppState {
   setUserEmail: (email: string | null) => void;
   setDocumentUpload: (docId: string, upload: DocumentUploadState) => void;
   getVerifiedCount: () => number;
+  setTier: (tier: SubscriptionTier) => void;
+  setAIConfidenceResult: (docId: string, result: AIConfidenceResult) => void;
   
+  // Tier helper
+  hasFeature: (feature: 'checklist' | 'upload' | 'download' | 'templates' | 'ai_confidence' | 'ai_validation' | 'expert_review' | 'live_call') => boolean;
+
   // Premium review actions
   setPremiumTier: (tier: PremiumTier) => void;
   setPremiumReviewStatus: (status: ReviewStatus) => void;
@@ -115,7 +148,9 @@ const initialState = {
   isSubmitting: false,
   error: null as string | null,
   unlocked: false,
+  tier: 'free' as SubscriptionTier,
   documentUploads: {} as Record<string, DocumentUploadState>,
+  aiConfidenceResults: {} as Record<string, AIConfidenceResult>,
   premiumReview: {
     tier: 'free' as PremiumTier,
     status: 'none' as ReviewStatus,
@@ -168,6 +203,33 @@ export const useApplicationStore = create<AppState>()(
       getVerifiedCount: () => {
         const state = get();
         return Object.values(state.documentUploads).filter((u) => u.status === 'valid').length;
+      },
+      setTier: (tier) => set({ tier, unlocked: tier !== 'free' }),
+      setAIConfidenceResult: (docId, result) =>
+        set((state) => ({
+          aiConfidenceResults: {
+            ...state.aiConfidenceResults,
+            [docId]: result,
+          },
+        })),
+      hasFeature: (feature) => {
+        const state = get();
+        const t = state.tier;
+        switch (feature) {
+          case 'checklist':
+          case 'upload':
+          case 'download':
+            return t !== 'free'; // standard+
+          case 'templates':
+          case 'ai_confidence':
+          case 'ai_validation':
+            return t === 'premium' || t === 'expert'; // premium+
+          case 'expert_review':
+          case 'live_call':
+            return t === 'expert'; // expert only
+          default:
+            return false;
+        }
       },
 
       // Premium review actions
@@ -223,7 +285,15 @@ export const useApplicationStore = create<AppState>()(
         targetApplicationDate: state.targetApplicationDate,
         currentStep: state.currentStep,
         unlocked: state.unlocked,
-        documentUploads: state.documentUploads,
+        tier: state.tier,
+        // Strip base64Data from persistence (too large for localStorage)
+        documentUploads: Object.fromEntries(
+          Object.entries(state.documentUploads).map(([k, v]) => [
+            k,
+            { status: v.status, feedback: v.feedback, fileName: v.fileName, mimeType: v.mimeType },
+          ])
+        ),
+        aiConfidenceResults: state.aiConfidenceResults,
         premiumReview: state.premiumReview,
         userEmail: state.userEmail,
       }),

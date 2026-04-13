@@ -38,6 +38,14 @@ export interface ChecklistItem {
   formatRequired: string;
   tips: string;
   displayOrder: number;
+  /** Official government link for this document requirement */
+  govLink?: string;
+  /** Official requirement text from gov.uk */
+  officialRequirement?: string;
+  /** Common mistakes to avoid */
+  commonMistakes?: string[];
+  /** Best practice tips from immigration advisors */
+  bestPractices?: string[];
 }
 
 export interface TimelineWeek {
@@ -180,6 +188,10 @@ export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
       formatRequired: 'Original + colour copy of every page (including blank pages)',
       tips: 'If your passport expires within 6 months of your intended travel date, renew it before applying. Old passports help show travel history.',
       displayOrder: 1,
+      govLink: 'https://www.gov.uk/uk-family-visa/partner-spouse',
+      officialRequirement: 'You must provide your current valid passport or other valid travel document. You must also provide any previous passports you hold.',
+      commonMistakes: ['Not including blank pages', 'Passport expiring within 6 months', 'Missing previous passports'],
+      bestPractices: ['Scan every page including blank ones', 'Use colour scans at 300 DPI minimum', 'Include all old passports even if expired'],
     },
     {
       id: 'sp-biometrics',
@@ -192,6 +204,10 @@ export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
       formatRequired: 'Digital confirmation or appointment receipt',
       tips: 'Book your biometrics appointment as soon as you submit online. Slots fill up fast — especially in peak months (Jan–Mar).',
       displayOrder: 2,
+      govLink: 'https://www.gov.uk/biometric-residence-permits',
+      officialRequirement: 'You must provide your biometric information (fingerprints and a photograph) as part of your application.',
+      commonMistakes: ['Waiting too long to book appointment', 'Going to wrong VAC location', 'Not bringing required documents to appointment'],
+      bestPractices: ['Book within 24 hours of online submission', 'Check VAC requirements for your country', 'Bring passport and application confirmation'],
     },
     {
       id: 'sp-photos',
@@ -204,6 +220,9 @@ export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
       formatRequired: '2 physical photos + digital copy',
       tips: 'Use a professional photo service or the Post Office. Do NOT use selfies or cropped photos.',
       displayOrder: 3,
+      govLink: 'https://www.gov.uk/photos-for-passports',
+      commonMistakes: ['Using selfies or webcam photos', 'Wrong background colour', 'Photos older than 6 months'],
+      bestPractices: ['Use a professional photo service or Post Office', 'White background, neutral expression', 'Check UKVI photo requirements specifically'],
     },
     {
       id: 'sp-tb-test',
@@ -216,6 +235,10 @@ export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
       formatRequired: 'Original certificate from approved clinic',
       tips: 'Check gov.uk for the list of countries requiring TB tests. The certificate is valid for 6 months from the test date.',
       displayOrder: 4,
+      govLink: 'https://www.gov.uk/tb-test-visa',
+      officialRequirement: 'If you are applying from a country where TB screening is required, you must provide a valid TB test certificate from an approved clinic.',
+      commonMistakes: ['Certificate expired (valid only 6 months)', 'Using non-approved clinic', 'Not checking if your country requires it'],
+      bestPractices: ['Schedule early — some clinics have long waits', 'Check approved clinic list on gov.uk', 'Keep original certificate safe'],
     },
     {
       id: 'sp-english-lang',
@@ -228,6 +251,10 @@ export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
       formatRequired: 'Original certificate from approved SELT provider',
       tips: 'Citizens of majority English-speaking countries (USA, Australia, etc.) are exempt. Degrees taught in English may also qualify — check with your university.',
       displayOrder: 5,
+      govLink: 'https://www.gov.uk/prove-you-know-english',
+      officialRequirement: 'You must prove your knowledge of the English language when you apply. For spouse visa initial application, you need A1 level (speaking and listening).',
+      commonMistakes: ['Taking wrong test (must be on approved SELT list)', 'Test certificate expired', 'Not checking nationality exemptions'],
+      bestPractices: ['Check if exempt by nationality first', 'Book IELTS Life Skills A1 specifically', 'Certificate must be within 2 years of test date'],
     },
     {
       id: 'sp-marriage-cert',
@@ -240,6 +267,10 @@ export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
       formatRequired: 'Original + certified English translation if applicable',
       tips: 'Unmarried partners: provide evidence of 2+ years of cohabitation instead (utility bills, joint tenancy, etc.).',
       displayOrder: 6,
+      govLink: 'https://www.gov.uk/uk-family-visa/partner-spouse',
+      officialRequirement: 'You must provide evidence of your marriage or civil partnership, or evidence of living together for at least 2 years if unmarried partners.',
+      commonMistakes: ['No certified translation for non-English documents', 'Using photocopy instead of original', 'Missing apostille for overseas certificates'],
+      bestPractices: ['Use a certified translator (not family member)', 'Keep original and translation together', 'Get apostille if married overseas'],
     },
     {
       id: 'sp-previous-visas',
@@ -252,6 +283,9 @@ export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
       formatRequired: 'Colour copies of all relevant documents',
       tips: 'Include refusals and curtailments from ANY country, not just the UK. Honesty is critical — omissions are treated as deception.',
       displayOrder: 7,
+      govLink: 'https://www.gov.uk/uk-family-visa/partner-spouse',
+      commonMistakes: ['Omitting refusals from other countries', 'Not including curtailment notices', 'Missing old BRP copies'],
+      bestPractices: ['Disclose ALL previous visas and refusals from every country', 'Include both sides of BRPs', 'Chronological order helps caseworkers'],
     },
 
     // --- Financial Documents ---
@@ -266,6 +300,10 @@ export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
       formatRequired: 'Original payslips or employer-issued copies (not screenshots)',
       tips: 'If your partner started a new job recently, you need 6 months in that role OR a combination of Cat A (6 months same employer) and Cat B (variable income) evidence.',
       displayOrder: 10,
+      govLink: 'https://www.gov.uk/uk-family-visa/proof-income',
+      officialRequirement: 'You must show a gross annual income of at least £29,000 from employment. Provide payslips for the last 6 months from the same employer.',
+      commonMistakes: ['Screenshots instead of official payslips', 'Payslips not covering full 6-month period', 'Salary not matching bank statement credits'],
+      bestPractices: ['Cross-reference each payslip with bank statement', 'Get employer-stamped copies if originals lost', 'Ensure gross (not net) salary meets threshold'],
     },
     {
       id: 'sp-sponsor-employer-letter',
@@ -278,6 +316,10 @@ export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
       formatRequired: 'Original letter on company letterhead, signed and dated',
       tips: 'The letter MUST include: employee name, job title, gross annual salary, employment start date, and contract type. Missing any of these = refusal risk.',
       displayOrder: 11,
+      govLink: 'https://www.gov.uk/uk-family-visa/proof-income',
+      officialRequirement: 'The employer letter must confirm: the person\'s employment, their gross annual salary, their period of employment, and the type of employment (permanent, fixed-term etc.).',
+      commonMistakes: ['Letter dated more than 28 days before application', 'Missing one of the required fields', 'Not on official company letterhead'],
+      bestPractices: ['Give HR a template listing all required fields', 'Request letter no more than 2 weeks before submission', 'Ensure signature matches a named individual'],
     },
     {
       id: 'sp-sponsor-bank-statements',
@@ -290,6 +332,10 @@ export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
       formatRequired: 'Official bank statements (stamped or digitally verified by the bank)',
       tips: 'Online printouts are NOT accepted unless stamped by the bank. Request official statements from your branch or use the bank\'s certified PDF service.',
       displayOrder: 12,
+      govLink: 'https://www.gov.uk/uk-family-visa/proof-income',
+      officialRequirement: 'Bank statements must cover the same period as the payslips, show the account holder name, sort code, account number, and corresponding salary deposits.',
+      commonMistakes: ['Using online printouts without bank stamp', 'Bank statements not matching payslip period', 'Salary credits not matching payslip amounts'],
+      bestPractices: ['Request official stamped statements from your bank branch', 'Highlight salary credits on each statement', 'Ensure full 6-month period is covered with no gaps'],
     },
     {
       id: 'sp-savings-evidence',
@@ -302,6 +348,9 @@ export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
       formatRequired: 'Official bank statements covering the full 28-day period',
       tips: 'The formula is: (£29,000 − actual income) × 2.5 = required savings. Funds must be accessible (not locked in pensions, property, or investments).',
       displayOrder: 13,
+      govLink: 'https://www.gov.uk/uk-family-visa/proof-income',
+      commonMistakes: ['Dipping below threshold during 28-day period', 'Using locked funds (pensions, ISAs)', 'Not covering full 28 consecutive days'],
+      bestPractices: ['Keep funds untouched for at least 35 days (buffer)', 'Use accessible savings accounts only', 'Get official bank letter confirming balance if possible'],
     },
     {
       id: 'sp-self-employed-accounts',
@@ -314,6 +363,9 @@ export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
       formatRequired: 'HMRC SA302 + tax year overviews + accountant letter on headed paper',
       tips: 'Self-employed applications are more complex and have higher refusal rates. Consider getting an immigration solicitor to review before submitting.',
       displayOrder: 14,
+      govLink: 'https://www.gov.uk/uk-family-visa/proof-income',
+      commonMistakes: ['Missing SA302 or tax year overview', 'Accountant letter not on headed paper', 'Business bank statements not covering full period'],
+      bestPractices: ['Get accountant letter dated within 28 days of application', 'Include both SA302 AND tax year overview for each year', 'Consider professional immigration review for self-employment cases'],
     },
 
     // --- Supporting / Relationship Evidence ---
@@ -328,6 +380,7 @@ export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
       formatRequired: 'Printed photos with written dates/descriptions, or a digital album with captions',
       tips: 'Quality over quantity. 15–20 photos spanning your entire relationship. Show: holidays, family events, daily life. Metadata-intact digital photos are strongest.',
       displayOrder: 20,
+      govLink: 'https://www.gov.uk/uk-family-visa/partner-spouse',
     },
     {
       id: 'sp-communication-evidence',
@@ -340,6 +393,7 @@ export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
       formatRequired: 'Printed screenshots with dates visible, organised chronologically',
       tips: 'Show consistent communication across the relationship timeline. Gaps of 2+ weeks without contact may raise questions. Include a mix of message types.',
       displayOrder: 21,
+      govLink: 'https://www.gov.uk/uk-family-visa/partner-spouse',
     },
     {
       id: 'sp-cohabitation-proof',
@@ -352,6 +406,7 @@ export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
       formatRequired: 'Original documents or certified copies showing shared address',
       tips: 'The more overlap in names + address, the better. Even if you don\'t have joint bills, both having separate bills at the same address helps.',
       displayOrder: 22,
+      govLink: 'https://www.gov.uk/uk-family-visa/partner-spouse',
     },
     {
       id: 'sp-accommodation-evidence',
@@ -364,6 +419,7 @@ export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
       formatRequired: 'Tenancy agreement or property ownership documents + council tax bill',
       tips: 'If living with family, get a letter from the homeowner confirming you can stay and the number of rooms/occupants. Include a property inspection report if possible.',
       displayOrder: 23,
+      govLink: 'https://www.gov.uk/uk-family-visa/partner-spouse',
     },
     {
       id: 'sp-sponsor-id',
@@ -376,6 +432,7 @@ export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
       formatRequired: 'Colour copy of passport bio page + BRP (both sides) if applicable',
       tips: 'If your sponsor naturalised, include their naturalisation certificate. If they have status under the EU Settlement Scheme, include their share code.',
       displayOrder: 24,
+      govLink: 'https://www.gov.uk/uk-family-visa/partner-spouse',
     },
     {
       id: 'sp-cover-letter',
@@ -419,6 +476,10 @@ export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
       formatRequired: 'Original + colour copy of bio page and all stamped pages',
       tips: 'Ensure your name on the passport matches exactly what your employer used on the Certificate of Sponsorship. Even minor differences cause delays.',
       displayOrder: 1,
+      govLink: 'https://www.gov.uk/skilled-worker-visa/documents-youll-need-to-apply',
+      officialRequirement: 'You must provide a current passport or other valid travel document.',
+      commonMistakes: ['Name mismatch between passport and CoS', 'Not including stamped pages', 'Passport expiring within 6 months'],
+      bestPractices: ['Check name matches CoS exactly', 'Scan bio page and all stamped pages in colour', 'Renew if expiring within 6 months'],
     },
     {
       id: 'sw-biometrics',
@@ -431,6 +492,7 @@ export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
       formatRequired: 'Digital confirmation or appointment receipt',
       tips: 'If applying from inside the UK, the ID Check app is faster. Outside UK, book the VAC appointment immediately after online submission.',
       displayOrder: 2,
+      govLink: 'https://www.gov.uk/biometric-residence-permits',
     },
     {
       id: 'sw-photos',
@@ -442,6 +504,7 @@ export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
       formatRequired: '2 physical photos + digital copy',
       tips: 'Check the specific VAC requirements for your country — some have additional photo specifications.',
       displayOrder: 3,
+      govLink: 'https://www.gov.uk/photos-for-passports',
     },
     {
       id: 'sw-tb-test',
@@ -454,6 +517,7 @@ export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
       formatRequired: 'Original certificate',
       tips: 'Valid for 6 months. Schedule this early — some clinics have long wait times.',
       displayOrder: 4,
+      govLink: 'https://www.gov.uk/tb-test-visa',
     },
     {
       id: 'sw-english-lang',
@@ -466,6 +530,7 @@ export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
       formatRequired: 'Original SELT certificate or degree certificate + ECCTIS/ENIC confirmation',
       tips: 'A UK degree automatically satisfies this. Non-UK degrees need confirmation from ECCTIS (formerly NARIC) that the degree was taught in English.',
       displayOrder: 5,
+      govLink: 'https://www.gov.uk/prove-you-know-english',
     },
     {
       id: 'sw-criminal-record',
@@ -478,6 +543,7 @@ export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
       formatRequired: 'Original + certified English translation',
       tips: 'Processing times vary wildly by country (2 weeks to 3 months). Start this early. Your employer\'s HR team should confirm whether this applies to your role.',
       displayOrder: 6,
+      govLink: 'https://www.gov.uk/skilled-worker-visa/documents-youll-need-to-apply',
     },
     {
       id: 'sw-previous-visas',
@@ -490,6 +556,7 @@ export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
       formatRequired: 'Colour copies',
       tips: 'Disclose everything. Undisclosed refusals — even from other countries — count as deception and can lead to a 10-year ban.',
       displayOrder: 7,
+      govLink: 'https://www.gov.uk/skilled-worker-visa/documents-youll-need-to-apply',
     },
 
     // --- Financial / Employment Documents ---
@@ -504,6 +571,10 @@ export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
       formatRequired: 'CoS reference number (provided by employer)',
       tips: 'Your CoS is valid for 3 months from date of assignment. Apply BEFORE it expires. Confirm your employer has included the correct SOC code and salary.',
       displayOrder: 10,
+      govLink: 'https://www.gov.uk/skilled-worker-visa/your-job',
+      officialRequirement: 'You must have a valid Certificate of Sponsorship (CoS) reference number from a licensed UK employer. The CoS must include the correct SOC code and salary for your role.',
+      commonMistakes: ['CoS expired before application submitted', 'Wrong SOC code', 'Salary on CoS doesn\'t match contract'],
+      bestPractices: ['Apply within 2 weeks of CoS assignment', 'Verify SOC code matches your actual role', 'Ensure salary on CoS exactly matches your contract'],
     },
     {
       id: 'sw-employment-contract',
@@ -516,6 +587,7 @@ export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
       formatRequired: 'Signed contract or offer letter on company letterhead',
       tips: 'The salary on the contract MUST exactly match the CoS. Any discrepancy = refusal. If there\'s a signing bonus or allowances, these usually cannot count toward the threshold.',
       displayOrder: 11,
+      govLink: 'https://www.gov.uk/skilled-worker-visa/your-job',
     },
     {
       id: 'sw-maintenance-funds',
@@ -528,6 +600,7 @@ export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
       formatRequired: 'Official bank statements (28-day period)',
       tips: 'Most employers will certify maintenance — check with your HR. If they don\'t, ensure the £1,270 is in YOUR name (not a family member\'s) and don\'t dip below the threshold.',
       displayOrder: 12,
+      govLink: 'https://www.gov.uk/skilled-worker-visa/money-you-need',
     },
     {
       id: 'sw-sponsor-licence-check',
@@ -540,6 +613,7 @@ export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
       formatRequired: 'Screenshot or printout from the public register',
       tips: 'Search at: gov.uk/government/publications/register-of-licensed-sponsors-workers. If your employer is NOT on the list, they cannot sponsor you. Period.',
       displayOrder: 13,
+      govLink: 'https://www.gov.uk/government/publications/register-of-licensed-sponsors-workers',
     },
     {
       id: 'sw-qualifications',
@@ -552,6 +626,7 @@ export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
       formatRequired: 'Original certificates + ECCTIS/ENIC confirmation for non-UK qualifications',
       tips: 'Not always required but strengthens your application, especially if salary is near the threshold. ECCTIS takes 10–15 working days to process.',
       displayOrder: 14,
+      govLink: 'https://www.gov.uk/skilled-worker-visa/documents-youll-need-to-apply',
     },
 
     // --- Supporting Documents ---
@@ -609,6 +684,10 @@ export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
       formatRequired: 'Original current passport + all previous passports',
       tips: 'Lost old passports? Request entry/exit records from the Home Office using a Subject Access Request (SAR). This takes 1–3 months.',
       displayOrder: 1,
+      govLink: 'https://www.gov.uk/apply-citizenship-indefinite-leave-to-remain',
+      officialRequirement: 'You must send your current passport and any previous passports you hold. These are used to verify your travel history and time spent in the UK.',
+      commonMistakes: ['Missing previous passports', 'Not requesting SAR for lost passports early enough', 'Travel history gaps'],
+      bestPractices: ['Submit SAR 3 months before if passports are lost', 'Create a travel history spreadsheet from passport stamps', 'Include ALL passports even if expired'],
     },
     {
       id: 'ct-brp',
@@ -621,6 +700,7 @@ export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
       formatRequired: 'Original BRP (both sides) or settled status share code',
       tips: 'If your BRP has expired but your ILR hasn\'t, you can still apply. Include a cover letter explaining the BRP expiry.',
       displayOrder: 2,
+      govLink: 'https://www.gov.uk/biometric-residence-permits',
     },
     {
       id: 'ct-life-in-uk',
@@ -633,6 +713,10 @@ export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
       formatRequired: 'Original pass notification letter',
       tips: 'Book at: lifeintheuktest.gov.uk. Cost is £50. Study the official handbook — most questions come directly from it. Pass mark is 75% (18/24).',
       displayOrder: 3,
+      govLink: 'https://www.gov.uk/life-in-the-uk-test',
+      officialRequirement: 'You must have passed the Life in the UK test. The pass letter does not expire.',
+      commonMistakes: ['Forgetting to bring pass letter', 'Not studying the official handbook', 'Booking test too close to application date'],
+      bestPractices: ['Book test at lifeintheuktest.gov.uk', 'Study official handbook (£12.99)', 'Keep original pass notification letter safe'],
     },
     {
       id: 'ct-english-lang',
@@ -645,6 +729,7 @@ export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
       formatRequired: 'Original certificate or degree + ECCTIS confirmation',
       tips: 'The Life in the UK test can count as English language evidence if you passed it. A UK degree at any level also satisfies this.',
       displayOrder: 4,
+      govLink: 'https://www.gov.uk/prove-you-know-english',
     },
     {
       id: 'ct-birth-certificate',
@@ -657,6 +742,7 @@ export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
       formatRequired: 'Original + certified English translation if applicable',
       tips: 'If you cannot obtain a birth certificate, provide a statutory declaration explaining why and any alternative evidence of identity.',
       displayOrder: 5,
+      govLink: 'https://www.gov.uk/apply-citizenship-indefinite-leave-to-remain',
     },
     {
       id: 'ct-previous-visas',
@@ -669,6 +755,7 @@ export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
       formatRequired: 'Colour copies of all documents, chronologically ordered',
       tips: 'The Home Office will cross-reference everything. Missing information delays processing significantly (sometimes months).',
       displayOrder: 6,
+      govLink: 'https://www.gov.uk/apply-citizenship-indefinite-leave-to-remain',
     },
 
     // --- Residency & Character ---
@@ -683,6 +770,10 @@ export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
       formatRequired: 'Spreadsheet or typed document listing all absences with exact dates',
       tips: 'Max 450 days outside UK in 5 years AND max 90 days in the final 12 months. Count carefully — even 1 day over = automatic refusal. Use passport stamps + flight bookings to verify.',
       displayOrder: 10,
+      govLink: 'https://www.gov.uk/apply-citizenship-indefinite-leave-to-remain',
+      officialRequirement: 'You must not have spent more than 450 days outside the UK during the 5-year period, and not more than 90 days outside the UK in the last 12 months.',
+      commonMistakes: ['Miscounting days (even 1 day over = refusal)', 'Not including day trips', 'Missing trips from older passports'],
+      bestPractices: ['Create detailed spreadsheet with entry/exit dates', 'Cross-reference with passport stamps AND flight bookings', 'Add 1-week buffer to your qualifying date'],
     },
     {
       id: 'ct-address-history',
@@ -695,6 +786,7 @@ export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
       formatRequired: 'Document for each address showing your name and dates',
       tips: 'Gaps in address history raise questions. If you lived with someone without bills in your name, get a letter from the householder confirming your stay.',
       displayOrder: 11,
+      govLink: 'https://www.gov.uk/apply-citizenship-indefinite-leave-to-remain',
     },
     {
       id: 'ct-tax-records',
@@ -707,6 +799,7 @@ export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
       formatRequired: 'HMRC tax summaries or P60s for each qualifying year',
       tips: 'Access your tax records via your Personal Tax Account on gov.uk. If you have any tax debts or missed filings, resolve them BEFORE applying.',
       displayOrder: 12,
+      govLink: 'https://www.gov.uk/apply-citizenship-indefinite-leave-to-remain',
     },
     {
       id: 'ct-criminal-record',
@@ -719,6 +812,7 @@ export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
       formatRequired: 'Completed form section + supporting certificates if applicable',
       tips: 'Unlike visa applications, spent convictions ARE relevant for citizenship. Driving offences (even penalty points) must be declared. Non-disclosure = refusal + potential ban.',
       displayOrder: 13,
+      govLink: 'https://www.gov.uk/apply-citizenship-indefinite-leave-to-remain',
     },
 
     // --- Supporting Documents ---
@@ -733,6 +827,7 @@ export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
       formatRequired: 'Referees complete sections of the application form directly',
       tips: 'Choose referees carefully. They may be contacted by the Home Office. Ensure they know your application timeline and can respond promptly.',
       displayOrder: 20,
+      govLink: 'https://www.gov.uk/apply-citizenship-indefinite-leave-to-remain',
     },
     {
       id: 'ct-marriage-cert',

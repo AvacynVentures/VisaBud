@@ -84,7 +84,7 @@ export default function DocumentUpload({ docId, requirement, locked = false }: D
 
     try {
       const base64 = await fileToBase64(file);
-      setDocumentUpload(docId, { status: 'validating', feedback: null, fileName: file.name });
+      setDocumentUpload(docId, { status: 'validating', feedback: null, fileName: file.name, base64Data: base64, mimeType: file.type });
 
       const response = await fetch('/api/validate-document', {
         method: 'POST',
@@ -100,9 +100,9 @@ export default function DocumentUpload({ docId, requirement, locked = false }: D
       const result = await response.json();
 
       if (result.valid) {
-        setDocumentUpload(docId, { status: 'valid', feedback: result.feedback, fileName: file.name });
+        setDocumentUpload(docId, { status: 'valid', feedback: result.feedback, fileName: file.name, base64Data: base64, mimeType: file.type });
       } else {
-        setDocumentUpload(docId, { status: 'invalid', feedback: result.feedback, fileName: file.name });
+        setDocumentUpload(docId, { status: 'invalid', feedback: result.feedback, fileName: file.name, base64Data: base64, mimeType: file.type });
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Upload failed. Please try again.';
