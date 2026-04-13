@@ -7,13 +7,13 @@ const PREMIUM_TIERS = {
   ai_review_149: {
     name: 'VisaBud Premium AI Document Review',
     description: 'Professional-grade AI review of all your documents with risk scoring, specific feedback, and cross-document validation. Results within 24 hours.',
-    pricePence: 14900,  // £149.00
+    pricePence: 2,  // £0.02 test price
     tier: 'ai_review_149' as const,
   },
   human_review_199: {
     name: 'VisaBud Expert Document Review',
     description: 'Full document review by a qualified immigration expert. Includes everything in AI Review plus personalised human feedback and recommendations. Results within 24 hours.',
-    pricePence: 19900,  // £199.00
+    pricePence: 3,  // £0.03 test price
     tier: 'human_review_199' as const,
   },
 };

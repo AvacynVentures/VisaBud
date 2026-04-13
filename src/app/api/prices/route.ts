@@ -1,42 +1,39 @@
 import { NextResponse } from 'next/server';
-import Stripe from 'stripe';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2024-04-10',
-});
+/**
+ * GET /api/prices
+ * Returns current pricing for all tiers.
+ * Single source of truth — checkout and frontend both consume this.
+ */
+
+const PRICES = {
+  standard: {
+    name: 'VisaBud Full Pack',
+    description: 'Personalised document checklist, timeline, risk assessment & PDF export',
+    priceGBP: 0.01,
+    pricePence: 1,
+    tier: 'standard',
+  },
+  premium: {
+    name: 'VisaBud Premium Pack',
+    description: 'Everything in Standard + AI document verification, templates & email support',
+    priceGBP: 0.02,
+    pricePence: 2,
+    tier: 'premium',
+  },
+  expert: {
+    name: 'VisaBud Expert Pack',
+    description: 'Everything in Premium + expert immigration review (24h turnaround) & priority support',
+    priceGBP: 0.03,
+    pricePence: 3,
+    tier: 'expert',
+  },
+};
 
 export async function GET() {
-  try {
-    // Fetch all prices from Stripe
-    const prices = await stripe.prices.list({
-      limit: 100,
-      expand: ['data.product'],
-    });
-
-    // Map prices to tiers (based on product metadata)
-    const tierPrices = prices.data.reduce((acc, price) => {
-      const product = price.product as Stripe.Product;
-      const tier = product.metadata?.tier;
-
-      if (tier && price.unit_amount !== null) {
-        acc[tier] = {
-          priceId: price.id,
-          amount: price.unit_amount,
-          currency: price.currency,
-          displayAmount: (price.unit_amount / 100).toFixed(2),
-          tier: tier,
-        };
-      }
-
-      return acc;
-    }, {} as Record<string, any>);
-
-    return NextResponse.json(tierPrices);
-  } catch (error) {
-    console.error('Error fetching prices:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch prices' },
-      { status: 500 }
-    );
-  }
+  return NextResponse.json(PRICES, {
+    headers: {
+      'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
+    },
+  });
 }

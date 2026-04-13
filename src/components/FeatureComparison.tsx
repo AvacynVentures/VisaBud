@@ -4,15 +4,17 @@ import { CheckCircle, X } from 'lucide-react';
 
 const FEATURES = [
   { name: 'Personalised document checklist', standard: true, premium: true, expert: true },
+  { name: 'Document uploads & downloads', standard: true, premium: true, expert: true },
   { name: 'Submission timeline', standard: true, premium: true, expert: true },
   { name: 'Risk assessment & alerts', standard: true, premium: true, expert: true },
   { name: 'PDF export', standard: true, premium: true, expert: true },
-  { name: 'AI document verification', standard: false, premium: true, expert: true },
+  { name: 'AI confidence scoring', standard: false, premium: true, expert: true },
+  { name: 'AI validation & tips', standard: false, premium: true, expert: true },
   { name: 'Preparation templates (37+)', standard: false, premium: true, expert: true },
-  { name: 'Email support (24h response)', standard: false, premium: true, expert: true },
-  { name: 'Expert immigration review', standard: false, premium: false, expert: true },
+  { name: 'Priority email support', standard: false, premium: true, expert: true },
+  { name: 'Expert human review (24h)', standard: false, premium: false, expert: true },
+  { name: 'Live consulting call', standard: false, premium: false, expert: true },
   { name: 'Priority support & follow-up', standard: false, premium: false, expert: true },
-  { name: '24-hour turnaround', standard: false, premium: false, expert: true },
 ];
 
 function Cell({ included }: { included: boolean }) {

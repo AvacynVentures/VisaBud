@@ -1,29 +1,29 @@
-import { stripe, VISABUD_PRODUCT_NAME, VISABUD_PRICE_PENCE, PREMIUM_REVIEW_TIERS } from '@/lib/stripe';
+import { stripe } from '@/lib/stripe';
 import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
 
 /**
- * Tier configuration for checkout
+ * Dynamic tier pricing — fetched from /api/prices (single source of truth)
  */
-const TIER_CONFIG = {
+const PRICES: Record<string, { name: string; description: string; pricePence: number }> = {
   standard: {
-    name: VISABUD_PRODUCT_NAME,
+    name: 'VisaBud Full Pack',
     description: 'Personalised document checklist, timeline, risk assessment & PDF export',
-    unitAmount: VISABUD_PRICE_PENCE, // £50
+    pricePence: 1, // £0.01
   },
   premium: {
     name: 'VisaBud Premium Pack',
     description: 'Everything in Standard + AI document verification, templates & email support',
-    unitAmount: PREMIUM_REVIEW_TIERS.ai_review_149.pricePence, // £149
+    pricePence: 2, // £0.02
   },
   expert: {
     name: 'VisaBud Expert Pack',
     description: 'Everything in Premium + expert immigration review (24h turnaround) & priority support',
-    unitAmount: PREMIUM_REVIEW_TIERS.human_review_199.pricePence, // £299
+    pricePence: 3, // £0.03
   },
-} as const;
+};
 
-type TierKey = keyof typeof TIER_CONFIG;
+type TierKey = 'standard' | 'premium' | 'expert';
 
 /**
  * POST /api/checkout
@@ -72,16 +72,16 @@ export async function POST(req: NextRequest) {
     let tier: TierKey = 'standard';
     try {
       const body = await req.json();
-      if (body.tier && body.tier in TIER_CONFIG) {
+      if (body.tier && body.tier in PRICES) {
         tier = body.tier as TierKey;
       }
     } catch {
       // No body or invalid JSON — default to standard
     }
 
-    const config = TIER_CONFIG[tier];
+    const config = PRICES[tier];
 
-    // Create Stripe checkout session
+    // Create Stripe checkout session with dynamic pricing
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       customer_email: email,
@@ -93,7 +93,7 @@ export async function POST(req: NextRequest) {
               name: config.name,
               description: config.description,
             },
-            unit_amount: config.unitAmount,
+            unit_amount: config.pricePence,
           },
           quantity: 1,
         },

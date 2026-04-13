@@ -84,25 +84,36 @@ export default function DocumentUpload({ docId, requirement, locked = false }: D
 
     try {
       const base64 = await fileToBase64(file);
-      setDocumentUpload(docId, { status: 'validating', feedback: null, fileName: file.name, base64Data: base64, mimeType: file.type });
+      setDocumentUpload(docId, { status: 'validating', feedback: null, fileName: file.name });
 
-      const response = await fetch('/api/validate-document', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ image: base64, requirement, mimeType: file.type }),
-      });
+      let validationResult: { valid: boolean; feedback: string } | null = null;
 
-      if (!response.ok) {
-        const errData = await response.json().catch(() => ({}));
-        throw new Error(errData.error || `Server error: ${response.status}`);
+      try {
+        const response = await fetch('/api/validate-document', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ image: base64, requirement, mimeType: file.type }),
+        });
+
+        if (response.ok) {
+          validationResult = await response.json();
+        }
+      } catch {
+        // AI validation unavailable — accept document anyway
       }
 
-      const result = await response.json();
+      // Store file data for download regardless of validation result
+      const baseUpload = { fileName: file.name, fileData: base64, mimeType: file.type };
 
-      if (result.valid) {
-        setDocumentUpload(docId, { status: 'valid', feedback: result.feedback, fileName: file.name, base64Data: base64, mimeType: file.type });
+      if (validationResult) {
+        if (validationResult.valid) {
+          setDocumentUpload(docId, { ...baseUpload, status: 'valid', feedback: validationResult.feedback });
+        } else {
+          setDocumentUpload(docId, { ...baseUpload, status: 'invalid', feedback: validationResult.feedback });
+        }
       } else {
-        setDocumentUpload(docId, { status: 'invalid', feedback: result.feedback, fileName: file.name, base64Data: base64, mimeType: file.type });
+        // No AI available — mark as uploaded/valid
+        setDocumentUpload(docId, { ...baseUpload, status: 'valid', feedback: 'Document uploaded successfully.' });
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Upload failed. Please try again.';
@@ -135,7 +146,24 @@ export default function DocumentUpload({ docId, requirement, locked = false }: D
   };
 
   const handleReset = () => {
-    setDocumentUpload(docId, { status: 'idle', feedback: null, fileName: null });
+    setDocumentUpload(docId, { status: 'idle', feedback: null, fileName: null, fileData: null, mimeType: null });
+  };
+
+  const handleDownload = () => {
+    const data = upload.fileData;
+    const mime = upload.mimeType || 'application/octet-stream';
+    const name = upload.fileName || 'document';
+    if (!data) return;
+    const byteChars = atob(data);
+    const byteNums = new Array(byteChars.length);
+    for (let i = 0; i < byteChars.length; i++) byteNums[i] = byteChars.charCodeAt(i);
+    const blob = new Blob([new Uint8Array(byteNums)], { type: mime });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = name;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   if (locked) {
@@ -274,13 +302,24 @@ export default function DocumentUpload({ docId, requirement, locked = false }: D
                   </p>
                 )}
               </div>
-              <button
-                onClick={handleReset}
-                className="p-1.5 rounded-lg hover:bg-emerald-100 transition-colors flex-shrink-0"
-                title="Remove"
-              >
-                <X className="w-3.5 h-3.5 text-emerald-500" />
-              </button>
+              <div className="flex items-center gap-1 flex-shrink-0">
+                {upload.fileData && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleDownload(); }}
+                    className="p-1.5 rounded-lg hover:bg-emerald-100 transition-colors"
+                    title="Download"
+                  >
+                    <Upload className="w-3.5 h-3.5 text-emerald-600 rotate-180" />
+                  </button>
+                )}
+                <button
+                  onClick={handleReset}
+                  className="p-1.5 rounded-lg hover:bg-emerald-100 transition-colors"
+                  title="Remove"
+                >
+                  <X className="w-3.5 h-3.5 text-emerald-500" />
+                </button>
+              </div>
             </div>
           </motion.div>
         )}

@@ -277,7 +277,7 @@ async function handlePremiumReviewPurchase(
  */
 async function handleFullPackPurchase(session: any, userId: string, _email: string) {
   const tier = session.metadata?.tier || 'standard';
-  const amountPence = session.amount_total || 5000;
+  const amountPence = session.amount_total || 1;
 
   // Record payment in payments table (source of truth for unlock status)
   const { error: paymentError } = await supabaseServer
