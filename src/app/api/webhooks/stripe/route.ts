@@ -220,8 +220,8 @@ async function handlePremiumReviewPurchase(
     .insert({
       user_id: userId,
       stripe_session_id: session.id,
-      amount: (session.amount_total || 0) / 100,
-      status: 'completed',
+      amount_pence: session.amount_total || 0,
+      payment_status: 'completed',
       product_type: 'premium_review',
       created_at: new Date().toISOString(),
     });
@@ -231,20 +231,15 @@ async function handlePremiumReviewPurchase(
     return;
   }
 
-  // Update user premium tier
-  const { error: updateError } = await supabaseServer
+  // Update user record (best effort — premium_tier column may not exist yet)
+  await supabaseServer
     .from('users')
     .update({
-      premium_tier: tier,
-      premium_purchased_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     })
-    .eq('id', userId);
-
-  if (updateError) {
-    console.error('Failed to update user premium tier:', updateError);
-    return;
-  }
+    .eq('id', userId)
+    .then(() => {})
+    .catch((err: Error) => console.error('Failed to update user:', err));
 
   // Create review session record
   const { error: sessionError } = await supabaseServer

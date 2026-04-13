@@ -106,15 +106,16 @@ export async function recordPayment(userId: string, stripeSessionId: string, amo
 /**
  * Update user unlock status
  */
-export async function updateUserUnlockStatus(userId: string, unlocked: boolean) {
+export async function updateUserUnlockStatus(userId: string, _unlocked: boolean) {
   try {
+    // Note: 'unlocked' column may not exist yet (pending migration 005)
+    // Unlock status is derived from payments table in the dashboard
     const { data, error } = await supabase
       .from('users')
       .update({
-        unlocked,
         updated_at: new Date().toISOString(),
       })
-      .eq('id', userId);
+      .eq('auth_id', userId);
 
     if (error) {
       console.error('Error updating user status:', error);

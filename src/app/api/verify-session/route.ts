@@ -40,21 +40,19 @@ export async function GET(req: NextRequest) {
     const userId = session.metadata?.userId;
     const email = session.customer_email;
 
-    // Belt-and-suspenders: ensure user is unlocked
+    // Belt-and-suspenders: ensure user record is updated
     // (webhook should have done this, but verify in case of race condition)
     if (userId) {
-      const { error: updateError } = await supabaseServer
+      await supabaseServer
         .from('users')
         .update({
-          unlocked: true,
           updated_at: new Date().toISOString(),
         })
-        .eq('id', userId);
-
-      if (updateError) {
-        console.error('Failed to update unlock status in verify-session:', updateError);
-        // Don't fail the request — the webhook likely handled it
-      }
+        .eq('auth_id', userId)
+        .then(() => {})
+        .catch((err: Error) => {
+          console.error('Failed to update user in verify-session:', err);
+        });
     }
 
     return NextResponse.json({

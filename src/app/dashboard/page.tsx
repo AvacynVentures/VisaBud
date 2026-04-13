@@ -118,26 +118,25 @@ function DashboardContent() {
     async function checkUnlockStatus() {
       try {
         const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          // Check payments table for completed payment by this user
-          // First get user record by auth_id
-          const { data: userData } = await supabase
-            .from('users')
+        if (!user) return;
+
+        // Get user record by auth_id
+        const { data: userData } = await supabase
+          .from('users')
+          .select('id')
+          .eq('auth_id', user.id)
+          .maybeSingle();
+        
+        if (userData) {
+          // Check payments table for completed payment
+          const { data: payments } = await supabase
+            .from('payments')
             .select('id')
-            .eq('auth_id', user.id)
-            .single();
+            .eq('user_id', userData.id)
+            .eq('payment_status', 'completed')
+            .limit(1);
           
-          if (userData) {
-            const { data: payment } = await supabase
-              .from('payments')
-              .select('id, product_type, payment_status')
-              .eq('user_id', userData.id)
-              .eq('payment_status', 'completed')
-              .limit(1)
-              .single();
-            
-            if (payment) setUnlocked(true);
-          }
+          if (payments && payments.length > 0) setUnlocked(true);
         }
       } catch (err) {
         // No payment found or query error — user stays on free tier (not an error)
