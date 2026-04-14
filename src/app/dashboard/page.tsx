@@ -1117,10 +1117,7 @@ function ChecklistItemRow({ item, checked, onToggle, unlocked = false }: { item:
   const hasFileData = !!upload?.fileData;
   const isPremiumPlus = purchasedTier === 'premium' || purchasedTier === 'expert';
 
-  // Check if a template exists for this document (templates use different IDs)
-  // Try exact match first, then fuzzy match by visa type
-  const template = getTemplate(item.id);
-  const hasTemplate = !!template || isPremiumPlus; // Show template button if premium (templates page has all)
+  // Template handling is done via GetTemplateButton component using getTemplateForItem()
 
   const handleToggle = useCallback(() => {
     if (!checked) {
@@ -1214,17 +1211,6 @@ function ChecklistItemRow({ item, checked, onToggle, unlocked = false }: { item:
       console.error('AI confidence check failed:', err);
     } finally {
       setIsAILoading(false);
-    }
-  };
-
-  // Template download handler — opens templates page filtered by visa type
-  const handleTemplateDownload = () => {
-    if (!isPremiumPlus) return;
-    // Try direct template API first, fallback to templates page
-    if (template) {
-      window.open(`/api/templates/${visaType || 'spouse'}/${template.id}`, '_blank');
-    } else {
-      window.open('/templates', '_blank');
     }
   };
 
@@ -1329,25 +1315,6 @@ function ChecklistItemRow({ item, checked, onToggle, unlocked = false }: { item:
           >
             <Sparkles className="w-3 h-3" />
             {confidenceDisplay.text}
-          </button>
-
-          {/* Templates — Premium+ */}
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              handleTemplateDownload();
-            }}
-            disabled={!isPremiumPlus || !hasTemplate}
-            className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
-              isPremiumPlus && hasTemplate
-                ? 'bg-violet-50 text-violet-700 hover:bg-violet-100 border border-violet-200'
-                : 'bg-gray-50 text-gray-400 border border-gray-100 cursor-not-allowed'
-            }`}
-            title={!isPremiumPlus ? 'Premium feature' : !hasTemplate ? 'No template available' : 'Download preparation template'}
-          >
-            <FileText className="w-3 h-3" />
-            Templates
-            {!isPremiumPlus && <Lock className="w-2.5 h-2.5" />}
           </button>
 
           {/* AI Ready Check — Premium+ */}
