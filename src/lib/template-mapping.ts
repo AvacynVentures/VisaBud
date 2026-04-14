@@ -6,44 +6,34 @@
 export const CHECKLIST_TO_TEMPLATE: Record<string, string> = {
   // ========== SPOUSE VISA ==========
   
-  // Proof of Relationship
-  'Proof of relationship': 'Spouse_ProofOfRelationship.docx',
+  // Personal Documents
+  'Marriage or Civil Partnership Certificate': 'Spouse_ProofOfRelationship.docx',
   
   // Financial Evidence
-  'Income evidence (P60/payslips)': 'Spouse_FinancialEvidence.docx',
-  'Self-employment accounts': 'Spouse_SelfEmploymentAccounts.docx',
-  'Bank statements (6 months)': 'Spouse_BankStatements.docx',
-  'Savings & sponsor declaration': 'Spouse_SavingsAndSponsorship.docx',
-  'Employment letter from sponsor': 'Spouse_EmploymentLetter.docx',
-  'Tax returns (2 years)': 'Spouse_TaxReturns.docx',
+  "Sponsor's Payslips (6 months)": 'Spouse_FinancialEvidence.docx',
+  "Sponsor's Employer Letter": 'Spouse_EmploymentLetter.docx',
+  "Sponsor's Bank Statements (6 months)": 'Spouse_BankStatements.docx',
+  'Cash Savings Evidence (if income below £29,000)': 'Spouse_SavingsAndSponsorship.docx',
+  'Self-Employment Evidence (if self-employed sponsor)': 'Spouse_SelfEmploymentAccounts.docx',
   
-  // Living Together
-  'Proof of cohabitation': 'Spouse_ProofOfCohabitation.docx',
-  'Utility bills & council tax': 'Spouse_UtilityBills.docx',
-  
-  // Evidence of Relationship
-  'Photos together (spanning relationship)': 'Spouse_Photos.docx',
-  'Email & message correspondence': 'Spouse_EmailCommunication.docx',
-  'Children documentation (if applicable)': 'Spouse_ChildrenDocumentation.docx',
+  // Supporting / Relationship Evidence
+  'Cohabitation / Shared Address Proof': 'Spouse_ProofOfCohabitation.docx',
+  'Relationship Photographs': 'Spouse_Photos.docx',
+  'Communication History': 'Spouse_EmailCommunication.docx',
   
   // ========== SKILLED WORKER VISA ==========
   
-  // Maintenance of Funds
-  'Maintenance of funds (£3,100 or salary)': 'SkilledWorker_MaintenanceFunds.docx',
-  
-  // Employment & Sponsorship
-  'Sponsor certification letter': 'SkilledWorker_SponsorshipLetter.docx',
-  'Job offer letter': 'SkilledWorker_JobOffer.docx',
-  'Payslips & P60 (employment income)': 'SkilledWorker_PayslipsAndP60.docx',
+  // Financial / Employment Documents
+  'Maintenance Funds Evidence': 'SkilledWorker_MaintenanceFunds.docx',
+  'Employer Sponsor Licence Verification': 'SkilledWorker_SponsorshipLetter.docx',
+  'Employment Contract / Offer Letter': 'SkilledWorker_JobOffer.docx',
   
   // ========== BRITISH CITIZENSHIP ==========
   
-  // Residency
-  'Proof of continuous residence (5 years)': 'Citizenship_ResidenceProof.docx',
-  
-  // Requirements
-  'English language test certificate (B1)': 'Citizenship_EnglishLanguageTest.docx',
-  'Life in the UK test certificate': 'Citizenship_LifeInUKTest.docx',
+  // These have no templates as they require official government-issued documents
+  // 'Proof of continuous residence (5 years)': 'Citizenship_ResidenceProof.docx',
+  // 'English Language Certificate (B1)': 'Citizenship_EnglishLanguageTest.docx',
+  // 'Life in the UK Test Certificate': 'Citizenship_LifeInUKTest.docx',
 };
 
 /**
