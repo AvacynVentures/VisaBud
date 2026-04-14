@@ -1117,7 +1117,10 @@ function ChecklistItemRow({ item, checked, onToggle, unlocked = false }: { item:
   const hasFileData = !!upload?.fileData;
   const isPremiumPlus = purchasedTier === 'premium' || purchasedTier === 'expert';
 
-  // Not used — GetTemplateButton handles template availability via getTemplateForItem()
+  // Check if a template exists for this document (templates use different IDs)
+  // Try exact match first, then fuzzy match by visa type
+  const template = getTemplate(item.id);
+  const hasTemplate = !!template || isPremiumPlus; // Show template button if premium (templates page has all)
 
   const handleToggle = useCallback(() => {
     if (!checked) {
