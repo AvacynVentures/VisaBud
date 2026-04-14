@@ -79,79 +79,72 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Sync to SendGrid (if configured)
-    const sendgridApiKey = process.env.SENDGRID_API_KEY;
-    let sendgridContactId: string | null = null;
-
-    if (sendgridApiKey) {
-      try {
-        const sgRes = await fetch('https://api.sendgrid.com/v3/marketing/contacts', {
-          method: 'PUT',
-          headers: {
-            Authorization: `Bearer ${sendgridApiKey}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            contacts: [
-              {
-                email: email.toLowerCase().trim(),
-                custom_fields: {
-                  // Map to SendGrid custom fields (IDs set in SendGrid dashboard)
-                  // e1 = visa_type, e2 = nationality, e3 = urgency, e4 = stage
-                  ...(visa_type && { e1: visa_type }),
-                  ...(nationality && { e2: nationality }),
-                  ...(urgency && { e3: urgency }),
-                  e4: 'free_user',
-                },
-              },
-            ],
-            // Add to specific list by visa type
-            ...(process.env.SENDGRID_LIST_ID && {
-              list_ids: [process.env.SENDGRID_LIST_ID],
-            }),
-          }),
-        });
-
-        if (sgRes.ok) {
-          const sgData = await sgRes.json();
-          sendgridContactId = sgData.job_id || null;
-        } else {
-          console.error('SendGrid sync failed:', await sgRes.text());
-        }
-      } catch (sgErr) {
-        console.error('SendGrid sync error:', sgErr);
-        // Don't block the user
-      }
-    }
-
-    // Queue welcome email (Day 0 automation)
-    // This would typically be handled by SendGrid automation or a background job
-    // For now, we trigger the welcome email directly if Resend/SendGrid is configured
-    if (process.env.RESEND_API_KEY) {
-      try {
-        await fetch('https://api.resend.com/emails', {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            from: process.env.EMAIL_FROM || 'VisaBud <hello@visabud.co.uk>',
-            to: email,
-            subject: 'Your personalised visa plan is ready 🎉',
-            html: getWelcomeEmailHtml(visa_type),
-          }),
-        });
-      } catch (emailErr) {
-        console.error('Welcome email error:', emailErr);
-      }
-    }
-
-    return NextResponse.json({
+    // Return success immediately (async background jobs below)
+    const responseToSend = NextResponse.json({
       success: true,
-      message: 'Subscribed successfully',
-      ...(sendgridContactId && { sendgrid_job_id: sendgridContactId }),
+      message: 'Email saved! You will receive your plan shortly.',
     });
+
+    // Fire-and-forget: Sync to SendGrid + send welcome email (don't await)
+    // These happen in background and won't block the user
+    (async () => {
+      try {
+        const sendgridApiKey = process.env.SENDGRID_API_KEY;
+        if (sendgridApiKey) {
+          await Promise.race([
+            fetch('https://api.sendgrid.com/v3/marketing/contacts', {
+              method: 'PUT',
+              headers: {
+                Authorization: `Bearer ${sendgridApiKey}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                contacts: [
+                  {
+                    email: email.toLowerCase().trim(),
+                    custom_fields: {
+                      ...(visa_type && { e1: visa_type }),
+                      ...(nationality && { e2: nationality }),
+                      ...(urgency && { e3: urgency }),
+                      e4: 'free_user',
+                    },
+                  },
+                ],
+                ...(process.env.SENDGRID_LIST_ID && {
+                  list_ids: [process.env.SENDGRID_LIST_ID],
+                }),
+              }),
+            }),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('SendGrid timeout')), 5000)),
+          ]);
+        }
+
+        // Send welcome email via Resend
+        if (process.env.RESEND_API_KEY) {
+          await Promise.race([
+            fetch('https://api.resend.com/emails', {
+              method: 'POST',
+              headers: {
+                Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                from: process.env.EMAIL_FROM || 'VisaBud <hello@visabud.co.uk>',
+                to: email,
+                subject: 'Your personalised visa plan is ready 🎉',
+                html: getWelcomeEmailHtml(visa_type),
+              }),
+            }),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('Resend timeout')), 5000)),
+          ]);
+        }
+      } catch (bgErr) {
+        // Log but don't propagate (user already got their success response)
+        console.error('Background email sync error:', bgErr);
+      }
+    })();
+
+    return responseToSend;
   } catch (err: any) {
     console.error('Email subscribe error:', err);
     return NextResponse.json(
