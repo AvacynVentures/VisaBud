@@ -33,6 +33,9 @@ export default function EmailCapture({ onComplete, onSkip }: EmailCaptureProps) 
     setError(null);
 
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
       const res = await fetch('/api/email/subscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -44,17 +47,24 @@ export default function EmailCapture({ onComplete, onSkip }: EmailCaptureProps) 
           consent: true,
           consent_timestamp: new Date().toISOString(),
         }),
+        signal: controller.signal,
       });
 
-      const data = await res.json();
+      clearTimeout(timeoutId);
 
       if (!res.ok) {
-        throw new Error(data.error || 'Failed to subscribe');
+        const data = await res.json();
+        throw new Error(data.error || `Server error: ${res.status}`);
       }
 
+      // Success — continue regardless of response (email might still send in background)
       onComplete();
     } catch (err: any) {
-      setError(err.message || 'Something went wrong. Please try again.');
+      if (err.name === 'AbortError') {
+        setError('Request timed out. Your email might still be saved. Please try again.');
+      } else {
+        setError(err.message || 'Something went wrong. Please try again.');
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -116,7 +126,7 @@ export default function EmailCapture({ onComplete, onSkip }: EmailCaptureProps) 
                 <p className="text-xs font-semibold text-blue-800 mb-2.5">What you&apos;ll receive:</p>
                 <ul className="space-y-1.5">
                   {[
-                    'Your personalised visa checklist (PDF)',
+                    'Your personalised visa checklist (PDF and online document)',
                     'Monthly tips specific to your visa type',
                     'Deadline reminders so you never miss a step',
                     'Updates when immigration rules change',
@@ -142,14 +152,14 @@ export default function EmailCapture({ onComplete, onSkip }: EmailCaptureProps) 
                     Email address
                   </label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none flex-shrink-0" />
                     <input
                       id="email"
                       type="email"
                       value={email}
                       onChange={(e) => { setEmail(e.target.value); setError(null); }}
                       placeholder="your@email.com"
-                      className="w-full pl-10 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-blue-500 focus:ring-0 text-sm transition-colors"
+                      className="w-full pl-11 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-blue-500 focus:ring-0 text-sm transition-colors text-ellipsis"
                       disabled={isSubmitting}
                     />
                   </div>
