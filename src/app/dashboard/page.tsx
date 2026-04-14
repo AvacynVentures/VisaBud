@@ -137,7 +137,15 @@ function DashboardContent() {
   const [hydrated, setHydrated] = useState(useApplicationStore.persist.hasHydrated());
   useEffect(() => {
     if (hydrated) return;
+    
+    // Fallback: force hydration after 2 seconds if onFinishHydration doesn't fire
+    const timeoutId = setTimeout(() => {
+      setHydrated(true);
+      console.warn('Hydration timeout: forcing render after 2s');
+    }, 2000);
+    
     const unsub = useApplicationStore.persist.onFinishHydration(() => {
+      clearTimeout(timeoutId);
       setHydrated(true);
     });
     // In case hydration already finished between useState and useEffect
