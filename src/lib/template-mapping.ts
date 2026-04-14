@@ -20,6 +20,7 @@ export const CHECKLIST_TO_TEMPLATE: Record<string, string> = {
   'Cohabitation / Shared Address Proof': 'Spouse_ProofOfCohabitation.docx',
   'Relationship Photographs': 'Spouse_Photos.docx',
   'Communication History': 'Spouse_EmailCommunication.docx',
+  'Cover Letter / Statement of Intent': 'Spouse_CoverLetter.docx',
   
   // ========== SKILLED WORKER VISA ==========
   
@@ -27,6 +28,7 @@ export const CHECKLIST_TO_TEMPLATE: Record<string, string> = {
   'Maintenance Funds Evidence': 'SkilledWorker_MaintenanceFunds.docx',
   'Employer Sponsor Licence Verification': 'SkilledWorker_SponsorshipLetter.docx',
   'Employment Contract / Offer Letter': 'SkilledWorker_JobOffer.docx',
+  'Cover Letter': 'SkilledWorker_CoverLetter.docx',
   
   // ========== BRITISH CITIZENSHIP ==========
   
@@ -34,6 +36,7 @@ export const CHECKLIST_TO_TEMPLATE: Record<string, string> = {
   'Travel History (5-Year Record)': 'Citizenship_ResidenceProof.docx',
   'English Language Evidence (B1+)': 'Citizenship_EnglishLanguageTest.docx',
   'Life in the UK Test Pass Certificate': 'Citizenship_LifeInUKTest.docx',
+  'Full Immigration History': 'Citizenship_ImmigrationHistory.docx',
 };
 
 /**
