@@ -54,8 +54,10 @@ import DocumentUpload from '@/components/DocumentUpload';
 import TierFeatureButtons from '@/components/TierFeatureButtons';
 import AIReportModal from '@/components/AIReportModal';
 import TemplatesGallery from '@/components/TemplatesGallery';
+import GetTemplateButton from '@/components/GetTemplateButton';
 import type { AIReportData } from '@/lib/store';
 import { getTemplate } from '@/lib/template-data';
+import { getTemplateForItem } from '@/lib/template-mapping';
 import { PageFadeIn, FadeIn, ConfettiBurst, CelebrationBanner } from '@/lib/animations';
 // PurchasedTier type used via store
 
@@ -1285,6 +1287,14 @@ function ChecklistItemRow({ item, checked, onToggle, unlocked = false }: { item:
 
         {/* Per-item action buttons row */}
         <div className="ml-9 mt-3 flex flex-wrap items-center gap-2">
+          {/* Template button — Premium only */}
+          <GetTemplateButton
+            itemTitle={item.title}
+            templateFilename={getTemplateForItem(item.title) || undefined}
+            isPremium={purchasedTier === 'premium' || purchasedTier === 'expert'}
+            onUnlock={() => {}} // Handled by parent
+          />
+
           {/* Gov.uk link — always visible */}
           {item.govLink && (
             <a
