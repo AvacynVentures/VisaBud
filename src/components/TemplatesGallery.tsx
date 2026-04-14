@@ -49,21 +49,17 @@ export default function TemplatesGallery({ onClose, isPremium = false }: Templat
 
   const visaTypes = ['Spouse', 'Skilled Worker', 'Citizenship'];
 
-  const handleDownload = async (filename: string, title: string) => {
+  const handleDownload = (filename: string, title: string) => {
     setDownloading(filename);
     try {
-      const response = await fetch(`/templates/${filename}`);
-      if (!response.ok) throw new Error('Download failed');
-
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(url);
+      // Direct download via simple link (no fetch needed for static files)
+      const link = document.createElement('a');
+      link.href = `/templates/${filename}`;
+      link.download = filename;
+      link.style.display = 'none';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     } catch (err) {
       console.error('Download error:', err);
       alert(`Failed to download ${title}`);
