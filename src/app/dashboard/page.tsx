@@ -184,14 +184,21 @@ function DashboardContent() {
           
           if (payments && payments.length > 0) {
             setUnlocked(true);
-            // Determine tier from amount
-            const amount = payments[0].amount_pence || 0;
-            if (amount >= 29900 || amount === 3) {
-              setPurchasedTier('expert');
-            } else if (amount >= 14900 || amount === 2) {
-              setPurchasedTier('premium');
+            // Use tier column from payments table (source of truth from webhook)
+            // Fallback to inferring from amount if tier column doesn't exist
+            const storedTier = payments[0].tier;
+            if (storedTier) {
+              setPurchasedTier(storedTier);
             } else {
-              setPurchasedTier('standard');
+              // Fallback: infer from amount (for backwards compat with old payments)
+              const amount = payments[0].amount_pence || 0;
+              if (amount >= 29900 || amount === 33) {
+                setPurchasedTier('expert');
+              } else if (amount >= 14900 || amount === 32 || amount === 2) {
+                setPurchasedTier('premium');
+              } else {
+                setPurchasedTier('standard');
+              }
             }
             return true;
           }
