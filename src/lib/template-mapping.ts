@@ -30,10 +30,10 @@ export const CHECKLIST_TO_TEMPLATE: Record<string, string> = {
   
   // ========== BRITISH CITIZENSHIP ==========
   
-  // These have no templates as they require official government-issued documents
-  // 'Proof of continuous residence (5 years)': 'Citizenship_ResidenceProof.docx',
-  // 'English Language Certificate (B1)': 'Citizenship_EnglishLanguageTest.docx',
-  // 'Life in the UK Test Certificate': 'Citizenship_LifeInUKTest.docx',
+  // Residency & Requirements
+  'Travel History (5-Year Record)': 'Citizenship_ResidenceProof.docx',
+  'English Language Evidence (B1+)': 'Citizenship_EnglishLanguageTest.docx',
+  'Life in the UK Test Pass Certificate': 'Citizenship_LifeInUKTest.docx',
 };
 
 /**
