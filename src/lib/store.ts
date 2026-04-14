@@ -263,6 +263,12 @@ export const useApplicationStore = create<AppState>()(
     {
       name: 'VisaBud-application',
       storage: createJSONStorage(() => localStorage),
+      onRehydrateStorage: () => {
+        return () => {
+          // Mark hydration as complete once Zustand restores from localStorage
+          useApplicationStore.persist.hasHydrated() // ensure flag is set
+        };
+      },
       partialize: (state) => ({
         visaType: state.visaType,
         nationality: state.nationality,

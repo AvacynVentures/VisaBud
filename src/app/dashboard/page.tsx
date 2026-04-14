@@ -130,8 +130,22 @@ function DashboardContent() {
     if (user?.email) setUserEmail(user.email);
   }, [user, setUserEmail]);
 
-  const [hydrated, setHydrated] = useState(false);
-  useEffect(() => { setHydrated(true); }, []);
+  // Wait for Zustand persist middleware to finish restoring from localStorage.
+  // Without this, the store has default (empty) values on first render,
+  // causing hasCompletedWizard to be false and showing FreemiumWelcomeDashboard
+  // even when the user completed the wizard before payment redirect.
+  const [hydrated, setHydrated] = useState(useApplicationStore.persist.hasHydrated());
+  useEffect(() => {
+    if (hydrated) return;
+    const unsub = useApplicationStore.persist.onFinishHydration(() => {
+      setHydrated(true);
+    });
+    // In case hydration already finished between useState and useEffect
+    if (useApplicationStore.persist.hasHydrated()) {
+      setHydrated(true);
+    }
+    return unsub;
+  }, [hydrated]);
 
   // Check unlock status — runs on mount AND polls when returning from payment
   useEffect(() => {

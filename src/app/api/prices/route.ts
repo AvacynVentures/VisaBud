@@ -1,39 +1,61 @@
 import { NextResponse } from 'next/server';
+import { supabaseServer } from '@/lib/supabase';
+import { TIER_METADATA, type TierKey } from '@/lib/stripe';
 
 /**
  * GET /api/prices
- * Returns current pricing for all tiers.
- * Single source of truth — checkout and frontend both consume this.
+ * Returns pricing from Supabase (synced from Stripe via webhook).
+ * Single source of truth chain: Stripe → webhook → Supabase → this endpoint.
+ * Cached for 1 hour at CDN, stale-while-revalidate for 24 hours.
  */
-
-const PRICES = {
-  standard: {
-    name: 'VisaBud Full Pack',
-    description: 'Personalised document checklist, timeline, risk assessment & PDF export',
-    priceGBP: 0.31,
-    pricePence: 31,
-    tier: 'standard',
-  },
-  premium: {
-    name: 'VisaBud Premium Pack',
-    description: 'Everything in Standard + AI document verification, templates & email support',
-    priceGBP: 0.32,
-    pricePence: 32,
-    tier: 'premium',
-  },
-  expert: {
-    name: 'VisaBud Expert Pack',
-    description: 'Everything in Premium + expert immigration review (24h turnaround) & priority support',
-    priceGBP: 0.33,
-    pricePence: 33,
-    tier: 'expert',
-  },
-};
-
 export async function GET() {
-  return NextResponse.json(PRICES, {
-    headers: {
-      'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
-    },
-  });
+  try {
+    const { data, error } = await supabaseServer
+      .from('prices')
+      .select('tier, price_gbp, price_pence, stripe_price_id')
+      .eq('is_active', true)
+      .order('price_pence');
+
+    if (error || !data || data.length === 0) {
+      console.error('Failed to fetch prices from Supabase:', error);
+      return NextResponse.json(
+        { error: 'Failed to load pricing' },
+        { status: 500 }
+      );
+    }
+
+    // Build response: merge DB prices with static tier metadata
+    const response: Record<string, any> = {};
+
+    for (const row of data) {
+      const tier = row.tier as TierKey;
+      const meta = TIER_METADATA[tier];
+      if (!meta) continue;
+
+      response[tier] = {
+        name: meta.name,
+        tier,
+        priceGBP: Number(row.price_gbp),
+        pricePence: row.price_pence,
+        stripePriceId: row.stripe_price_id,
+        description: meta.description,
+        shortName: meta.shortName,
+        deliveryTime: meta.deliveryTime,
+        includes: meta.includes,
+        excludes: meta.excludes,
+      };
+    }
+
+    return NextResponse.json(response, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
+      },
+    });
+  } catch (err: any) {
+    console.error('Failed to fetch prices:', err);
+    return NextResponse.json(
+      { error: 'Failed to load pricing', details: err.message },
+      { status: 500 }
+    );
+  }
 }

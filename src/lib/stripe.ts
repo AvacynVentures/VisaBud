@@ -4,18 +4,47 @@ export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2023-08-16',
 });
 
-export const VISABUD_PRODUCT_NAME = 'VisaBud Full Pack';
-export const VISABUD_PRICE_GBP = 0.31; // £0.31 test price
-export const VISABUD_PRICE_PENCE = 31; // £0.31 in pence
+// ─── Stripe Price IDs (from env — source of truth is Stripe dashboard) ──────
 
-// Premium Review Tiers
-export const PREMIUM_REVIEW_TIERS = {
-  ai_review_149: {
-    name: 'VisaBud Premium AI Document Review',
+export const STRIPE_PRICE_IDS = {
+  standard: process.env.STRIPE_PRICE_STANDARD!,
+  premium: process.env.STRIPE_PRICE_PREMIUM!,
+  expert: process.env.STRIPE_PRICE_EXPERT!,
+} as const;
+
+export type TierKey = keyof typeof STRIPE_PRICE_IDS;
+
+// ─── Tier metadata (non-price display content) ─────────────────────────────
+
+export const TIER_METADATA: Record<TierKey, {
+  name: string;
+  shortName: string;
+  description: string;
+  deliveryTime: string;
+  includes: string[];
+  excludes: string[];
+}> = {
+  standard: {
+    name: 'VisaBud Full Pack',
+    shortName: 'Standard Checklist',
+    description: 'Personalised document checklist, timeline, risk assessment & PDF export',
+    deliveryTime: 'Instant',
+    includes: [
+      'Personalised document checklist',
+      'Step-by-step timeline',
+      'Risk assessment & alerts',
+      'PDF export',
+    ],
+    excludes: [
+      'AI document verification',
+      'Human expert review',
+    ],
+  },
+  premium: {
+    name: 'VisaBud Premium Pack',
     shortName: 'AI Premium Review',
-    price: 0.32,
-    pricePence: 32,
-    description: 'Professional-grade AI review of all your documents with risk scoring, specific feedback, and cross-document validation.',
+    description: 'Everything in Standard + AI document verification, templates & email support',
+    deliveryTime: 'Results within minutes',
     includes: [
       'AI risk scoring (high/medium/low) per document',
       'Specific actionable feedback for each document',
@@ -30,14 +59,12 @@ export const PREMIUM_REVIEW_TIERS = {
       'Solicitor opinion',
       'Direct consultation',
     ],
-    deliveryTime: 'Results within minutes',
   },
-  human_review_199: {
-    name: 'VisaBud Expert Document Review',
+  expert: {
+    name: 'VisaBud Expert Pack',
     shortName: 'Expert Human Review',
-    price: 0.33,
-    pricePence: 33,
-    description: 'Full document review by a qualified immigration expert, plus everything in the AI review.',
+    description: 'Everything in Premium + expert immigration review (24h turnaround) & priority support',
+    deliveryTime: 'Results within 24 hours',
     includes: [
       'Everything in AI Premium Review',
       'Review by qualified immigration expert',
@@ -51,53 +78,10 @@ export const PREMIUM_REVIEW_TIERS = {
       'Application form completion',
       'Representation to UKVI',
     ],
-    deliveryTime: 'Results within 24 hours',
   },
-} as const;
+};
 
-export type PremiumTier = keyof typeof PREMIUM_REVIEW_TIERS | 'free';
-
-/**
- * Create a Stripe checkout session for VisaBud
- */
-export async function createCheckoutSession(
-  email: string,
-  userId: string,
-  successUrl: string,
-  cancelUrl: string
-) {
-  try {
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
-      customer_email: email,
-      line_items: [
-        {
-          price_data: {
-            currency: 'gbp',
-            product_data: {
-              name: VISABUD_PRODUCT_NAME,
-              description: 'Full access to personalized visa checklist, timeline, and risk assessment',
-            },
-            unit_amount: VISABUD_PRICE_PENCE,
-          },
-          quantity: 1,
-        },
-      ],
-      mode: 'payment',
-      success_url: successUrl,
-      cancel_url: cancelUrl,
-      metadata: {
-        userId,
-        productName: VISABUD_PRODUCT_NAME,
-      },
-    });
-
-    return { success: true, sessionId: session.id, sessionUrl: session.url };
-  } catch (error) {
-    console.error('Error creating checkout session:', error);
-    return { success: false, error: String(error) };
-  }
-}
+// ─── Utility functions ──────────────────────────────────────────────────────
 
 /**
  * Retrieve a checkout session from Stripe
@@ -118,13 +102,13 @@ export async function getCheckoutSession(sessionId: string) {
 export async function processSuccessfulPayment(sessionId: string) {
   try {
     const session = await stripe.checkout.sessions.retrieve(sessionId);
-    
+
     if (session.payment_status === 'paid') {
       return {
         success: true,
         userId: session.metadata?.userId,
         email: session.customer_email,
-        amount: session.amount_total ? session.amount_total / 100 : VISABUD_PRICE_GBP,
+        amount: session.amount_total ? session.amount_total / 100 : 0,
       };
     }
 
