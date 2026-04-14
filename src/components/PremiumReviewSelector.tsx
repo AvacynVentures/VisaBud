@@ -63,14 +63,11 @@ export default function PremiumReviewSelector() {
     setIsLoading(true);
     setError(null);
 
-    // Map to legacy tier names for backwards compat with checkout endpoint
-    const legacyTier = tier === 'premium' ? 'ai_review_149' : 'human_review_199';
-
     try {
       const response = await fetch('/api/checkout/premium-review', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tier: legacyTier }),
+        body: JSON.stringify({ tier }),
       });
 
       const data = await response.json();
