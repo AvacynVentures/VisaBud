@@ -5,16 +5,16 @@ export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 });
 
 export const VISABUD_PRODUCT_NAME = 'VisaBud Full Pack';
-export const VISABUD_PRICE_GBP = 0.01; // £0.01 test price
-export const VISABUD_PRICE_PENCE = 1; // £0.01 in pence
+export const VISABUD_PRICE_GBP = 0.31; // £0.31 test price
+export const VISABUD_PRICE_PENCE = 31; // £0.31 in pence
 
 // Premium Review Tiers
 export const PREMIUM_REVIEW_TIERS = {
   ai_review_149: {
     name: 'VisaBud Premium AI Document Review',
     shortName: 'AI Premium Review',
-    price: 0.02,
-    pricePence: 2,
+    price: 0.32,
+    pricePence: 32,
     description: 'Professional-grade AI review of all your documents with risk scoring, specific feedback, and cross-document validation.',
     includes: [
       'AI risk scoring (high/medium/low) per document',
@@ -35,8 +35,8 @@ export const PREMIUM_REVIEW_TIERS = {
   human_review_199: {
     name: 'VisaBud Expert Document Review',
     shortName: 'Expert Human Review',
-    price: 0.03,
-    pricePence: 3,
+    price: 0.33,
+    pricePence: 33,
     description: 'Full document review by a qualified immigration expert, plus everything in the AI review.',
     includes: [
       'Everything in AI Premium Review',

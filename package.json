@@ -8,7 +8,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "validate:prices": "node scripts/validate-prices.js",
+    "precommit": "npm run validate:prices && npm run type-check"
   },
   "dependencies": {
     "@stripe/react-stripe-js": "2.4.0",
