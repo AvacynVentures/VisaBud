@@ -56,7 +56,6 @@ import AIReportModal from '@/components/AIReportModal';
 import TemplatesGallery from '@/components/TemplatesGallery';
 import GetTemplateButton from '@/components/GetTemplateButton';
 import type { AIReportData } from '@/lib/store';
-import { getTemplate } from '@/lib/template-data';
 import { getTemplateForItem } from '@/lib/template-mapping';
 import { PageFadeIn, FadeIn, ConfettiBurst, CelebrationBanner } from '@/lib/animations';
 // PurchasedTier type used via store
