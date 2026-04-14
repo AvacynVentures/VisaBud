@@ -9,17 +9,17 @@ const PRICES: Record<string, { name: string; description: string; pricePence: nu
   standard: {
     name: 'VisaBud Full Pack',
     description: 'Personalised document checklist, timeline, risk assessment & PDF export',
-    pricePence: 1, // £0.01
+    pricePence: 31, // £0.31 (Stripe minimum: £0.30)
   },
   premium: {
     name: 'VisaBud Premium Pack',
     description: 'Everything in Standard + AI document verification, templates & email support',
-    pricePence: 2, // £0.02
+    pricePence: 32, // £0.32
   },
   expert: {
     name: 'VisaBud Expert Pack',
     description: 'Everything in Premium + expert immigration review (24h turnaround) & priority support',
-    pricePence: 3, // £0.03
+    pricePence: 33, // £0.33
   },
 };
 
