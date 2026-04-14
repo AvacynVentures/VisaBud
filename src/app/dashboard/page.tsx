@@ -1331,25 +1331,6 @@ function ChecklistItemRow({ item, checked, onToggle, unlocked = false }: { item:
             {confidenceDisplay.text}
           </button>
 
-          {/* Templates — Premium+ */}
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              handleTemplateDownload();
-            }}
-            disabled={!isPremiumPlus || !hasTemplate}
-            className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
-              isPremiumPlus && hasTemplate
-                ? 'bg-violet-50 text-violet-700 hover:bg-violet-100 border border-violet-200'
-                : 'bg-gray-50 text-gray-400 border border-gray-100 cursor-not-allowed'
-            }`}
-            title={!isPremiumPlus ? 'Premium feature' : !hasTemplate ? 'No template available' : 'Download preparation template'}
-          >
-            <FileText className="w-3 h-3" />
-            Templates
-            {!isPremiumPlus && <Lock className="w-2.5 h-2.5" />}
-          </button>
-
           {/* AI Ready Check — Premium+ */}
           <button
             onClick={(e) => {
