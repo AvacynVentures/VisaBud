@@ -1320,15 +1320,17 @@ function ChecklistItemRow({ item, checked, onToggle, unlocked = false }: { item:
           <button
             onClick={(e) => {
               e.stopPropagation();
-              handleAIReadyCheck();
+              if (isPremiumPlus) handleAIReadyCheck();
             }}
             disabled={!isPremiumPlus || (!hasFileData && !report)}
             className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
               isPremiumPlus && (hasFileData || report)
                 ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200'
+                : !isPremiumPlus
+                ? 'bg-amber-50 text-amber-700 border border-amber-200 cursor-not-allowed'
                 : 'bg-gray-50 text-gray-400 border border-gray-100 cursor-not-allowed'
             }`}
-            title={!isPremiumPlus ? 'Premium feature' : !hasFileData && !report ? 'Upload a document first' : 'Run AI analysis'}
+            title={!isPremiumPlus ? 'Premium: AI document analysis' : !hasFileData && !report ? 'Upload a document first' : 'Run AI analysis'}
           >
             <ShieldCheck className="w-3 h-3" />
             AI Ready Check

@@ -37,10 +37,10 @@ export default function GetTemplateButton({
       <button
         onClick={onUnlock}
         className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-amber-700 bg-amber-50 hover:bg-amber-100 rounded-lg transition-colors border border-amber-200"
-        title="Unlock Premium to download templates"
+        title={`Premium: Download ${itemTitle} template`}
       >
         <Lock className="w-3.5 h-3.5" />
-        Template
+        <span>Template</span>
       </button>
     );
   }
