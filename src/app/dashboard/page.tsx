@@ -979,6 +979,22 @@ function ChecklistTab({
 
   return (
     <div className="space-y-6">
+      {/* Upgrade Banner */}
+      <div className="bg-gradient-to-r from-emerald-50 to-emerald-100 border border-emerald-300 rounded-2xl p-5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="flex-1">
+          <h3 className="font-bold text-lg text-emerald-900 mb-1">🚀 Unlock Premium</h3>
+          <p className="text-sm text-emerald-700">
+            Get <strong>19 professional templates</strong>, <strong>AI document analysis</strong>, full timeline, and complete risk assessment.
+          </p>
+        </div>
+        <button
+          onClick={onUnlock}
+          className="inline-flex items-center gap-2 px-5 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-md hover:shadow-lg transition-all active:scale-95 whitespace-nowrap flex-shrink-0"
+        >
+          See Plans
+        </button>
+      </div>
+
       <ProgressCard checkedCount={checkedCount} total={total} progressPct={progressPct} verifiedCount={verifiedCount} />
 
       {/* Personal Documents — teaser */}

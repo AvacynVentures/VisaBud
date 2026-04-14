@@ -36,7 +36,7 @@ export default function GetTemplateButton({
     return (
       <button
         onClick={onUnlock}
-        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-amber-700 bg-amber-50 hover:bg-amber-100 rounded-lg transition-colors border border-amber-200"
+        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-amber-700 bg-amber-50 hover:bg-amber-100 active:scale-95 rounded-lg transition-colors border border-amber-200 cursor-pointer"
         title={`Premium: Download ${itemTitle} template`}
       >
         <Lock className="w-3.5 h-3.5" />
