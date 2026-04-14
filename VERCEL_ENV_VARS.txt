@@ -1,0 +1,9 @@
+ADD THESE TO VERCEL PRODUCTION ENVIRONMENT:
+
+STRIPE_PRICE_STANDARD=price_1TLJsF2F2Knncp2Pr66XqlWA
+STRIPE_PRICE_PREMIUM=price_1TLJt82F2Knncp2PkA4OsgYh
+STRIPE_PRICE_EXPERT=price_1TLJuC2F2Knncp2PnSFp3yn9
+
+Go to: https://vercel.com/AvacynVentures/visa-bud/settings/environment-variables
+
+Add each as a new environment variable (Production scope)

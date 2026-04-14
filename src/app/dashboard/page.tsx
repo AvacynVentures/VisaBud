@@ -53,6 +53,7 @@ import PaymentSuccessBanner from '@/components/PaymentSuccessBanner';
 import DocumentUpload from '@/components/DocumentUpload';
 import TierFeatureButtons from '@/components/TierFeatureButtons';
 import AIReportModal from '@/components/AIReportModal';
+import TemplatesGallery from '@/components/TemplatesGallery';
 import type { AIReportData } from '@/lib/store';
 import { getTemplate } from '@/lib/template-data';
 import { PageFadeIn, FadeIn, ConfettiBurst, CelebrationBanner } from '@/lib/animations';
@@ -60,12 +61,13 @@ import { PageFadeIn, FadeIn, ConfettiBurst, CelebrationBanner } from '@/lib/anim
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
-type TabId = 'checklist' | 'timeline' | 'risks' | 'submit';
+type TabId = 'checklist' | 'timeline' | 'risks' | 'templates' | 'submit';
 
 const TABS: { id: TabId; label: string; icon: typeof FileText; color: string }[] = [
   { id: 'checklist', label: 'Checklist', icon: FileText, color: 'text-blue-600' },
   { id: 'timeline', label: 'Timeline', icon: Calendar, color: 'text-emerald-600' },
   { id: 'risks', label: 'Risks', icon: AlertCircle, color: 'text-amber-600' },
+  { id: 'templates', label: 'Templates', icon: FileText, color: 'text-indigo-600' },
   { id: 'submit', label: 'Submit', icon: CheckCircle, color: 'text-violet-600' },
 ];
 
@@ -826,6 +828,9 @@ function FullDashboard({
               )}
               {activeTab === 'risks' && (
                 <RisksTab risks={risks} unlocked={unlocked} onUnlock={() => setShowPaywall(true)} />
+              )}
+              {activeTab === 'templates' && (
+                <TemplatesGallery isPremium={unlocked} onClose={() => setActiveTab('checklist')} />
               )}
               {activeTab === 'submit' && (
                 <SubmitTab
