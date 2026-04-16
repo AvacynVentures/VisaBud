@@ -12,6 +12,7 @@
     "precommit": "npm run type-check"
   },
   "dependencies": {
+    "@sentry/nextjs": "^10.49.0",
     "@stripe/react-stripe-js": "2.4.0",
     "@stripe/stripe-js": "1.46.0",
     "@supabase/supabase-js": "2.38.4",

@@ -6,6 +6,7 @@ import { useAuth } from '@/lib/auth-context';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect } from 'react';
 import Link from 'next/link';
+import * as Sentry from '@sentry/nextjs';
 
 function GoogleIcon() {
   return (
@@ -101,10 +102,31 @@ function SignUpPageContent() {
         if (authError.message?.includes('rate') || authError.status === 429 || (authError as any).status === 429) {
           // Set 5-minute cooldown
           localStorage.setItem('signup_cooldown_until', (Date.now() + 5 * 60 * 1000).toString());
+          
+          // Track rate limit event in Sentry
+          Sentry.captureMessage('Signup Rate Limit Hit', {
+            level: 'warning',
+            tags: {
+              error_type: 'rate_limit',
+              email_domain: email.split('@')[1] || 'unknown',
+            },
+            contexts: {
+              signup: {
+                email_hash: email.length,
+              },
+            },
+          });
+          
           setError('We\'re protecting your account from too many attempts. Please wait 5 minutes and try again. Still having trouble? Contact us at support@visabud.co.uk');
         } else if (authError.message?.includes('invalid') || authError.message?.includes('not allowed')) {
           setError('Please use a valid email address (e.g., yourname@gmail.com)');
         } else {
+          // Track other auth errors
+          Sentry.captureException(authError, {
+            tags: {
+              error_type: 'auth_error',
+            },
+          });
           setError(authError.message || 'Something went wrong. Please try again.');
         }
         setSending(false);
