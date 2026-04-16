@@ -81,7 +81,7 @@ function SignUpPageContent() {
     const cooldownUntil = localStorage.getItem('signup_cooldown_until');
     if (cooldownUntil && Date.now() < parseInt(cooldownUntil, 10)) {
       const remaining = Math.ceil((parseInt(cooldownUntil, 10) - Date.now()) / 60000);
-      setError(`Too many signup attempts. Please wait ${remaining} minute${remaining > 1 ? 's' : ''} and try again.`);
+      setError(`We're protecting your account. Please wait ${remaining} minute${remaining > 1 ? 's' : ''} and try again. Contact support@visabud.co.uk if you need help.`);
       return;
     }
 
@@ -101,7 +101,7 @@ function SignUpPageContent() {
         if (authError.message?.includes('rate') || authError.status === 429 || (authError as any).status === 429) {
           // Set 5-minute cooldown
           localStorage.setItem('signup_cooldown_until', (Date.now() + 5 * 60 * 1000).toString());
-          setError('Too many signup attempts. Please wait 5 minutes and try again.');
+          setError('We\'re protecting your account from too many attempts. Please wait 5 minutes and try again. Still having trouble? Contact us at support@visabud.co.uk');
         } else if (authError.message?.includes('invalid') || authError.message?.includes('not allowed')) {
           setError('Please use a valid email address (e.g., yourname@gmail.com)');
         } else {
