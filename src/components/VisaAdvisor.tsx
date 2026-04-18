@@ -66,6 +66,7 @@ export default function VisaAdvisor({
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(mode === 'inline');
   const [error, setError] = useState<string | null>(null);
+  const [lastFailedMessage, setLastFailedMessage] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const visaType = store.visaType || 'spouse';
@@ -139,12 +140,13 @@ export default function VisaAdvisor({
       const errorMsg =
         err instanceof Error ? err.message : 'Failed to get advisor response';
       setError(errorMsg);
+      setLastFailedMessage(trimmedText); // Store for retry
 
       // Still add error message to chat for visibility
       const errorMessage: ChatMessage = {
         id: `error-${Date.now()}`,
         role: 'assistant',
-        content: `I apologize, I couldn't process your question right now. ${errorMsg}. Please try again.`,
+        content: `I apologize, I couldn't process your question right now. ${errorMsg}. Please try again or ask something else.`,
         timestamp: new Date(),
       };
 
@@ -336,11 +338,26 @@ export default function VisaAdvisor({
   return (
     <div className="w-full bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden flex flex-col h-[500px]">
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-6 flex-shrink-0">
-        <h3 className="text-xl font-bold">Visa Advisor 🤖</h3>
-        <p className="text-sm opacity-90 mt-1">
-          Ask anything about your {visaType.replace('_', ' ')} visa application
-        </p>
+      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-6 flex-shrink-0 flex items-center justify-between">
+        <div>
+          <h3 className="text-xl font-bold">Visa Advisor 🤖</h3>
+          <p className="text-sm opacity-90 mt-1">
+            Ask anything about your {visaType.replace('_', ' ')} visa application
+          </p>
+        </div>
+        {messages.length > 0 && (
+          <button
+            onClick={() => {
+              setMessages([]);
+              setError(null);
+              setLastFailedMessage(null);
+            }}
+            className="px-3 py-2 bg-white bg-opacity-20 hover:bg-opacity-30 rounded text-sm font-medium transition-all"
+            title="Clear conversation"
+          >
+            🗑️
+          </button>
+        )}
       </div>
 
       {/* Messages */}
@@ -409,8 +426,19 @@ export default function VisaAdvisor({
             )}
 
             {error && (
-              <div className="p-3 bg-red-50 border border-red-200 rounded text-sm text-red-700">
-                <strong>Error:</strong> {error}
+              <div className="p-3 bg-red-50 border border-red-200 rounded text-sm text-red-700 flex items-center justify-between">
+                <div>
+                  <strong>Error:</strong> {error}
+                </div>
+                {lastFailedMessage && (
+                  <button
+                    onClick={() => handleSendMessage(lastFailedMessage)}
+                    disabled={isLoading}
+                    className="ml-3 px-3 py-1 bg-red-600 text-white rounded text-xs font-medium hover:bg-red-700 disabled:opacity-50 whitespace-nowrap"
+                  >
+                    Retry
+                  </button>
+                )}
               </div>
             )}
 

@@ -4,6 +4,42 @@ import { getTimelineData } from '@/lib/timeline-data';
 export const maxDuration = 60;
 
 /**
+ * Rate limit tracking: IP -> { count, resetTime }
+ * Simple in-memory tracking (fine for MVP; use Redis in production)
+ */
+const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
+
+/**
+ * Check rate limit: 10 messages per minute per IP
+ */
+function checkRateLimit(ip: string): { allowed: boolean; retryAfter?: number } {
+  const now = Date.now();
+  const entry = rateLimitMap.get(ip);
+
+  // Clean up old entries
+  if (entry && entry.resetTime < now) {
+    rateLimitMap.delete(ip);
+  }
+
+  const current = rateLimitMap.get(ip);
+
+  if (!current) {
+    // First request in window
+    rateLimitMap.set(ip, { count: 1, resetTime: now + 60000 });
+    return { allowed: true };
+  }
+
+  if (current.count >= 10) {
+    const retryAfter = Math.ceil((current.resetTime - now) / 1000);
+    return { allowed: false, retryAfter };
+  }
+
+  // Increment counter
+  current.count++;
+  return { allowed: true };
+}
+
+/**
  * Message format for Claude API
  */
 interface ClaudeMessage {
@@ -58,19 +94,41 @@ const GOV_UK_LINKS: Record<string, Record<string, string>> = {
 
 /**
  * Build rich system prompt with user's visa details, timeline, and government links
- * The system prompt guides Claude to provide accurate, contextual advice
+ * Includes: timeline milestones, submission steps, financial requirements
  */
 function buildSystemPrompt(context: VisaAdvisorContext): string {
   const timeline = getTimelineData(context.visaType);
   const govLinks = GOV_UK_LINKS[context.visaType] || GOV_UK_LINKS.spouse;
 
-  // Format timeline stages as readable text for the prompt
+  // Format timeline stages with milestones
   const timelineDescription = timeline.stages
     .map(
       (stage, i) =>
-        `**${i + 1}. ${stage.label}** (${stage.leadDays} days): ${stage.detail}`
+        `**${i + 1}. ${stage.label}** (${stage.leadDays} days): ${stage.detail}${
+          stage.governmentProcessingDays
+            ? ` | Gov processing: ${stage.governmentProcessingDays.standard} days standard`
+            : ''
+        }`
     )
     .join('\n\n');
+
+  // Financial requirements per visa type
+  const financialRequirements = {
+    spouse: '- Minimum income: £29,000/year (as of April 2024)\n- Savings: £16,000 can substitute if income lower\n- Sponsor must prove financial ability',
+    skilled_worker: '- Salary threshold: £38,700/year (or going rate for role)\n- Financial requirement: £1,270 in account for 28 days\n- Check salary list on gov.uk for your occupation',
+    citizenship: '- No income requirement\n- Must have stable residence\n- Good character assessment required',
+  };
+
+  const financialText = financialRequirements[context.visaType as keyof typeof financialRequirements] || financialRequirements.spouse;
+
+  // Submission steps
+  const submissionSteps = {
+    spouse: '1. Complete online application on gov.uk\n2. Pay visa fee (£719) + IHS surcharge (~£710 for 2.5 years)\n3. Upload supporting documents\n4. Receive confirmation + reference number\n5. Book biometrics appointment\n6. Attend biometrics (photos + fingerprints)\n7. Home Office processes (12 weeks standard, 5 days priority)',
+    skilled_worker: '1. Get Certificate of Sponsorship (CoS) from employer\n2. Gather documents (qualifications, criminal record, English proof)\n3. Apply online within 3 months of CoS\n4. Pay fee (£719) + IHS surcharge\n5. Biometrics appointment\n6. Processing (3 weeks standard)',
+    citizenship: '1. Confirm eligibility (5 years residence, absences <450 days total)\n2. Pass Life in the UK test\n3. Gather documents (passports, council tax, birth certificate, referees)\n4. Submit AN application (online or paper)\n5. Home Office processes (6 months)\n6. Attend citizenship ceremony',
+  };
+
+  const submissionText = submissionSteps[context.visaType as keyof typeof submissionSteps] || submissionSteps.spouse;
 
   // Format government links
   const govLinkText = Object.entries(govLinks)
@@ -82,6 +140,7 @@ function buildSystemPrompt(context: VisaAdvisorContext): string {
 ## YOUR ROLE
 - Provide accurate, up-to-date visa advice based on official UK government guidance
 - Answer questions about the application process, documents, timelines, and requirements
+- Walk users through submission steps when they ask "How do I submit?"
 - Give context-specific advice based on the applicant's situation
 - Always direct users to official gov.uk sources for authoritative information
 - Be empathetic but honest about challenges and processing times
@@ -89,32 +148,40 @@ function buildSystemPrompt(context: VisaAdvisorContext): string {
 ## APPLICANT'S SITUATION
 - **Visa Type**: ${context.visaType.replace('_', ' ')}
 - **Nationality**: ${context.nationality || 'Not provided'}
-- **Timeline**: ${context.urgency || 'Standard processing'}
+- **Timeline Preference**: ${context.urgency || 'Standard processing'}
 - **Documents Ready**: ${context.documentCompletionPercent || 0}%
 - **Income Level**: ${context.annualIncomeRange || 'Not specified'}
 - **Access Level**: ${context.purchasedTier || 'Free checklist'}
 
-## TIMELINE FOR THIS VISA
+## APPLICATION TIMELINE
 ${timelineDescription}
+
+## HOW TO SUBMIT YOUR APPLICATION
+${submissionText}
+
+## FINANCIAL REQUIREMENTS
+${financialText}
 
 ## OFFICIAL GOVERNMENT RESOURCES
 ${govLinkText}
 
 ## TONE & GUIDELINES
 1. Be conversational and supportive, not robotic
-2. Break down complex processes into clear steps
-3. Reference their specific visa type in responses
-4. Include relevant gov.uk links with context (not just raw URLs)
-5. If unsure about current requirements, direct them to gov.uk
-6. Use markdown formatting: **bold** for key terms, bullets for lists
-7. End substantive answers with "📌 See: [link]" for relevant gov.uk pages
-8. Always remind them to verify requirements directly with gov.uk before submitting
+2. Break down complex processes into clear, numbered steps
+3. When asked "How do I submit?" reference the submission steps above
+4. Reference their specific visa type in responses
+5. Include relevant gov.uk links with context (not just raw URLs)
+6. If unsure about current requirements, direct them to gov.uk
+7. Use markdown formatting: **bold** for key terms, numbered/bulleted lists
+8. End substantive answers with "📌 See: [link]" for relevant gov.uk pages
+9. Always remind them to verify requirements directly with gov.uk before submitting
 
-## IMPORTANT NOTES
+## CRITICAL NOTES
 - Processing times are current as of 2026 but can change
-- Financial requirements and eligibility criteria are strict
-- Missing documents = automatic refusal
-- Always verify current requirements on gov.uk`;
+- Financial requirements and eligibility criteria are STRICT
+- Missing ONE required document = automatic refusal
+- Always verify current requirements on gov.uk BEFORE applying
+- Processing times differ for in-country vs. overseas applications`;
 }
 
 /**
@@ -123,6 +190,25 @@ ${govLinkText}
  */
 export async function POST(req: NextRequest) {
   try {
+    // Get client IP for rate limiting
+    const ip = req.headers.get('x-forwarded-for')?.split(',')[0] || 
+               req.headers.get('x-real-ip') || 
+               '127.0.0.1';
+
+    // Check rate limit
+    const rateLimitCheck = checkRateLimit(ip);
+    if (!rateLimitCheck.allowed) {
+      return NextResponse.json(
+        { error: 'Too many messages. Please wait a moment and try again.' },
+        {
+          status: 429,
+          headers: {
+            'Retry-After': String(rateLimitCheck.retryAfter || 60),
+          },
+        }
+      );
+    }
+
     const body = await req.json();
     const {
       message,
