@@ -15,7 +15,7 @@ import {
  * In production, these would use a dedicated PDF library
  */
 export async function generateExampleBankStatementPDF(
-  statement: ExampleBankStatement
+  _statement: ExampleBankStatement
 ): Promise<Blob> {
   // Placeholder: return empty blob
   // In production: use library like puppeteer or dedicated PDF service
@@ -25,21 +25,21 @@ export async function generateExampleBankStatementPDF(
 /**
  * Generate example payslip PDF
  */
-export async function generateExamplePayslipPDF(payslip: ExamplePayslip): Promise<Blob> {
+export async function generateExamplePayslipPDF(_payslip: ExamplePayslip): Promise<Blob> {
   return new Blob(['placeholder'], { type: 'application/pdf' });
 }
 
 /**
  * Generate example utility bill PDF
  */
-export async function generateExampleUtilityBillPDF(bill: ExampleUtilityBill): Promise<Blob> {
+export async function generateExampleUtilityBillPDF(_bill: ExampleUtilityBill): Promise<Blob> {
   return new Blob(['placeholder'], { type: 'application/pdf' });
 }
 
 /**
  * Generate example employer letter PDF
  */
-export async function generateExampleEmployerLetterPDF(letter: ExampleEmployerLetter): Promise<Blob> {
+export async function generateExampleEmployerLetterPDF(_letter: ExampleEmployerLetter): Promise<Blob> {
   return new Blob(['placeholder'], { type: 'application/pdf' });
 }
 
