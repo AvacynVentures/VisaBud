@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { sendEmail, emailTemplates } from '@/lib/email';
 
 /**
  * Auth callback handler for Supabase (magic link + OAuth).
@@ -59,7 +60,7 @@ export async function GET(request: NextRequest) {
         || null;
       
       // Upsert user record (create if doesn't exist, update if it does)
-      await supabaseAdmin
+      const { data: userData } = await supabaseAdmin
         .from('users')
         .upsert(
           {
@@ -70,7 +71,27 @@ export async function GET(request: NextRequest) {
             updated_at: new Date().toISOString(),
           },
           { onConflict: 'auth_id' }
-        );
+        )
+        .select('created_at')
+        .single();
+
+      // Send welcome email to new users (fire-and-forget)
+      const userEmail = data.user.email;
+      if (userData && userEmail && process.env.RESEND_API_KEY) {
+        (async () => {
+          try {
+            const template = emailTemplates.welcome(userEmail);
+            await sendEmail(
+              userEmail,
+              template,
+              process.env.RESEND_API_KEY || ''
+            );
+            console.log(`Welcome email sent to ${userEmail}`);
+          } catch (err) {
+            console.error(`Failed to send welcome email to ${userEmail}:`, err);
+          }
+        })();
+      }
 
       // Check if user has a completed payment
       const { data: paymentData } = await supabaseAdmin
