@@ -142,7 +142,7 @@ export function generateExampleBankStatement(_person: ExamplePerson): ExampleBan
   }
   
   return {
-    accountHolder: person.fullName,
+    accountHolder: _person.fullName,
     bankName,
     accountNumber: accountNum,
     sortCode,
