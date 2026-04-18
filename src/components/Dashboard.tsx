@@ -23,8 +23,10 @@ export default function Dashboard({ applicationId: _applicationId, documents = [
     setCompletedDocs(updated);
   };
 
-  const completionPercentage = documents.length > 0 
-    ? Math.round((completedDocs.size / documents.length) * 100) 
+  // Only count documents marked as completed (not invalid ones)
+  const validDocuments = documents.filter(doc => doc.is_completed);
+  const completionPercentage = validDocuments.length > 0 
+    ? Math.round((completedDocs.size / validDocuments.length) * 100) 
     : 0;
 
   // Group documents by category

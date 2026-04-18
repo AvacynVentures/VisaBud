@@ -9,33 +9,34 @@ interface Template {
   title: string;
   visa: 'Spouse' | 'Skilled Worker' | 'Citizenship';
   category: string;
+  description?: string; // Additional guidance for users
 }
 
 const TEMPLATES: Template[] = [
   // Spouse Visa (12)
-  { filename: 'Spouse_ProofOfRelationship.docx', title: 'Proof of Relationship', visa: 'Spouse', category: 'Evidence & Documentation' },
-  { filename: 'Spouse_FinancialEvidence.docx', title: 'Financial Evidence Summary', visa: 'Spouse', category: 'Financial' },
-  { filename: 'Spouse_ProofOfCohabitation.docx', title: 'Proof of Cohabitation', visa: 'Spouse', category: 'Evidence & Documentation' },
-  { filename: 'Spouse_SavingsAndSponsorship.docx', title: 'Savings & Sponsorship Declaration', visa: 'Spouse', category: 'Financial' },
-  { filename: 'Spouse_EmploymentLetter.docx', title: 'Employer Verification Letter', visa: 'Spouse', category: 'Financial' },
-  { filename: 'Spouse_SelfEmploymentAccounts.docx', title: 'Self-Employment Accounts & Tax Returns', visa: 'Spouse', category: 'Financial' },
-  { filename: 'Spouse_BankStatements.docx', title: 'Bank Statements & Financial Records', visa: 'Spouse', category: 'Financial' },
-  { filename: 'Spouse_TaxReturns.docx', title: 'Tax Returns & P60 Forms', visa: 'Spouse', category: 'Financial' },
-  { filename: 'Spouse_UtilityBills.docx', title: 'Utility Bills & Council Tax', visa: 'Spouse', category: 'Evidence & Documentation' },
-  { filename: 'Spouse_Photos.docx', title: 'Relationship Photos & Documentation', visa: 'Spouse', category: 'Evidence & Documentation' },
-  { filename: 'Spouse_EmailCommunication.docx', title: 'Email & Message Correspondence', visa: 'Spouse', category: 'Evidence & Documentation' },
-  { filename: 'Spouse_ChildrenDocumentation.docx', title: 'Children Documentation', visa: 'Spouse', category: 'Family' },
+  { filename: 'Spouse_ProofOfRelationship.docx', title: 'Proof of Relationship', visa: 'Spouse', category: 'Evidence & Documentation', description: 'Document your relationship: photos together, trip evidence, shared experiences' },
+  { filename: 'Spouse_FinancialEvidence.docx', title: 'Financial Evidence Summary', visa: 'Spouse', category: 'Financial', description: 'Summarize how you meet the £29,000/year requirement with bank statements + payslips' },
+  { filename: 'Spouse_ProofOfCohabitation.docx', title: 'Proof of Cohabitation', visa: 'Spouse', category: 'Evidence & Documentation', description: 'Demonstrate living together: lease agreements, bills, correspondence' },
+  { filename: 'Spouse_SavingsAndSponsorship.docx', title: 'Savings & Sponsorship Declaration', visa: 'Spouse', category: 'Financial', description: 'If below £29k salary, show savings of £16,000+ held for 6 months' },
+  { filename: 'Spouse_EmploymentLetter.docx', title: 'Employer Verification Letter', visa: 'Spouse', category: 'Financial', description: 'Letter from employer on letterhead confirming job title, salary, and permanence' },
+  { filename: 'Spouse_SelfEmploymentAccounts.docx', title: 'Self-Employment Accounts & Tax Returns', visa: 'Spouse', category: 'Financial', description: 'If self-employed: 2 years of tax returns + business bank statements' },
+  { filename: 'Spouse_BankStatements.docx', title: 'Bank Statements & Financial Records', visa: 'Spouse', category: 'Financial', description: '6 consecutive months of statements showing income and stability' },
+  { filename: 'Spouse_TaxReturns.docx', title: 'Tax Returns & P60 Forms', visa: 'Spouse', category: 'Financial', description: 'Most recent P60 or tax return (self-employed) showing annual income' },
+  { filename: 'Spouse_UtilityBills.docx', title: 'Utility Bills & Council Tax', visa: 'Spouse', category: 'Evidence & Documentation', description: 'Proof of address: electricity, gas, water, or council tax bills in both names' },
+  { filename: 'Spouse_Photos.docx', title: 'Relationship Photos & Documentation', visa: 'Spouse', category: 'Evidence & Documentation', description: 'Photos of you together, family, holidays — chronological order helps' },
+  { filename: 'Spouse_EmailCommunication.docx', title: 'Email & Message Correspondence', visa: 'Spouse', category: 'Evidence & Documentation', description: 'Screenshots of meaningful conversations showing genuine relationship' },
+  { filename: 'Spouse_ChildrenDocumentation.docx', title: 'Children Documentation', visa: 'Spouse', category: 'Family', description: 'Birth certificates, custody arrangements if applicable' },
 
   // Skilled Worker (4)
-  { filename: 'SkilledWorker_MaintenanceFunds.docx', title: 'Maintenance of Funds Declaration', visa: 'Skilled Worker', category: 'Financial' },
-  { filename: 'SkilledWorker_SponsorshipLetter.docx', title: 'Sponsor Certification Letter', visa: 'Skilled Worker', category: 'Employment' },
-  { filename: 'SkilledWorker_PayslipsAndP60.docx', title: 'Payslips & Tax Records', visa: 'Skilled Worker', category: 'Employment' },
-  { filename: 'SkilledWorker_JobOffer.docx', title: 'Job Offer Letter', visa: 'Skilled Worker', category: 'Employment' },
+  { filename: 'SkilledWorker_MaintenanceFunds.docx', title: 'Maintenance of Funds Declaration', visa: 'Skilled Worker', category: 'Financial', description: 'Confirm you hold £1,270 in your account for 28 consecutive days' },
+  { filename: 'SkilledWorker_SponsorshipLetter.docx', title: 'Sponsor Certification Letter', visa: 'Skilled Worker', category: 'Employment', description: 'From your employer confirming sponsorship and job details' },
+  { filename: 'SkilledWorker_PayslipsAndP60.docx', title: 'Payslips & Tax Records', visa: 'Skilled Worker', category: 'Employment', description: 'Recent payslips + P60 confirming salary meets threshold (£38,700+)' },
+  { filename: 'SkilledWorker_JobOffer.docx', title: 'Job Offer Letter', visa: 'Skilled Worker', category: 'Employment', description: 'Original job offer with salary, position, and start date' },
 
   // Citizenship (3)
-  { filename: 'Citizenship_ResidenceProof.docx', title: 'Continuous Residence Proof', visa: 'Citizenship', category: 'Residency' },
-  { filename: 'Citizenship_EnglishLanguageTest.docx', title: 'English Language Proficiency Certificate', visa: 'Citizenship', category: 'Requirements' },
-  { filename: 'Citizenship_LifeInUKTest.docx', title: 'Life in the UK Test Certificate', visa: 'Citizenship', category: 'Requirements' },
+  { filename: 'Citizenship_ResidenceProof.docx', title: 'Continuous Residence Proof', visa: 'Citizenship', category: 'Residency', description: 'Council tax bills, tenancy agreements for each year of 5-year period' },
+  { filename: 'Citizenship_EnglishLanguageTest.docx', title: 'English Language Proficiency Certificate', visa: 'Citizenship', category: 'Requirements', description: 'B1 CEFR level or higher (or degree taught in English)' },
+  { filename: 'Citizenship_LifeInUKTest.docx', title: 'Life in the UK Test Certificate', visa: 'Citizenship', category: 'Requirements', description: 'Pass certificate from approved test provider' },
 ];
 
 interface TemplatesGalleryProps {
@@ -159,6 +160,9 @@ export default function TemplatesGallery({ onClose, isPremium = false }: Templat
                       >
                         <div className="flex-1">
                           <p className="font-medium text-gray-900">{template.title}</p>
+                          {template.description && (
+                            <p className="text-xs text-gray-600 mt-1">{template.description}</p>
+                          )}
                           <p className="text-xs text-gray-500 mt-1">{template.category}</p>
                         </div>
 
