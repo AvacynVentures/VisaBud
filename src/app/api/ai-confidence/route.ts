@@ -159,7 +159,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const { image, requirement, mimeType, docTitle, visaType } = await req.json();
+    const { image, requirement, mimeType, docTitle, visaType, documentId } = await req.json();
 
     if (!requirement) {
       return NextResponse.json({ error: 'Missing requirement' }, { status: 400 });
@@ -176,6 +176,36 @@ export async function POST(req: NextRequest) {
       docTitle: docTitle || 'Document',
       visaType: visaType || 'spouse',
     });
+
+    // Store result in ai_reports table (best effort — don't fail if this errors)
+    try {
+      if (user && documentId) {
+        // Get current version
+        const { data: existing } = await supabaseServer
+          .from('ai_reports')
+          .select('version')
+          .eq('user_id', user.id)
+          .eq('document_id', documentId)
+          .order('version', { ascending: false })
+          .limit(1);
+
+        const nextVersion = (existing?.[0]?.version || 0) + 1;
+
+        await supabaseServer.from('ai_reports').insert({
+          user_id: user.id,
+          document_id: documentId || docTitle,
+          document_name: docTitle || 'Document',
+          confidence_score: result.confidence,
+          flags: result.flags.map((f: string) => ({ text: f, severity: 'medium' })),
+          swot: result.swot,
+          recommendations: result.recommendations.map((r: string) => ({ step: '', description: r })),
+          generated_at: new Date().toISOString(),
+          version: nextVersion,
+        });
+      }
+    } catch (storeErr) {
+      console.warn('[ai-confidence] Failed to store report:', storeErr);
+    }
 
     return NextResponse.json(result);
   } catch (error) {

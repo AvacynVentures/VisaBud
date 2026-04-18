@@ -1,33 +1,13 @@
-import { stripe } from '@/lib/stripe';
+import { stripe, STRIPE_PRICE_IDS, type TierKey } from '@/lib/stripe';
 import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
 
 /**
- * Dynamic tier pricing — fetched from /api/prices (single source of truth)
- */
-const PRICES: Record<string, { name: string; description: string; pricePence: number }> = {
-  standard: {
-    name: 'VisaBud Full Pack',
-    description: 'Personalised document checklist, timeline, risk assessment & PDF export',
-    pricePence: 1, // £0.01
-  },
-  premium: {
-    name: 'VisaBud Premium Pack',
-    description: 'Everything in Standard + AI document verification, templates & email support',
-    pricePence: 2, // £0.02
-  },
-  expert: {
-    name: 'VisaBud Expert Pack',
-    description: 'Everything in Premium + expert immigration review (24h turnaround) & priority support',
-    pricePence: 3, // £0.03
-  },
-};
-
-type TierKey = 'standard' | 'premium' | 'expert';
-
-/**
  * POST /api/checkout
- * Create a Stripe checkout session for the selected VisaBud tier
+ * Create a Stripe checkout session for the selected VisaBud tier.
+ *
+ * Uses Stripe Price IDs (from env) — Stripe is the source of truth for amounts.
+ * No hardcoded prices in this file.
  *
  * Body: { tier?: "standard" | "premium" | "expert" }
  * Headers: Authorization: Bearer <supabase_access_token>
@@ -72,29 +52,29 @@ export async function POST(req: NextRequest) {
     let tier: TierKey = 'standard';
     try {
       const body = await req.json();
-      if (body.tier && body.tier in PRICES) {
+      if (body.tier && body.tier in STRIPE_PRICE_IDS) {
         tier = body.tier as TierKey;
       }
     } catch {
       // No body or invalid JSON — default to standard
     }
 
-    const config = PRICES[tier];
+    const priceId = STRIPE_PRICE_IDS[tier];
 
-    // Create Stripe checkout session with dynamic pricing
+    if (!priceId) {
+      return NextResponse.json(
+        { error: `Price ID not configured for tier: ${tier}. Check STRIPE_PRICE_${tier.toUpperCase()} env var.` },
+        { status: 500 }
+      );
+    }
+
+    // Create Stripe checkout session using Price ID (Stripe holds the amount)
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       customer_email: email,
       line_items: [
         {
-          price_data: {
-            currency: 'gbp',
-            product_data: {
-              name: config.name,
-              description: config.description,
-            },
-            unit_amount: config.pricePence,
-          },
+          price: priceId,  // ← Stripe Price ID — source of truth for amount
           quantity: 1,
         },
       ],
@@ -157,6 +137,11 @@ export async function GET() {
       stripe: 'connected',
       keyPrefix,
       siteUrl: siteUrl !== 'NOT_SET' ? 'set' : 'NOT_SET',
+      priceIds: {
+        standard: STRIPE_PRICE_IDS.standard ? 'set' : 'NOT_SET',
+        premium: STRIPE_PRICE_IDS.premium ? 'set' : 'NOT_SET',
+        expert: STRIPE_PRICE_IDS.expert ? 'set' : 'NOT_SET',
+      },
     });
   } catch (err: any) {
     return NextResponse.json({

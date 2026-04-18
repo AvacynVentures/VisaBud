@@ -1,0 +1,82 @@
+'use client';
+
+import { useState } from 'react';
+import { Download, Lock } from 'lucide-react';
+
+interface GetTemplateButtonProps {
+  itemTitle: string;
+  templateFilename?: string;
+  isPremium: boolean;
+  onUnlock?: () => void;
+}
+
+export default function GetTemplateButton({
+  itemTitle,
+  templateFilename,
+  isPremium,
+  onUnlock,
+}: GetTemplateButtonProps) {
+  const [isDownloading, setIsDownloading] = useState(false);
+
+  // No template available for this item
+  if (!templateFilename) {
+    return (
+      <button
+        disabled
+        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-400 bg-gray-100 rounded-lg cursor-not-allowed border border-gray-200"
+        title="Template coming soon"
+      >
+        <Download className="w-3.5 h-3.5" />
+        Template
+      </button>
+    );
+  }
+
+  if (!isPremium) {
+    return (
+      <button
+        onClick={onUnlock}
+        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-amber-700 bg-amber-50 hover:bg-amber-100 active:scale-95 rounded-lg transition-colors border border-amber-200 cursor-pointer"
+        title={`Premium: Download ${itemTitle} template`}
+      >
+        <Lock className="w-3.5 h-3.5" />
+        <span>Template</span>
+      </button>
+    );
+  }
+
+  const handleDownload = () => {
+    setIsDownloading(true);
+    try {
+      // Direct download via simple link (no fetch needed for static files)
+      const link = document.createElement('a');
+      link.href = `/templates/${templateFilename}`;
+      link.download = templateFilename;
+      link.style.display = 'none';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (err) {
+      console.error('Download error:', err);
+      alert(`Failed to download template for: ${itemTitle}`);
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
+  return (
+    <button
+      onClick={handleDownload}
+      disabled={isDownloading}
+      className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
+        isDownloading
+          ? 'bg-gray-200 text-gray-600 cursor-not-allowed'
+          : 'text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200'
+      }`}
+      title={`Download template: ${itemTitle}`}
+    >
+      <Download className="w-3.5 h-3.5" />
+      {isDownloading ? 'Downloading...' : 'Template'}
+    </button>
+  );
+}

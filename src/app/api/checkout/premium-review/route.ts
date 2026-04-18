@@ -1,43 +1,58 @@
-import { stripe } from '@/lib/stripe';
-import { supabase } from '@/lib/supabase';
+import { stripe, STRIPE_PRICE_IDS, type TierKey } from '@/lib/stripe';
+import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
-
-// Premium Review Product Configs
-const PREMIUM_TIERS = {
-  ai_review_149: {
-    name: 'VisaBud Premium AI Document Review',
-    description: 'Professional-grade AI review of all your documents with risk scoring, specific feedback, and cross-document validation. Results within 24 hours.',
-    pricePence: 2,  // £0.02 test price
-    tier: 'ai_review_149' as const,
-  },
-  human_review_199: {
-    name: 'VisaBud Expert Document Review',
-    description: 'Full document review by a qualified immigration expert. Includes everything in AI Review plus personalised human feedback and recommendations. Results within 24 hours.',
-    pricePence: 3,  // £0.03 test price
-    tier: 'human_review_199' as const,
-  },
-};
 
 /**
  * POST /api/checkout/premium-review
- * Create a Stripe checkout session for premium document review
+ * Create a Stripe checkout session for premium document review.
+ *
+ * Uses Stripe Price IDs — no hardcoded amounts.
+ * Accepts tier: "premium" or "expert" (standard is handled by /api/checkout)
  */
 export async function POST(req: NextRequest) {
   try {
-    const { tier } = await req.json();
+    const body = await req.json();
+    const { tier } = body;
 
-    // Validate tier
-    if (!tier || !PREMIUM_TIERS[tier as keyof typeof PREMIUM_TIERS]) {
+    // Validate tier — only premium and expert are valid for review checkout
+    if (!tier || !['premium', 'expert'].includes(tier)) {
       return NextResponse.json(
-        { error: 'Invalid tier. Must be "ai_review_149" or "human_review_199".' },
+        { error: 'Invalid tier. Must be "premium" or "expert".' },
         { status: 400 }
       );
     }
 
-    const product = PREMIUM_TIERS[tier as keyof typeof PREMIUM_TIERS];
+    const priceId = STRIPE_PRICE_IDS[tier as TierKey];
 
-    // Get current user
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (!priceId) {
+      return NextResponse.json(
+        { error: `Price ID not configured for tier: ${tier}` },
+        { status: 500 }
+      );
+    }
+
+    // Get current user from auth header
+    const authHeader = req.headers.get('authorization') || req.headers.get('Authorization');
+    const token = authHeader?.replace('Bearer ', '');
+
+    if (!token) {
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
+    const supabaseAuth = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        global: {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      }
+    );
+
+    const { data: { user }, error: authError } = await supabaseAuth.auth.getUser(token);
 
     if (authError || !user) {
       return NextResponse.json(
@@ -48,34 +63,24 @@ export async function POST(req: NextRequest) {
 
     const email = user.email || 'unknown@example.com';
 
-    // Create Stripe checkout session
+    // Create Stripe checkout session using Price ID
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       customer_email: email,
       line_items: [
         {
-          price_data: {
-            currency: 'gbp',
-            product_data: {
-              name: product.name,
-              description: product.description,
-              metadata: {
-                tier: product.tier,
-              },
-            },
-            unit_amount: product.pricePence,
-          },
+          price: priceId,  // ← Stripe Price ID — source of truth for amount
           quantity: 1,
         },
       ],
       mode: 'payment',
-      success_url: `${process.env.NEXT_PUBLIC_SITE_URL}/app/review-success?session_id={CHECKOUT_SESSION_ID}&tier=${product.tier}`,
+      success_url: `${process.env.NEXT_PUBLIC_SITE_URL}/app/review-success?session_id={CHECKOUT_SESSION_ID}&tier=${tier}`,
       cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard`,
       metadata: {
         userId: user.id,
         email: email,
         productType: 'premium_review',
-        tier: product.tier,
+        tier: tier,
       },
     });
 

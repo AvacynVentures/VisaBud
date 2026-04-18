@@ -52,17 +52,23 @@ import PaywallModal from '@/components/PaywallModal';
 import PaymentSuccessBanner from '@/components/PaymentSuccessBanner';
 import DocumentUpload from '@/components/DocumentUpload';
 import TierFeatureButtons from '@/components/TierFeatureButtons';
+import AIReportModal from '@/components/AIReportModal';
+import TemplatesGallery from '@/components/TemplatesGallery';
+import GetTemplateButton from '@/components/GetTemplateButton';
+import type { AIReportData } from '@/lib/store';
+import { getTemplateForItem } from '@/lib/template-mapping';
 import { PageFadeIn, FadeIn, ConfettiBurst, CelebrationBanner } from '@/lib/animations';
 // PurchasedTier type used via store
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
-type TabId = 'checklist' | 'timeline' | 'risks' | 'submit';
+type TabId = 'checklist' | 'timeline' | 'risks' | 'templates' | 'submit';
 
 const TABS: { id: TabId; label: string; icon: typeof FileText; color: string }[] = [
   { id: 'checklist', label: 'Checklist', icon: FileText, color: 'text-blue-600' },
   { id: 'timeline', label: 'Timeline', icon: Calendar, color: 'text-emerald-600' },
   { id: 'risks', label: 'Risks', icon: AlertCircle, color: 'text-amber-600' },
+  { id: 'templates', label: 'Templates', icon: FileText, color: 'text-indigo-600' },
   { id: 'submit', label: 'Submit', icon: CheckCircle, color: 'text-violet-600' },
 ];
 
@@ -127,8 +133,30 @@ function DashboardContent() {
     if (user?.email) setUserEmail(user.email);
   }, [user, setUserEmail]);
 
-  const [hydrated, setHydrated] = useState(false);
-  useEffect(() => { setHydrated(true); }, []);
+  // Wait for Zustand persist middleware to finish restoring from localStorage.
+  // Without this, the store has default (empty) values on first render,
+  // causing hasCompletedWizard to be false and showing FreemiumWelcomeDashboard
+  // even when the user completed the wizard before payment redirect.
+  const [hydrated, setHydrated] = useState(useApplicationStore.persist.hasHydrated());
+  useEffect(() => {
+    if (hydrated) return;
+    
+    // Fallback: force hydration after 2 seconds if onFinishHydration doesn't fire
+    const timeoutId = setTimeout(() => {
+      setHydrated(true);
+      console.warn('Hydration timeout: forcing render after 2s');
+    }, 2000);
+    
+    const unsub = useApplicationStore.persist.onFinishHydration(() => {
+      clearTimeout(timeoutId);
+      setHydrated(true);
+    });
+    // In case hydration already finished between useState and useEffect
+    if (useApplicationStore.persist.hasHydrated()) {
+      setHydrated(true);
+    }
+    return unsub;
+  }, [hydrated]);
 
   // Check unlock status — runs on mount AND polls when returning from payment
   useEffect(() => {
@@ -159,14 +187,21 @@ function DashboardContent() {
           
           if (payments && payments.length > 0) {
             setUnlocked(true);
-            // Determine tier from amount
-            const amount = payments[0].amount_pence || 0;
-            if (amount >= 29900 || amount === 3) {
-              setPurchasedTier('expert');
-            } else if (amount >= 14900 || amount === 2) {
-              setPurchasedTier('premium');
+            // Use tier column from payments table (source of truth from webhook)
+            // Fallback to inferring from amount if tier column doesn't exist
+            const storedTier = payments[0].tier;
+            if (storedTier) {
+              setPurchasedTier(storedTier);
             } else {
-              setPurchasedTier('standard');
+              // Fallback: infer from amount (for backwards compat with old payments)
+              const amount = payments[0].amount_pence || 0;
+              if (amount >= 29900 || amount === 33) {
+                setPurchasedTier('expert');
+              } else if (amount >= 14900 || amount === 32 || amount === 2) {
+                setPurchasedTier('premium');
+              } else {
+                setPurchasedTier('standard');
+              }
             }
             return true;
           }
@@ -709,18 +744,22 @@ function FullDashboard({
             </FadeIn>
           )}
 
-          {/* Free tier banner */}
+          {/* Premium Upgrade Banner — shown to Standard/Free users */}
           {!unlocked && (
             <FadeIn delay={0.05}>
-              <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 mb-6 flex items-center gap-3">
-                <Info className="w-5 h-5 text-amber-600 flex-shrink-0" />
-                <p className="text-sm text-amber-800">
-                  <span className="font-semibold">You&apos;re viewing a preview of your checklist.</span>{' '}
-                  <button onClick={() => setShowPaywall(true)} className="text-amber-900 underline hover:no-underline font-semibold">
-                    Unlock Premium
-                  </button>{' '}
-                  for the complete plan with all documents, full timeline, and detailed risk assessment.
-                </p>
+              <div className="bg-gradient-to-r from-emerald-50 to-emerald-100 border border-emerald-300 rounded-2xl p-5 sm:p-6 mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="flex-1">
+                  <h3 className="font-bold text-lg text-emerald-900 mb-1">🚀 Unlock Premium</h3>
+                  <p className="text-sm text-emerald-700">
+                    Get <strong>19 professional templates</strong>, <strong>AI document analysis</strong>, full timeline, and complete risk assessment.
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowPaywall(true)}
+                  className="inline-flex items-center gap-2 px-5 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-md hover:shadow-lg transition-all active:scale-95 whitespace-nowrap flex-shrink-0"
+                >
+                  See Plans
+                </button>
               </div>
             </FadeIn>
           )}
@@ -794,6 +833,9 @@ function FullDashboard({
               )}
               {activeTab === 'risks' && (
                 <RisksTab risks={risks} unlocked={unlocked} onUnlock={() => setShowPaywall(true)} />
+              )}
+              {activeTab === 'templates' && (
+                <TemplatesGallery isPremium={unlocked} onClose={() => setActiveTab('checklist')} />
               )}
               {activeTab === 'submit' && (
                 <SubmitTab
@@ -1069,6 +1111,16 @@ function ProgressCard({ checkedCount, total, progressPct, verifiedCount }: { che
 
 function ChecklistItemRow({ item, checked, onToggle, unlocked = false }: { item: ChecklistItem; checked: boolean; onToggle: () => void; unlocked?: boolean }) {
   const [justChecked, setJustChecked] = useState(false);
+  const [showAIModal, setShowAIModal] = useState(false);
+  const [isAILoading, setIsAILoading] = useState(false);
+
+  const { documentUploads, documentReports, setDocumentReport, purchasedTier, visaType } = useApplicationStore();
+  const upload = documentUploads[item.id];
+  const report = documentReports[item.id] || null;
+  const hasFileData = !!upload?.fileData;
+  const isPremiumPlus = purchasedTier === 'premium' || purchasedTier === 'expert';
+
+  // Template handling is done via GetTemplateButton component using getTemplateForItem()
 
   const handleToggle = useCallback(() => {
     if (!checked) {
@@ -1078,59 +1130,253 @@ function ChecklistItemRow({ item, checked, onToggle, unlocked = false }: { item:
     onToggle();
   }, [checked, onToggle]);
 
+  // Confidence KPI display
+  const getConfidenceDisplay = () => {
+    if (!isPremiumPlus) {
+      return { text: '🔒', className: 'text-gray-400 cursor-not-allowed', clickable: false };
+    }
+    if (!report) {
+      return { text: 'Not assessed', className: 'text-gray-400 hover:text-gray-600 cursor-pointer', clickable: true };
+    }
+    const score = report.confidence;
+    if (score >= 70) return { text: `${score}% 🟢`, className: 'text-emerald-600 hover:text-emerald-700 cursor-pointer font-semibold', clickable: true };
+    if (score >= 40) return { text: `${score}% 🟡`, className: 'text-amber-600 hover:text-amber-700 cursor-pointer font-semibold', clickable: true };
+    return { text: `${score}% 🔴`, className: 'text-red-600 hover:text-red-700 cursor-pointer font-semibold', clickable: true };
+  };
+
+  const confidenceDisplay = getConfidenceDisplay();
+
+  // AI Ready Check handler
+  const handleAIReadyCheck = async (forceNew = false) => {
+    if (!isPremiumPlus) return;
+    if (!hasFileData && !report) return;
+
+    // If report exists and not forcing new, show cached
+    if (report && !forceNew) {
+      setShowAIModal(true);
+      return;
+    }
+
+    // Generate new report
+    setShowAIModal(true);
+    setIsAILoading(true);
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        throw new Error('Not authenticated');
+      }
+
+      const response = await fetch('/api/ai-confidence', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          image: upload?.fileData,
+          requirement: `${item.title}: ${item.description}`,
+          mimeType: upload?.mimeType || 'image/jpeg',
+          docTitle: item.title,
+          visaType: visaType || 'spouse',
+        }),
+      });
+
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.error || `API error: ${response.status}`);
+      }
+
+      const result = await response.json();
+
+      // Transform API response to AIReportData format
+      const reportData: AIReportData = {
+        documentId: item.id,
+        documentName: item.title,
+        confidence: result.confidence,
+        flags: Array.isArray(result.flags)
+          ? result.flags.map((f: string | { text: string; severity: string }) =>
+              typeof f === 'string' ? { text: f, severity: 'medium' } : f
+            )
+          : [],
+        swot: result.swot || { strengths: [], weaknesses: [], opportunities: [], threats: [] },
+        recommendations: Array.isArray(result.recommendations)
+          ? result.recommendations.map((r: string | { step: string; description: string }) =>
+              typeof r === 'string' ? { step: '', description: r } : r
+            )
+          : [],
+        generatedAt: new Date().toISOString(),
+        version: report ? report.version + 1 : 1,
+      };
+
+      setDocumentReport(item.id, reportData);
+    } catch (err) {
+      console.error('AI confidence check failed:', err);
+    } finally {
+      setIsAILoading(false);
+    }
+  };
+
+  // Document download handler
+  const handleDocumentDownload = () => {
+    if (!upload?.fileData) return;
+    const data = upload.fileData;
+    const mime = upload.mimeType || 'application/octet-stream';
+    const name = upload.fileName || 'document';
+    const byteChars = atob(data);
+    const byteNums = new Array(byteChars.length);
+    for (let i = 0; i < byteChars.length; i++) byteNums[i] = byteChars.charCodeAt(i);
+    const blob = new Blob([new Uint8Array(byteNums)], { type: mime });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = name;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
-    <div className={`px-5 sm:px-6 py-4 hover:bg-gray-50/50 transition-all duration-200 ${checked ? 'bg-emerald-50/30' : ''} ${justChecked ? 'animate-greenFlash' : ''}`}>
-      <button onClick={handleToggle} className="w-full text-left flex items-start gap-4 touch-target">
-        <div className="pt-0.5 flex-shrink-0">
-          {checked ? (
-            <motion.div
-              initial={justChecked ? { scale: 0 } : { scale: 1 }}
-              animate={{ scale: 1 }}
-              transition={{ type: 'spring', stiffness: 500, damping: 15 }}
-              className={justChecked ? 'animate-greenGlow rounded-full' : ''}
-            >
-              <CheckSquare className="w-5 h-5 text-emerald-600" />
-            </motion.div>
-          ) : (
-            <Square className="w-5 h-5 text-gray-300" />
-          )}
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className={`font-medium text-sm ${checked ? 'text-gray-400 line-through' : 'text-gray-900'}`}>
-            {item.title}
-          </p>
-          <p className={`text-sm mt-0.5 ${checked ? 'text-gray-300' : 'text-gray-500'}`}>
-            {item.description}
-          </p>
-          {item.tips && !checked && (
-            <div className="flex items-start gap-1.5 mt-2 text-xs text-blue-600">
-              <Info className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
-              <span>{item.tips}</span>
+    <>
+      <div className={`px-5 sm:px-6 py-4 hover:bg-gray-50/50 transition-all duration-200 ${checked ? 'bg-emerald-50/30' : ''} ${justChecked ? 'animate-greenFlash' : ''}`}>
+        <button onClick={handleToggle} className="w-full text-left flex items-start gap-4 touch-target">
+          <div className="pt-0.5 flex-shrink-0">
+            {checked ? (
+              <motion.div
+                initial={justChecked ? { scale: 0 } : { scale: 1 }}
+                animate={{ scale: 1 }}
+                transition={{ type: 'spring', stiffness: 500, damping: 15 }}
+                className={justChecked ? 'animate-greenGlow rounded-full' : ''}
+              >
+                <CheckSquare className="w-5 h-5 text-emerald-600" />
+              </motion.div>
+            ) : (
+              <Square className="w-5 h-5 text-gray-300" />
+            )}
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className={`font-medium text-sm ${checked ? 'text-gray-400 line-through' : 'text-gray-900'}`}>
+              {item.title}
+            </p>
+            <p className={`text-sm mt-0.5 ${checked ? 'text-gray-300' : 'text-gray-500'}`}>
+              {item.description}
+            </p>
+            {item.tips && !checked && (
+              <div className="flex items-start gap-1.5 mt-2 text-xs text-blue-600">
+                <Info className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
+                <span>{item.tips}</span>
+              </div>
+            )}
+          </div>
+          {justChecked && (
+            <div className="relative flex-shrink-0">
+              <ConfettiBurst active={true} />
             </div>
           )}
-          {item.govLink && !checked && (
+        </button>
+
+        {/* Per-item action buttons row */}
+        <div className="ml-9 mt-3 flex flex-wrap items-center gap-2">
+          {/* Template button — Premium only */}
+          <GetTemplateButton
+            itemTitle={item.title}
+            templateFilename={getTemplateForItem(item.title) || undefined}
+            isPremium={purchasedTier === 'premium' || purchasedTier === 'expert'}
+            onUnlock={() => {}} // Handled by parent
+          />
+
+          {/* Gov.uk link — always visible */}
+          {item.govLink && (
             <a
               href={item.govLink}
               target="_blank"
               rel="noopener noreferrer"
-              onClick={(e) => e.stopPropagation()}
-              className="inline-flex items-center gap-1.5 mt-2 px-3 py-1.5 text-xs font-medium text-white bg-blue-700 hover:bg-blue-800 rounded-lg transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-blue-700 hover:bg-blue-800 rounded-lg transition-colors"
             >
               <ExternalLink className="w-3 h-3" />
-              Gov.uk guidance
+              Gov.uk 🔗
             </a>
           )}
+
+          {/* Confidence KPI — Premium+ */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              if (confidenceDisplay.clickable) {
+                if (report) {
+                  setShowAIModal(true);
+                } else if (hasFileData) {
+                  handleAIReadyCheck();
+                }
+              }
+            }}
+            disabled={!confidenceDisplay.clickable}
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg border transition-colors ${
+              confidenceDisplay.clickable
+                ? 'border-gray-200 hover:bg-gray-50'
+                : 'border-gray-100 bg-gray-50 cursor-not-allowed'
+            } ${confidenceDisplay.className}`}
+          >
+            <Sparkles className="w-3 h-3" />
+            {confidenceDisplay.text}
+          </button>
+
+          {/* AI Ready Check — Premium+ */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              if (isPremiumPlus) handleAIReadyCheck();
+            }}
+            disabled={!isPremiumPlus || (!hasFileData && !report)}
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
+              isPremiumPlus && (hasFileData || report)
+                ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200'
+                : !isPremiumPlus
+                ? 'bg-amber-50 text-amber-700 border border-amber-200 cursor-not-allowed'
+                : 'bg-gray-50 text-gray-400 border border-gray-100 cursor-not-allowed'
+            }`}
+            title={!isPremiumPlus ? 'Premium: AI document analysis' : !hasFileData && !report ? 'Upload a document first' : 'Run AI analysis'}
+          >
+            <ShieldCheck className="w-3 h-3" />
+            AI Ready Check
+            {!isPremiumPlus && <Lock className="w-2.5 h-2.5" />}
+          </button>
+
+          {/* Download — visible if document uploaded */}
+          {hasFileData && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDocumentDownload();
+              }}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 hover:text-gray-800 bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-200 transition-colors"
+            >
+              <Download className="w-3 h-3" />
+              Download
+            </button>
+          )}
         </div>
-        {justChecked && (
-          <div className="relative flex-shrink-0">
-            <ConfettiBurst active={true} />
-          </div>
-        )}
-      </button>
-      <div className="ml-9">
-        <DocumentUpload docId={item.id} requirement={`${item.title}: ${item.description}`} locked={!unlocked} />
+
+        {/* Document Upload */}
+        <div className="ml-9 mt-2">
+          <DocumentUpload docId={item.id} requirement={`${item.title}: ${item.description}`} locked={!unlocked} />
+        </div>
       </div>
-    </div>
+
+      {/* AI Report Modal */}
+      <AIReportModal
+        isOpen={showAIModal}
+        onClose={() => setShowAIModal(false)}
+        report={report}
+        documentId={item.id}
+        documentName={item.title}
+        isLoading={isAILoading}
+        onGenerateNew={() => handleAIReadyCheck(true)}
+        onViewFullReport={() => {
+          setShowAIModal(false);
+          window.location.href = `/dashboard/${item.id}/ai-report`;
+        }}
+      />
+    </>
   );
 }
 

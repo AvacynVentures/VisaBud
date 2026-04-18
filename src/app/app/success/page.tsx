@@ -175,6 +175,19 @@ function SuccessContent() {
 
   const store = useApplicationStore();
 
+  // Wait for Zustand to restore from localStorage before reading wizard answers
+  const [storeHydrated, setStoreHydrated] = useState(useApplicationStore.persist.hasHydrated());
+  useEffect(() => {
+    if (storeHydrated) return;
+    const unsub = useApplicationStore.persist.onFinishHydration(() => {
+      setStoreHydrated(true);
+    });
+    if (useApplicationStore.persist.hasHydrated()) {
+      setStoreHydrated(true);
+    }
+    return unsub;
+  }, [storeHydrated]);
+
   // Verify the Stripe session on mount
   useEffect(() => {
     if (!sessionId) {

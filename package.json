@@ -8,14 +8,17 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "precommit": "npm run type-check"
   },
   "dependencies": {
+    "@sentry/nextjs": "^10.49.0",
     "@stripe/react-stripe-js": "2.4.0",
     "@stripe/stripe-js": "1.46.0",
     "@supabase/supabase-js": "2.38.4",
     "@tailwindcss/typography": "^0.5.19",
     "axios": "1.6.0",
+    "docx": "^9.6.1",
     "framer-motion": "10.16.0",
     "html2canvas": "1.4.1",
     "jspdf": "2.5.1",
