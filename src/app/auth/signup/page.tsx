@@ -77,7 +77,7 @@ function SignUpPageContent() {
       return;
     }
 
-    // Check for rate-limit cooldown
+    // Check for rate-limit cooldown (ONLY if actually rate-limited before)
     const cooldownUntil = localStorage.getItem('signup_cooldown_until');
     if (cooldownUntil && Date.now() < parseInt(cooldownUntil, 10)) {
       const remaining = Math.ceil((parseInt(cooldownUntil, 10) - Date.now()) / 60000);
@@ -99,20 +99,26 @@ function SignUpPageContent() {
 
       if (authError) {
         if (authError.message?.includes('rate') || authError.status === 429 || (authError as any).status === 429) {
-          // Set 5-minute cooldown
+          // ONLY set cooldown if actually rate-limited by Supabase
           localStorage.setItem('signup_cooldown_until', (Date.now() + 5 * 60 * 1000).toString());
           setError('Too many signup attempts. Please wait 5 minutes and try again.');
         } else if (authError.message?.includes('invalid') || authError.message?.includes('not allowed')) {
           setError('Please use a valid email address (e.g., yourname@gmail.com)');
         } else {
+          // Clear any stale cooldown on non-rate-limit errors
+          localStorage.removeItem('signup_cooldown_until');
           setError(authError.message || 'Something went wrong. Please try again.');
         }
         setSending(false);
         return;
       }
 
+      // Success: clear cooldown and show confirmation
+      localStorage.removeItem('signup_cooldown_until');
       setSubmitted(true);
     } catch (err) {
+      // Clear stale cooldown on network error too
+      localStorage.removeItem('signup_cooldown_until');
       setError('Network error. Please check your connection and try again.');
     } finally {
       setSending(false);

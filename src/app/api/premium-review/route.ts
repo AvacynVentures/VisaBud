@@ -67,10 +67,19 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(result);
   } catch (error) {
+    // Fix 2: Mark as FAILED with details, don't silently accept
     console.error('Premium review error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error during premium review' },
-      { status: 500 }
-    );
+    return NextResponse.json({
+      riskLevel: 'high',
+      confidenceScore: 0,
+      feedback: 'Premium review is temporarily unavailable. Your document has been saved and will be reviewed when service recovers. This is not a reflection of document quality.',
+      issues: [],
+      positives: [],
+      provider: 'fallback',
+      pendingValidation: true,
+      analysisComplete: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+      latencyMs: 0,
+    });
   }
 }
