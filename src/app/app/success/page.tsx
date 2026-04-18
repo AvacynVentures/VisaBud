@@ -397,6 +397,27 @@ function SuccessContent() {
         </div>
       </div>
 
+      {/* AI Document Review */}
+      <div className="px-4 pb-8">
+        <div className="max-w-lg mx-auto">
+          <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-2xl border border-indigo-200 p-8">
+            <div className="text-center">
+              <span className="text-4xl mb-3 block">🤖</span>
+              <h2 className="text-xl font-bold text-indigo-900 mb-2">Validate Your Documents</h2>
+              <p className="text-sm text-indigo-800 mb-6">
+                Upload your actual documents and let AI check them against official Gov.uk requirements. Catch issues before submitting.
+              </p>
+              <a
+                href="/app/documents"
+                className="inline-block w-full py-3 px-6 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700 transition-colors"
+              >
+                Start Document Review →
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* What's Next */}
       <div className="px-4 pb-8">
         <div className="max-w-lg mx-auto">
