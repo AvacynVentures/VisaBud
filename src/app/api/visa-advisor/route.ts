@@ -3,25 +3,43 @@ import { getTimelineData } from '@/lib/timeline-data';
 
 export const maxDuration = 60;
 
-interface Message {
+/**
+ * Message format for Claude API
+ */
+interface ClaudeMessage {
   role: 'user' | 'assistant';
   content: string;
 }
 
-// Gov.uk links database
+/**
+ * User context passed from frontend
+ */
+interface VisaAdvisorContext {
+  visaType: string;
+  nationality?: string;
+  urgency?: string;
+  documentCompletionPercent?: number;
+  annualIncomeRange?: string;
+  purchasedTier?: string;
+}
+
+/**
+ * Gov.uk links mapped by visa type
+ * Ensures we always point to official government guidance
+ */
 const GOV_UK_LINKS: Record<string, Record<string, string>> = {
   spouse: {
     overview: 'https://www.gov.uk/uk-family-visa',
-    application: 'https://www.gov.uk/apply-to-come-to-the-uk',
+    apply: 'https://www.gov.uk/apply-to-come-to-the-uk',
     documents: 'https://www.gov.uk/uk-family-visa/documents-you-must-provide',
     fees: 'https://www.gov.uk/uk-family-visa/fees-and-how-to-pay',
     income: 'https://www.gov.uk/guidance/prove-your-income-for-family-visas',
-    biometrics: 'https://www.gov.uk/government/organisations/uk-visas-and-immigration/about/about-us',
+    biometrics: 'https://www.gov.uk/uk-visa-biometrics-appointments',
     status: 'https://visas-immigration.service.gov.uk/apply-online/visa-status',
   },
   skilled_worker: {
     overview: 'https://www.gov.uk/skilled-worker-visa',
-    application: 'https://www.gov.uk/apply-to-come-to-the-uk',
+    apply: 'https://www.gov.uk/apply-to-come-to-the-uk',
     documents: 'https://www.gov.uk/skilled-worker-visa/documents-you-must-provide',
     fees: 'https://www.gov.uk/skilled-worker-visa/fees-and-how-to-pay',
     salary: 'https://www.gov.uk/guidance/salary-requirements-for-workers',
@@ -30,7 +48,7 @@ const GOV_UK_LINKS: Record<string, Record<string, string>> = {
   },
   citizenship: {
     overview: 'https://www.gov.uk/becoming-a-british-citizen',
-    application: 'https://www.gov.uk/becoming-a-british-citizen/apply',
+    apply: 'https://www.gov.uk/becoming-a-british-citizen/apply',
     documents: 'https://www.gov.uk/becoming-a-british-citizen/documents-you-must-provide',
     fees: 'https://www.gov.uk/becoming-a-british-citizen/fees',
     lifeInUkTest: 'https://www.gov.uk/life-in-the-uk-test',
@@ -39,69 +57,101 @@ const GOV_UK_LINKS: Record<string, Record<string, string>> = {
 };
 
 /**
- * Build system prompt with user context
+ * Build rich system prompt with user's visa details, timeline, and government links
+ * The system prompt guides Claude to provide accurate, contextual advice
  */
-function buildSystemPrompt(userContext: {
-  visaType: string;
-  nationality?: string;
-  urgency?: string;
-  documentCompletionPercent?: number;
-  verifiedDocuments?: string[];
-  annualIncomeRange?: string;
-  purchasedTier?: string;
-}): string {
-  const timeline = getTimelineData(userContext.visaType);
-  const govLinks = GOV_UK_LINKS[userContext.visaType] || GOV_UK_LINKS.spouse;
-  
-  const timelineText = timeline.stages
-    .map((s, i) => `${i + 1}. ${s.label}: ${s.detail}`)
+function buildSystemPrompt(context: VisaAdvisorContext): string {
+  const timeline = getTimelineData(context.visaType);
+  const govLinks = GOV_UK_LINKS[context.visaType] || GOV_UK_LINKS.spouse;
+
+  // Format timeline stages as readable text for the prompt
+  const timelineDescription = timeline.stages
+    .map(
+      (stage, i) =>
+        `**${i + 1}. ${stage.label}** (${stage.leadDays} days): ${stage.detail}`
+    )
+    .join('\n\n');
+
+  // Format government links
+  const govLinkText = Object.entries(govLinks)
+    .map(([topic, url]) => `- **${topic.replace(/([A-Z])/g, ' $1')}**: ${url}`)
     .join('\n');
 
-  return `You are a friendly, knowledgeable UK visa advisor for VisaBud. You help users understand their visa application process and answer questions.
+  return `You are a trusted UK visa advisor for VisaBud, helping applicants understand their specific visa application journey.
 
-USER CONTEXT:
-- Visa Type: ${userContext.visaType}
-- Nationality: ${userContext.nationality || 'Not provided'}
-- Timeline Urgency: ${userContext.urgency || 'Standard'}
-- Documents Uploaded: ${userContext.verifiedDocuments?.join(', ') || 'None yet'}
-- Document Completion: ${userContext.documentCompletionPercent || 0}%
-- Annual Income: ${userContext.annualIncomeRange || 'Not provided'}
-- Purchased Tier: ${userContext.purchasedTier || 'Free checklist only'}
+## YOUR ROLE
+- Provide accurate, up-to-date visa advice based on official UK government guidance
+- Answer questions about the application process, documents, timelines, and requirements
+- Give context-specific advice based on the applicant's situation
+- Always direct users to official gov.uk sources for authoritative information
+- Be empathetic but honest about challenges and processing times
 
-TIMELINE FOR ${userContext.visaType.toUpperCase()} VISA:
-${timelineText}
+## APPLICANT'S SITUATION
+- **Visa Type**: ${context.visaType.replace('_', ' ')}
+- **Nationality**: ${context.nationality || 'Not provided'}
+- **Timeline**: ${context.urgency || 'Standard processing'}
+- **Documents Ready**: ${context.documentCompletionPercent || 0}%
+- **Income Level**: ${context.annualIncomeRange || 'Not specified'}
+- **Access Level**: ${context.purchasedTier || 'Free checklist'}
 
-OFFICIAL GOVERNMENT LINKS:
-${Object.entries(govLinks)
-  .map(([key, url]) => `- ${key}: ${url}`)
-  .join('\n')}
+## TIMELINE FOR THIS VISA
+${timelineDescription}
 
-INSTRUCTIONS:
-1. Answer questions about their specific visa type and timeline
-2. Reference the timeline stages and lead times above
-3. Provide gov.uk links when relevant
-4. Be honest about processing times and requirements
-5. Suggest next steps based on their progress
-6. If they ask about submission, link to the official application portal
-7. Keep responses concise but helpful
-8. Use markdown formatting for clarity (bold for key points, bullets for lists)
-9. Always end complex answers with a relevant gov.uk link
+## OFFICIAL GOVERNMENT RESOURCES
+${govLinkText}
 
-You are empathetic, accurate, and always encourage users to verify on gov.uk before submitting.`;
+## TONE & GUIDELINES
+1. Be conversational and supportive, not robotic
+2. Break down complex processes into clear steps
+3. Reference their specific visa type in responses
+4. Include relevant gov.uk links with context (not just raw URLs)
+5. If unsure about current requirements, direct them to gov.uk
+6. Use markdown formatting: **bold** for key terms, bullets for lists
+7. End substantive answers with "📌 See: [link]" for relevant gov.uk pages
+8. Always remind them to verify requirements directly with gov.uk before submitting
+
+## IMPORTANT NOTES
+- Processing times are current as of 2026 but can change
+- Financial requirements and eligibility criteria are strict
+- Missing documents = automatic refusal
+- Always verify current requirements on gov.uk`;
 }
 
+/**
+ * POST /api/visa-advisor
+ * Accepts a chat message and returns advice from Claude
+ */
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const {
       message,
       conversationHistory = [],
-      userContext = {},
+      userContext = { visaType: 'spouse' },
+    }: {
+      message: string;
+      conversationHistory: ClaudeMessage[];
+      userContext: VisaAdvisorContext;
     } = body;
 
-    if (!message || typeof message !== 'string') {
+    // Validate input
+    if (!message || typeof message !== 'string' || message.trim().length === 0) {
+      return NextResponse.json({ error: 'Message is required' }, { status: 400 });
+    }
+
+    // Prevent excessively long messages (abuse/spam)
+    if (message.length > 1000) {
       return NextResponse.json(
-        { error: 'Message is required' },
+        { error: 'Message too long (max 1000 characters)' },
+        { status: 400 }
+      );
+    }
+
+    // Validate visa type
+    const validVisaTypes = ['spouse', 'skilled_worker', 'citizenship'];
+    if (!validVisaTypes.includes(userContext.visaType)) {
+      return NextResponse.json(
+        { error: 'Invalid visa type' },
         { status: 400 }
       );
     }
@@ -109,13 +159,13 @@ export async function POST(req: NextRequest) {
     // Build system prompt with user context
     const systemPrompt = buildSystemPrompt(userContext);
 
-    // Prepare messages for Claude
-    const messages: Message[] = [
-      ...conversationHistory.slice(-19), // Keep last 19 for context window
+    // Prepare messages for Claude (keep last 19 for context window management)
+    const messages: ClaudeMessage[] = [
+      ...conversationHistory.slice(-19),
       { role: 'user', content: message },
     ];
 
-    // Call Claude API via fetch
+    // Call Claude Haiku (cost-efficient for chat)
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -125,31 +175,53 @@ export async function POST(req: NextRequest) {
       },
       body: JSON.stringify({
         model: 'claude-3-5-haiku-20241022',
-        max_tokens: 500,
+        max_tokens: 600,
         system: systemPrompt,
         messages,
       }),
     });
 
+    // Handle API errors
     if (!response.ok) {
-      const error = await response.text();
-      console.error('[visa-advisor] Claude API error:', response.status, error);
+      const errorText = await response.text();
+      console.error('[visa-advisor] Claude API error:', {
+        status: response.status,
+        error: errorText,
+      });
 
       if (response.status === 429) {
         return NextResponse.json(
-          { error: 'Rate limited. Please wait a moment and try again.' },
+          {
+            error:
+              'I\'m a bit busy right now. Please wait a moment and try again.',
+          },
           { status: 429 }
         );
       }
 
+      if (response.status === 401 || response.status === 403) {
+        console.error('[visa-advisor] Authentication failed');
+        return NextResponse.json(
+          { error: 'Service configuration error' },
+          { status: 500 }
+        );
+      }
+
       return NextResponse.json(
-        { error: 'Failed to get response from advisor' },
+        { error: 'Failed to get advisor response. Please try again.' },
         { status: 500 }
       );
     }
 
     const data = await response.json();
     const assistantMessage = data.content?.[0]?.text || '';
+
+    if (!assistantMessage) {
+      return NextResponse.json(
+        { error: 'Unexpected response format' },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json({
       success: true,
@@ -159,10 +231,12 @@ export async function POST(req: NextRequest) {
         outputTokens: data.usage?.output_tokens || 0,
       },
     });
-  } catch (err: any) {
-    console.error('[visa-advisor] Error:', err);
+  } catch (err: unknown) {
+    const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+    console.error('[visa-advisor] Unhandled error:', errorMessage);
+
     return NextResponse.json(
-      { error: err.message || 'Internal server error' },
+      { error: 'An unexpected error occurred. Please try again.' },
       { status: 500 }
     );
   }
