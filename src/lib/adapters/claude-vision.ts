@@ -196,7 +196,7 @@ Respond ONLY with valid JSON (no markdown, no explanation):
     const userPrompt = `Verify this document matches the requirement: "${input.requirement}".
 
 Check the following:
-1. Document clarity — is it readable and not blurry?
+1. Document clarity — is the text readable? If the document is rotated or upside down, read it in the correct orientation. Do NOT penalise rotation.
 2. Completeness — does it contain all the required information?
 3. Relevance — does it match what's being asked for?
 4. All required details visible (names, dates, amounts, stamps etc.)
@@ -292,12 +292,13 @@ Analyze this document across 4 dimensions:
    - 25: Very few required fields visible
    - 0: No required information visible
 
-3. CLARITY (0-100): Is it readable and properly oriented?
-   - 100: Crystal clear, proper orientation, well-lit
+3. CLARITY (0-100): Is the text readable?
+   - If the document is rotated or upside down, mentally rotate it and read it in the correct orientation. Do NOT penalise rotation — assess content as if properly oriented.
+   - 100: Crystal clear, well-lit, text fully readable
    - 75: Clear but minor quality issues
    - 50: Readable but some blur/shadow
-   - 25: Significantly degraded, hard to read
-   - 0: Illegible
+   - 25: Significantly degraded, hard to read even when oriented correctly
+   - 0: Illegible regardless of orientation
 
 4. VALIDITY (0-100): Is it current and authentic-looking?
    - 100: Not expired, authentic format

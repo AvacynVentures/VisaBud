@@ -100,7 +100,7 @@ export class OpenAIVisionProvider implements VisionProvider {
     const mediaType = input.mimeType === 'application/pdf' ? 'application/pdf' : (input.mimeType || 'image/jpeg');
     const requirement = input.requirement || 'general visa document';
 
-    const systemPrompt = `You are a document classifier. You determine what type of image has been uploaded. You always respond with valid JSON only — no markdown, no explanation.`;
+    const systemPrompt = `You are a document classifier. You determine what type of image has been uploaded. You always respond with valid JSON only - no markdown, no explanation.`;
 
     const userPrompt = `Analyze this image:
 
@@ -151,7 +151,7 @@ Respond ONLY with valid JSON (no markdown, no explanation):
       isVisaRelevant: true,
       detectedType: null,
       matchesRequirement: false,
-      explanation: 'Classification could not be completed — proceeding with analysis.',
+      explanation: 'Classification could not be completed - proceeding with analysis.',
     };
   }
 
@@ -166,9 +166,9 @@ Respond ONLY with valid JSON (no markdown, no explanation):
     const userPrompt = `Verify this document matches the requirement: "${input.requirement}".
 
 Check the following:
-1. Document clarity — is it readable and not blurry?
-2. Completeness — does it contain all the required information?
-3. Relevance — does it match what's being asked for?
+1. Document clarity - is the text readable? If rotated or upside down, read it in the correct orientation. Do NOT penalise rotation.
+2. Completeness - does it contain all the required information?
+3. Relevance - does it match what's being asked for?
 4. All required details visible (names, dates, amounts, stamps etc.)
 
 If valid, give brief positive feedback. If invalid, explain specifically what's missing or wrong and suggest how to fix it.
@@ -195,7 +195,7 @@ Respond ONLY with JSON: { "valid": true/false, "feedback": "your feedback here" 
       }
     } catch { /* fall through */ }
 
-    // Fix 3: Don't silently pass — mark as incomplete
+    // Fix 3: Don't silently pass - mark as incomplete
     return {
       valid: false,
       feedback: 'Could not parse validation result. This is NOT a reflection of document quality. Please try again.',
@@ -262,12 +262,13 @@ Analyze this document across 4 dimensions:
    - 25: Very few required fields visible
    - 0: No required information visible
 
-3. CLARITY (0-100): Is it readable and properly oriented?
-   - 100: Crystal clear, proper orientation, well-lit
+3. CLARITY (0-100): Is the text readable?
+   - If the document is rotated or upside down, mentally rotate it and read it in the correct orientation. Do NOT penalise rotation — assess content as if properly oriented.
+   - 100: Crystal clear, well-lit, text fully readable
    - 75: Clear but minor quality issues
    - 50: Readable but some blur/shadow
-   - 25: Significantly degraded, hard to read
-   - 0: Illegible
+   - 25: Significantly degraded, hard to read even when oriented correctly
+   - 0: Illegible regardless of orientation
 
 4. VALIDITY (0-100): Is it current and authentic-looking?
    - 100: Not expired, authentic format
@@ -313,7 +314,7 @@ Respond with JSON only.`;
           confidenceScore = Math.min(100, Math.max(0, parsed.confidenceScore || 0));
         }
 
-        // Derive risk level from confidence score — consistent with Claude adapter
+        // Derive risk level from confidence score - consistent with Claude adapter
         const riskLevel: 'high' | 'medium' | 'low' =
           confidenceScore <= 40 ? 'high' : confidenceScore <= 70 ? 'medium' : 'low';
 
