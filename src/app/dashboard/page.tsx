@@ -11,6 +11,7 @@ import {
   TIMELINES,
   getApplicableRisks,
   getChecklistByCategory,
+  getSubmissionInfo,
   ChecklistItem,
   Priority,
   TimelineWeek,
@@ -871,8 +872,9 @@ function FullDashboard({
                 <SubmitTab
                   visaLabel={visaLabel}
                   urgencyLabel={urgencyLabel}
+                  visaType={validVisaType}
                   checkedCount={checkedCount}
-                  total={checklist.length}
+                  total={applicableChecklist.length}
                   riskCount={risks.length}
                   highRisks={highRisks}
                   onUnlock={() => setShowPaywall(true)}
@@ -1733,6 +1735,7 @@ function RiskCard({ risk }: { risk: RiskRule }) {
 function SubmitTab({
   visaLabel,
   urgencyLabel,
+  visaType,
   checkedCount,
   total,
   riskCount,
@@ -1742,6 +1745,7 @@ function SubmitTab({
 }: {
   visaLabel: string;
   urgencyLabel: string;
+  visaType: VisaTypeKey | null;
   checkedCount: number;
   total: number;
   riskCount: number;
@@ -1750,10 +1754,16 @@ function SubmitTab({
   unlocked: boolean;
 }) {
   const readiness = total > 0 ? Math.round((checkedCount / total) * 100) : 0;
+  const submissionInfo = visaType ? getSubmissionInfo(visaType) : null;
+
+  // Readiness traffic light
+  const isReady = readiness === 100 && highRisks === 0;
+  const needsWork = readiness < 100 || highRisks > 0;
 
   if (unlocked) {
     return (
       <div className="space-y-6">
+        {/* Section 1: Readiness Summary */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 sm:p-6">
           <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
             <BookOpen className="w-5 h-5 text-blue-600" />
@@ -1767,18 +1777,166 @@ function SubmitTab({
           </div>
         </div>
 
-        <div className="rounded-2xl border shadow-sm p-5 sm:p-6 bg-emerald-50 border-emerald-200">
-          <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 bg-emerald-100">
-              <CheckCircle className="w-6 h-6 text-emerald-600" />
+        {/* Section 2: Submit Your Application — the main event */}
+        <div className={`rounded-2xl border shadow-sm p-5 sm:p-6 ${isReady ? 'bg-emerald-50 border-emerald-200' : 'bg-amber-50 border-amber-200'}`}>
+          <div className="flex items-start gap-4 mb-5">
+            <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${isReady ? 'bg-emerald-100' : 'bg-amber-100'}`}>
+              {isReady ? <CheckCircle className="w-6 h-6 text-emerald-600" /> : <AlertCircle className="w-6 h-6 text-amber-600" />}
             </div>
             <div>
-              <h3 className="font-bold text-lg text-emerald-900">Full Plan Unlocked</h3>
-              <p className="text-sm mt-1 text-emerald-700">
-                You have full access to your personalised checklist, timeline, and risk assessment. Use the tabs above to review everything.
+              <h3 className={`font-bold text-lg ${isReady ? 'text-emerald-900' : 'text-amber-900'}`}>
+                {isReady ? 'You\'re ready to submit!' : 'Almost there — review before submitting'}
+              </h3>
+              <p className={`text-sm mt-1 ${isReady ? 'text-emerald-700' : 'text-amber-700'}`}>
+                {isReady
+                  ? 'VisaBud has prepared you. The official application is submitted on gov.uk.'
+                  : `${total - checkedCount > 0 ? `${total - checkedCount} documents still needed. ` : ''}${highRisks > 0 ? `${highRisks} high-risk issue${highRisks > 1 ? 's' : ''} to resolve. ` : ''}Review your checklist before proceeding.`
+                }
               </p>
             </div>
           </div>
+
+          {submissionInfo && (
+            <a
+              href={submissionInfo.applicationUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`w-full flex items-center justify-center gap-2 py-4 rounded-xl font-bold text-white transition-all shadow-sm text-base ${
+                isReady
+                  ? 'bg-emerald-600 hover:bg-emerald-700'
+                  : 'bg-amber-600 hover:bg-amber-700'
+              }`}
+            >
+              Start Your Application on Gov.uk
+              <ArrowRight className="w-5 h-5" />
+            </a>
+          )}
+        </div>
+
+        {/* Section 3: Pre-flight Checklist */}
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 sm:p-6">
+          <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <Shield className="w-5 h-5 text-violet-600" />
+            Before You Click Submit
+          </h3>
+          <div className="space-y-2.5">
+            {[
+              { label: 'All critical documents collected', done: readiness === 100 },
+              { label: 'No high-risk issues on uploaded documents', done: highRisks === 0 },
+              { label: 'Financial evidence within date validity (check: employer letter < 28 days, bank statements current)', done: null },
+              { label: 'English language test passed or exemption confirmed', done: null },
+              { label: 'TB test done (if required for your country)', done: null },
+              { label: `Budget ready — visa fee + IHS + priority (if applicable)`, done: null },
+              { label: 'Passport valid for 6+ months', done: null },
+            ].map((item, i) => (
+              <div key={i} className="flex items-start gap-3 py-1">
+                {item.done === true ? (
+                  <CheckCircle className="w-5 h-5 text-emerald-500 flex-shrink-0 mt-0.5" />
+                ) : item.done === false ? (
+                  <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+                ) : (
+                  <div className="w-5 h-5 rounded-full border-2 border-gray-300 flex-shrink-0 mt-0.5" />
+                )}
+                <span className={`text-sm ${item.done === false ? 'text-red-700 font-medium' : 'text-gray-700'}`}>{item.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Section 4: Step-by-Step Submission Process */}
+        {submissionInfo && (
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 sm:p-6">
+            <h3 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
+              <FileText className="w-5 h-5 text-blue-600" />
+              How to Submit — Step by Step
+            </h3>
+            <p className="text-sm text-gray-500 mb-5">{submissionInfo.summaryIntro}</p>
+
+            <div className="space-y-4">
+              {submissionInfo.steps.map((step) => (
+                <div key={step.order} className="flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0 text-lg">
+                    {step.icon}
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-gray-900">{step.order}. {step.title}</p>
+                    <p className="text-xs text-gray-600 mt-0.5 leading-relaxed">{step.description}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Section 5: Important Notes + What Happens After */}
+        {submissionInfo && (
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 sm:p-6">
+            <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <AlertCircle className="w-5 h-5 text-amber-600" />
+              Important — After You Submit
+            </h3>
+            <div className="space-y-2">
+              {submissionInfo.importantNotes.map((note, i) => (
+                <div key={i} className="flex items-start gap-2">
+                  <span className="text-amber-500 mt-0.5 flex-shrink-0">•</span>
+                  <p className="text-sm text-gray-700">{note}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Section 6: Useful Links */}
+        {submissionInfo && (
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 sm:p-6">
+            <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <ExternalLink className="w-5 h-5 text-blue-600" />
+              Useful Links
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <a href={submissionInfo.applicationUrl} target="_blank" rel="noopener noreferrer"
+                className="flex items-center gap-2 px-4 py-3 bg-blue-50 rounded-xl hover:bg-blue-100 transition-colors">
+                <span className="text-lg">📝</span>
+                <div>
+                  <p className="text-sm font-semibold text-blue-900">Official Application Form</p>
+                  <p className="text-xs text-blue-600">gov.uk</p>
+                </div>
+              </a>
+              <a href={submissionInfo.contactInfo.url} target="_blank" rel="noopener noreferrer"
+                className="flex items-center gap-2 px-4 py-3 bg-blue-50 rounded-xl hover:bg-blue-100 transition-colors">
+                <span className="text-lg">📞</span>
+                <div>
+                  <p className="text-sm font-semibold text-blue-900">Contact UKVI</p>
+                  <p className="text-xs text-blue-600">{submissionInfo.contactInfo.phone.split('/')[0].trim()}</p>
+                </div>
+              </a>
+              <a href="https://www.gov.uk/find-a-visa-application-centre" target="_blank" rel="noopener noreferrer"
+                className="flex items-center gap-2 px-4 py-3 bg-blue-50 rounded-xl hover:bg-blue-100 transition-colors">
+                <span className="text-lg">🖐️</span>
+                <div>
+                  <p className="text-sm font-semibold text-blue-900">Book Biometrics</p>
+                  <p className="text-xs text-blue-600">Find your nearest VAC</p>
+                </div>
+              </a>
+              <a href="https://www.gov.uk/healthcare-immigration-application/how-much-pay" target="_blank" rel="noopener noreferrer"
+                className="flex items-center gap-2 px-4 py-3 bg-blue-50 rounded-xl hover:bg-blue-100 transition-colors">
+                <span className="text-lg">💳</span>
+                <div>
+                  <p className="text-sm font-semibold text-blue-900">IHS Calculator</p>
+                  <p className="text-xs text-blue-600">Calculate your health surcharge</p>
+                </div>
+              </a>
+            </div>
+          </div>
+        )}
+
+        {/* Disclaimer */}
+        <div className="bg-gray-50 rounded-2xl border border-gray-100 p-4">
+          <p className="text-xs text-gray-500 text-center leading-relaxed">
+            VisaBud is a preparation tool — not a law firm or accredited immigration advisor.
+            Always verify requirements on <a href="https://www.gov.uk" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">gov.uk</a> before submitting.
+            For complex cases, consider consulting an OISC-registered immigration advisor.
+          </p>
         </div>
       </div>
     );
