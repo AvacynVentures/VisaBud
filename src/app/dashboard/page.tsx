@@ -948,23 +948,81 @@ function ChecklistTab({
   unlocked: boolean;
   onUnlock: () => void;
 }) {
-  const { documentUploads } = useApplicationStore();
+  const { documentUploads, documentReports } = useApplicationStore();
   const verifiedCount = Object.values(documentUploads).filter((u) => u.status === 'valid').length;
 
+  // Risk-aware completion analysis
+  const reportValues = Object.values(documentReports);
+  const hasAnyReports = reportValues.length > 0;
+  const highRiskDocs = reportValues.filter((r) => r.confidence <= 40).length;
+  const mediumRiskDocs = reportValues.filter((r) => r.confidence > 40 && r.confidence <= 70).length;
+
+  const getCompletionMessage = () => {
+    if (highRiskDocs > 0) {
+      return {
+        bg: 'bg-red-50 border-red-200',
+        iconBg: 'bg-red-100',
+        iconColor: 'text-red-600',
+        icon: '🔴',
+        title: `Checklist complete, but ${highRiskDocs} document${highRiskDocs > 1 ? 's have' : ' has'} critical issues`,
+        subtitle: 'Do not submit until flagged documents are resolved. Review the items marked with red risk scores.',
+        titleColor: 'text-red-900',
+        subtitleColor: 'text-red-700',
+      };
+    }
+    if (mediumRiskDocs > 0) {
+      return {
+        bg: 'bg-amber-50 border-amber-200',
+        iconBg: 'bg-amber-100',
+        iconColor: 'text-amber-600',
+        icon: '⚠️',
+        title: `Checklist complete, but ${mediumRiskDocs} document${mediumRiskDocs > 1 ? 's need' : ' needs'} attention`,
+        subtitle: 'These issues could delay your application. Review flagged items before submitting.',
+        titleColor: 'text-amber-900',
+        subtitleColor: 'text-amber-700',
+      };
+    }
+    if (hasAnyReports) {
+      return {
+        bg: 'bg-emerald-50 border-emerald-200',
+        iconBg: 'bg-emerald-100',
+        iconColor: 'text-emerald-600',
+        icon: '🎉',
+        title: 'Your checklist is complete and your documents look strong!',
+        subtitle: 'Review your timeline and submit when ready.',
+        titleColor: 'text-emerald-900',
+        subtitleColor: 'text-emerald-700',
+      };
+    }
+    // No AI review done
+    return {
+      bg: 'bg-blue-50 border-blue-200',
+      iconBg: 'bg-blue-100',
+      iconColor: 'text-blue-600',
+      icon: '📋',
+      title: 'Your checklist is complete!',
+      subtitle: 'Consider uploading your documents for AI verification to catch issues before you submit.',
+      titleColor: 'text-blue-900',
+      subtitleColor: 'text-blue-700',
+    };
+  };
+
   if (unlocked) {
+    const completionMsg = getCompletionMessage();
+
     return (
       <div className="space-y-6">
         <ProgressCard checkedCount={checkedCount} total={total} progressPct={progressPct} verifiedCount={verifiedCount} />
 
-        {/* 100% celebration */}
+        {/* Risk-aware completion message */}
         <CelebrationBanner show={progressPct === 100}>
-          <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-5 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center flex-shrink-0 animate-bounceIn">
-              <PartyPopper className="w-6 h-6 text-emerald-600" />
+          <div className={`${completionMsg.bg} border rounded-2xl p-5 flex items-center gap-4`}>
+            <div className={`w-12 h-12 rounded-xl ${completionMsg.iconBg} flex items-center justify-center flex-shrink-0 animate-bounceIn`}>
+              <span className="text-2xl">{completionMsg.icon}</span>
             </div>
             <div>
-              <h3 className="font-bold text-emerald-900 text-lg">You&apos;re all set! Ready to apply? 🎉</h3>
-              <p className="text-sm text-emerald-700">All documents collected. Head to the Submit tab for next steps.</p>
+              <h3 className={`font-bold ${completionMsg.titleColor} text-lg`}>{completionMsg.title}</h3>
+              <p className={`text-sm ${completionMsg.subtitleColor}`}>{completionMsg.subtitle}</p>
             </div>
           </div>
         </CelebrationBanner>
