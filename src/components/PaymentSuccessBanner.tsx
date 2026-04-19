@@ -160,7 +160,19 @@ export default function PaymentSuccessBanner({ onDismiss }: { onDismiss?: () => 
 
             {/* Secondary */}
             <p className="text-center text-xs text-slate-400 mt-4">
-              📧 Email confirmation sent · <a href="mailto:support@visabud.co.uk" className="text-blue-500 hover:underline">Need help?</a>
+              📧 Email confirmation sent ·{' '}
+              <a
+                href="mailto:support@visabud.co.uk"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-500 hover:underline cursor-pointer"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  window.location.href = 'mailto:support@visabud.co.uk';
+                }}
+              >
+                Need help?
+              </a>
             </p>
           </div>
         </motion.div>

@@ -308,7 +308,7 @@ export async function sendEmail(
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'VisaBud <tim.bot@silvergrifindsc.com>',
+        from: 'VisaBud <noreply@visabud.co.uk>',
         reply_to: 'support@visabud.co.uk',
         to: [to],
         subject: template.subject,
