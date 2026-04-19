@@ -59,6 +59,15 @@ export async function GET(request: NextRequest) {
         || data.user.user_metadata?.name 
         || null;
       
+      // Check if user already exists (to determine if this is a new signup)
+      const { data: existingUser } = await supabaseAdmin
+        .from('users')
+        .select('auth_id')
+        .eq('auth_id', data.user.id)
+        .single();
+
+      const isNewUser = !existingUser;
+
       // Upsert user record (create if doesn't exist, update if it does)
       const { data: userData } = await supabaseAdmin
         .from('users')
@@ -91,6 +100,13 @@ export async function GET(request: NextRequest) {
             console.error(`Failed to send welcome email to ${userEmail}:`, err);
           }
         })();
+      }
+
+      // Send welcome email to new users (non-blocking)
+      if (isNewUser && data.user.email) {
+        sendEmail(data.user.email, emailTemplates.welcome(data.user.email)).catch((err) =>
+          console.error('[auth/callback] Welcome email failed:', err)
+        );
       }
 
       // Check if user has a completed payment

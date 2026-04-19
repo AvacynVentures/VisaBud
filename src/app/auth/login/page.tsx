@@ -92,8 +92,10 @@ function LoginPageContent() {
       });
 
       if (authError) {
+        console.error('Login OTP error:', JSON.stringify({ message: authError.message, status: authError.status }));
+        
         if (authError.message?.includes('rate') || authError.status === 429) {
-          setError('Too many requests. Please wait a moment and try again.');
+          setError('Supabase is temporarily limiting email sign-ins. Please use "Continue with Google" above, or try again in a few minutes.');
         } else {
           setError(authError.message || 'Something went wrong. Please try again.');
         }

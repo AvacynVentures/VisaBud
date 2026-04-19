@@ -152,14 +152,15 @@ export default function EmailCapture({ onComplete, onSkip }: EmailCaptureProps) 
                     Email address
                   </label>
                   <div className="relative">
-                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none flex-shrink-0" />
+                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none flex-shrink-0 z-10" />
                     <input
                       id="email"
                       type="email"
+                      autoComplete="off"
                       value={email}
                       onChange={(e) => { setEmail(e.target.value); setError(null); }}
                       placeholder="your@email.com"
-                      className="w-full pl-11 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-blue-500 focus:ring-0 text-sm transition-colors text-ellipsis"
+                      className="w-full pl-12 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-blue-500 focus:ring-0 text-sm transition-colors"
                       disabled={isSubmitting}
                     />
                   </div>

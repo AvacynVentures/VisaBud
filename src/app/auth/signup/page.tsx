@@ -6,6 +6,7 @@ import { useAuth } from '@/lib/auth-context';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect } from 'react';
 import Link from 'next/link';
+import * as Sentry from '@sentry/nextjs';
 
 function GoogleIcon() {
   return (
@@ -77,17 +78,13 @@ function SignUpPageContent() {
       return;
     }
 
-    // Check for rate-limit cooldown (ONLY if actually rate-limited before)
-    const cooldownUntil = localStorage.getItem('signup_cooldown_until');
-    if (cooldownUntil && Date.now() < parseInt(cooldownUntil, 10)) {
-      const remaining = Math.ceil((parseInt(cooldownUntil, 10) - Date.now()) / 60000);
-      setError(`Too many signup attempts. Please wait ${remaining} minute${remaining > 1 ? 's' : ''} and try again.`);
-      return;
-    }
-
     setSending(true);
 
     try {
+      // Clear any stale rate-limit state from previous sessions
+      localStorage.removeItem('signup_cooldown_until');
+      localStorage.removeItem('signup_last_attempt');
+
       const { error: authError } = await supabase.auth.signInWithOtp({
         email: trimmed,
         options: {
@@ -95,30 +92,31 @@ function SignUpPageContent() {
         },
       });
 
-      localStorage.setItem('signup_last_attempt', Date.now().toString());
-
       if (authError) {
+        // Log for debugging
+        console.error('Signup OTP error:', JSON.stringify({ message: authError.message, status: authError.status }));
+        
+        // Track in Sentry
+        Sentry.captureException(authError, {
+          tags: {
+            error_type: authError.status === 429 || authError.message?.includes('rate') ? 'rate_limit' : 'auth_error',
+            email_domain: email.split('@')[1] || 'unknown',
+          },
+        });
+
         if (authError.message?.includes('rate') || authError.status === 429 || (authError as any).status === 429) {
-          // ONLY set cooldown if actually rate-limited by Supabase
-          localStorage.setItem('signup_cooldown_until', (Date.now() + 5 * 60 * 1000).toString());
-          setError('Too many signup attempts. Please wait 5 minutes and try again.');
+          setError('Supabase is temporarily limiting email sign-ins. Please use "Continue with Google" above, or try again in a few minutes.');
         } else if (authError.message?.includes('invalid') || authError.message?.includes('not allowed')) {
           setError('Please use a valid email address (e.g., yourname@gmail.com)');
         } else {
-          // Clear any stale cooldown on non-rate-limit errors
-          localStorage.removeItem('signup_cooldown_until');
           setError(authError.message || 'Something went wrong. Please try again.');
         }
         setSending(false);
         return;
       }
 
-      // Success: clear cooldown and show confirmation
-      localStorage.removeItem('signup_cooldown_until');
       setSubmitted(true);
     } catch (err) {
-      // Clear stale cooldown on network error too
-      localStorage.removeItem('signup_cooldown_until');
       setError('Network error. Please check your connection and try again.');
     } finally {
       setSending(false);
@@ -241,12 +239,10 @@ function SignUpPageContent() {
               }`}
             >
               {oauthLoading === 'google' ? (
-                <span className="pointer-events-none flex-shrink-0">
-                  <svg className="animate-spin w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                  </svg>
-                </span>
+                <svg className="animate-spin w-5 h-5 text-gray-400" viewBox="0 0 24 24" fill="none">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
               ) : (
                 <GoogleIcon />
               )}
@@ -304,12 +300,10 @@ function SignUpPageContent() {
             >
               {sending ? (
                 <span className="flex items-center justify-center gap-2">
-                  <span className="pointer-events-none flex-shrink-0">
-                    <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                    </svg>
-                  </span>
+                  <svg className="animate-spin w-5 h-5" viewBox="0 0 24 24" fill="none">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
                   Creating account…
                 </span>
               ) : (

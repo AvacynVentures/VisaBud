@@ -295,40 +295,39 @@ export async function sendEmail(
   template: EmailTemplate,
   resendApiKey: string = process.env.RESEND_API_KEY || ''
 ) {
-  try {
-    // Validate Resend API key
-    if (!resendApiKey) {
-      console.error('RESEND_API_KEY not configured');
-      return { success: false, error: 'Email service not configured' };
-    }
+  if (!resendApiKey) {
+    console.error('[email] RESEND_API_KEY not set — cannot send email');
+    return { success: false, error: 'Email service not configured' };
+  }
 
-    // Call Resend API
-    const response = await fetch('https://api.resend.com/emails', {
+  try {
+    const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${resendApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'VisaBud <noreply@visabud.co.uk>',
-        to: to,
+        from: 'VisaBud <tim.bot@silvergrifindsc.com>',
+        reply_to: 'support@visabud.co.uk',
+        to: [to],
         subject: template.subject,
         html: template.html,
         text: template.text,
       }),
     });
 
-    if (!response.ok) {
-      const error = await response.text();
-      console.error(`Resend API error (${response.status}):`, error);
-      return { success: false, error: `Email delivery failed: ${response.statusText}` };
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      console.error('[email] Resend API error:', res.status, errData);
+      return { success: false, error: errData?.message || `Resend API error: ${res.status}` };
     }
 
-    const data = await response.json();
-    console.log(`Email sent successfully to ${to}: ${data.id}`);
-    return { success: true, messageId: data.id };
+    const data = await res.json();
+    console.log(`[email] Sent to ${to}: ${template.subject} (id: ${data.id})`);
+    return { success: true, id: data.id };
   } catch (err: any) {
-    console.error('Email send error:', err);
-    return { success: false, error: err.message || 'Unknown error sending email' };
+    console.error('[email] Send error:', err);
+    return { success: false, error: err.message };
   }
 }
