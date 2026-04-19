@@ -136,7 +136,7 @@ export const VISA_TYPES: Record<VisaTypeKey, VisaTypeInfo> = {
     keyRequirements: [
       'Valid Certificate of Sponsorship (CoS) from licensed employer',
       'Job at RQF Level 3+ (A-level equivalent or above)',
-      'Salary meets £38,700+ threshold (or going rate for occupation)',
+      'Salary meets minimum threshold — general is £38,700+ but varies by occupation and CoS date (check going rate for your specific SOC code)',
       'English language at B1 level (CEFR)',
       'Maintenance funds of £1,270 held for 28+ consecutive days (unless employer certifies)',
       'Criminal record certificate (if role involves vulnerable persons)',
@@ -573,7 +573,7 @@ export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
       tips: 'Your CoS is valid for 3 months from date of assignment. Apply BEFORE it expires. Confirm your employer has included the correct SOC code and salary.',
       displayOrder: 10,
       govLink: 'https://www.gov.uk/skilled-worker-visa/your-job',
-      officialRequirement: 'You must have a valid Certificate of Sponsorship (CoS) reference number from a licensed UK employer. The CoS must include the correct SOC code and salary for your role.',
+      officialRequirement: 'You must have a valid Certificate of Sponsorship (CoS) reference number from a licensed UK employer. The CoS must include the correct SOC code and salary for your role. The minimum salary depends on your specific occupation and when you got your CoS.',
       commonMistakes: ['CoS expired before application submitted', 'Wrong SOC code', 'Salary on CoS doesn\'t match contract'],
       bestPractices: ['Apply within 2 weeks of CoS assignment', 'Verify SOC code matches your actual role', 'Ensure salary on CoS exactly matches your contract'],
     },
@@ -764,12 +764,12 @@ export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
       id: 'ct-travel-history',
       title: 'Travel History (5-Year Record)',
       description:
-        'Complete record of every trip outside the UK in the qualifying 5-year period (or 3 years if married to a British citizen). Include dates, destinations, and purposes.',
+        'Complete record of every trip outside the UK in the qualifying 5-year period (or 3 years if married to a British citizen). Include dates, destinations, and purposes. CRITICAL: You must have been physically present in the UK exactly 5 years before the Home Office receives your application.',
       category: 'financial',
       required: true,
       priority: 'critical',
       formatRequired: 'Spreadsheet or typed document listing all absences with exact dates',
-      tips: 'Max 450 days outside UK in 5 years AND max 90 days in the final 12 months. Count carefully — even 1 day over = automatic refusal. Use passport stamps + flight bookings to verify.',
+      tips: 'Max 450 days outside UK in 5 years AND max 90 days in the final 12 months. Count carefully — even 1 day over = automatic refusal. ALSO: you must have been physically in the UK exactly 5 years before your application is received. Example: if you apply 20 June 2027, you must have been in the UK on 20 June 2022. Use passport stamps + flight bookings to verify.',
       displayOrder: 10,
       govLink: 'https://www.gov.uk/apply-citizenship-indefinite-leave-to-remain',
       officialRequirement: 'You must not have spent more than 450 days outside the UK during the 5-year period, and not more than 90 days outside the UK in the last 12 months.',
@@ -1525,7 +1525,7 @@ export const SUBMISSION_INFO: SubmissionInfo[] = [
         order: 1,
         title: 'Verify Qualifying Date',
         description:
-          'Triple-check your qualifying date. You must have completed 5 years of continuous residence (or 3 years if married to a British citizen) on the date you submit the form. Not before — exactly on or after.',
+          'Triple-check your qualifying date. You must have been physically present in the UK exactly 5 years before the Home Office receives your application (or 3 years if married to a British citizen). You must also have held ILR or settled status for at least 12 months. If you apply online, the application is received the same day. If by post, allow extra days.',
         icon: '📅',
       },
       {
