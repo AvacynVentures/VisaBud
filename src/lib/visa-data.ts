@@ -461,6 +461,21 @@ export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
       tips: 'Get 2-4 letters from different people (both sides of the relationship). Each letter should include their full name, relationship to you, and a copy of their ID.',
       displayOrder: 26,
     },
+    {
+      id: 'sp-children-dependants',
+      title: 'Children as Dependants (if applicable)',
+      description:
+        'If you are applying with children under 18 (or who were under 18 when first granted leave), they can be added as dependants. Each child needs their own documents and incurs additional fees. Skip this item if you have no children applying with you.',
+      category: 'supporting',
+      required: false,
+      priority: 'important',
+      formatRequired: 'Per child: passport, birth certificate, consent from other parent (if applicable)',
+      tips: 'Each child costs an additional £2,064 (outside UK) / £1,407 (inside UK) plus IHS (£1,940–£3,880 depending on visa duration). Documents needed per child: valid passport, birth certificate (proving relationship to you), and written consent from the other parent if they are not travelling with the child. If you have sole custody, provide the court order. For complex custody situations, seek professional immigration advice before applying.',
+      displayOrder: 27,
+      govLink: 'https://www.gov.uk/uk-family-visa/child',
+      commonMistakes: ['Forgetting to include consent from the other parent', 'Not including birth certificate for each child', 'Underbudgeting — each child has separate fees + IHS'],
+      bestPractices: ['Budget £2,064 + IHS per child before starting', 'Get written consent from the other parent early — this can take time', 'If separated/divorced, include custody court orders', 'Children 18+ have different rules — check gov.uk/uk-family-visa/child'],
+    },
   ],
 
   // =========================================================================
@@ -668,6 +683,21 @@ export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
       formatRequired: 'PDF, 2 pages max',
       tips: 'Ensure job titles and dates match what\'s on your CoS. Inconsistencies between CV and CoS can trigger additional scrutiny.',
       displayOrder: 22,
+    },
+    {
+      id: 'sw-children-dependants',
+      title: 'Children as Dependants (if applicable)',
+      description:
+        'Your children can apply to join you in the UK as dependants. Each child needs their own application, documents, and fees. Skip this item if no children are applying with you.',
+      category: 'supporting',
+      required: false,
+      priority: 'important',
+      formatRequired: 'Per child: passport, birth certificate, proof of relationship, maintenance funds evidence',
+      tips: 'Each child pays the same application fee as you (based on visa duration) plus IHS (£776/year for under-18s). Documents needed: valid passport, birth certificate, and proof of maintenance funds (unless your employer certifies for dependants too). If the other parent is not applying, you need their written consent. For children 18+, different rules apply — check gov.uk.',
+      displayOrder: 23,
+      govLink: 'https://www.gov.uk/skilled-worker-visa/your-partner-and-children',
+      commonMistakes: ['Not budgeting for dependant fees', 'Missing consent from other parent', 'Not checking if employer certifies maintenance for dependants'],
+      bestPractices: ['Ask your employer if they certify maintenance for dependants (saves providing bank statements)', 'Get written consent from other parent early', 'Children 18+ have different eligibility — check before applying'],
     },
   ],
 
@@ -879,6 +909,21 @@ export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
       formatRequired: 'Original deed poll, marriage certificate, or statutory declaration',
       tips: 'All name changes must be declared. Ensure your current passport reflects your current legal name.',
       displayOrder: 24,
+    },
+    {
+      id: 'ct-children-registration',
+      title: 'Children — Registration as British Citizens (if applicable)',
+      description:
+        'If you have children under 18 who are not already British citizens, they may be eligible to register as British citizens once you naturalise. This is a separate application. Skip if not applicable.',
+      category: 'supporting',
+      required: false,
+      priority: 'important',
+      formatRequired: 'Separate application (Form MN1) per child + child\'s passport + birth certificate',
+      tips: 'Children born in the UK to a parent who later becomes a British citizen can register as British. Cost is £1,214 per child (as of 2024 — check gov.uk for current fee). This is a separate process from your own naturalisation — apply after your citizenship is confirmed. Children born outside the UK may also be eligible depending on circumstances. Seek professional advice for complex family situations.',
+      displayOrder: 25,
+      govLink: 'https://www.gov.uk/register-british-citizen/born-in-uk',
+      commonMistakes: ['Assuming children automatically become British when you do', 'Not budgeting for separate registration fees per child', 'Waiting too long — some routes have age limits'],
+      bestPractices: ['Apply for child registration after your own citizenship ceremony', 'Budget £1,214 per child', 'Check specific eligibility at gov.uk/register-british-citizen', 'For children born outside the UK, check gov.uk/register-british-citizen/born-outside-the-uk'],
     },
   ],
 };
