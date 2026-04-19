@@ -313,8 +313,12 @@ Respond with JSON only.`;
           confidenceScore = Math.min(100, Math.max(0, parsed.confidenceScore || 0));
         }
 
+        // Derive risk level from confidence score — consistent with Claude adapter
+        const riskLevel: 'high' | 'medium' | 'low' =
+          confidenceScore <= 40 ? 'high' : confidenceScore <= 70 ? 'medium' : 'low';
+
         return {
-          riskLevel: parsed.riskLevel || 'medium',
+          riskLevel,
           confidenceScore,
           feedback: parsed.feedback || 'Review completed.',
           issues: Array.isArray(parsed.issues) ? parsed.issues : [],
