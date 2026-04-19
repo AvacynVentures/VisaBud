@@ -105,12 +105,12 @@ export const VISA_TYPES: Record<VisaTypeKey, VisaTypeInfo> = {
     shortLabel: 'Spouse Visa',
     icon: '💑',
     description:
-      'For partners of British citizens or settled persons. Your UK-based partner sponsors your application. The minimum income threshold is £29,000/year (as of April 2024) or equivalent savings.',
-    govFee: '£1,846',
-    ihsSurcharge: '£1,035/year (£2,587.50 for 2.5 years)',
-    processingTime: '24 weeks (standard) / 5–10 working days (priority)',
+      'For partners of British citizens or settled persons. Your UK-based partner sponsors your application. The minimum income threshold is £29,000/year (combined income) or equivalent savings.',
+    govFee: '£2,064 (outside UK) / £1,407 (inside UK)',
+    ihsSurcharge: '£1,035/year (£3,105 for 2 years 9 months)',
+    processingTime: '12 weeks (outside UK) / 8 weeks (inside UK) / ~12 months (if not meeting financial requirements)',
     priorityAvailable: true,
-    priorityFee: '£500–£800',
+    priorityFee: '£1,000 (super priority, inside UK only)',
     keyRequirements: [
       'Sponsor earns £29,000+/year or has £62,500+ in savings',
       'Genuine and subsisting relationship',
@@ -127,12 +127,12 @@ export const VISA_TYPES: Record<VisaTypeKey, VisaTypeInfo> = {
     shortLabel: 'Skilled Worker',
     icon: '💼',
     description:
-      'For people with a confirmed job offer from a UK employer who holds a valid sponsor licence. The general salary threshold is £38,700/year, though some occupations have lower going rates.',
-    govFee: '£719–£1,420 (depending on duration and skill level)',
+      'For people with a confirmed job offer from a UK employer who holds a valid sponsor licence. The general salary threshold is £38,700/year, though some occupations have lower going rates. Check the specific eligibility for your job.',
+    govFee: '£819–£1,618 (outside UK) / £943–£1,865 (inside UK) — lower if on immigration salary list',
     ihsSurcharge: '£1,035/year',
-    processingTime: '3 weeks (standard) / 5 working days (priority)',
+    processingTime: '3 weeks (outside UK) / 8 weeks (inside UK)',
     priorityAvailable: true,
-    priorityFee: '£500',
+    priorityFee: 'Varies — you\'ll be told if faster processing is available when you apply',
     keyRequirements: [
       'Valid Certificate of Sponsorship (CoS) from licensed employer',
       'Job at RQF Level 3+ (A-level equivalent or above)',
@@ -149,20 +149,21 @@ export const VISA_TYPES: Record<VisaTypeKey, VisaTypeInfo> = {
     shortLabel: 'Citizenship',
     icon: '🏛️',
     description:
-      'For people who have lived in the UK for 5+ years (or 3 years if married to a British citizen). No income requirement, but strict character and residency tests apply.',
-    govFee: '£1,580',
+      'For people who have lived in the UK for 5+ years and held ILR or settled status for at least 12 months (or 3 years residence if married to a British citizen). No income requirement, but strict character and residency tests apply.',
+    govFee: '£1,839 (includes £130 ceremony fee)',
     ihsSurcharge: 'N/A',
     processingTime: '6 months (standard)',
     priorityAvailable: false,
     priorityFee: null,
     keyRequirements: [
       '5 years continuous lawful residence (3 if married to British citizen)',
+      'Must have held ILR or settled status for at least 12 months',
       'No more than 450 days outside UK in 5-year period',
       'No more than 90 days outside UK in final 12 months',
-      'Indefinite Leave to Remain (ILR) or equivalent status',
+      'Must be physically present in UK exactly 5 years before application received',
       'Good character — no serious criminal convictions',
       'Life in the UK test passed',
-      'English language at B1 level or above',
+      'English language at B1 level or above (or Welsh/Scottish Gaelic)',
     ],
   },
 };
@@ -249,7 +250,7 @@ export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
       required: true,
       priority: 'critical',
       formatRequired: 'Original certificate from approved SELT provider',
-      tips: 'Citizens of majority English-speaking countries (USA, Australia, etc.) are exempt. Degrees taught in English may also qualify — check with your university.',
+      tips: 'Exempt if: national of a listed majority English-speaking country (USA, Australia, Canada, NZ, etc.), over 65, or have a physical/mental condition preventing you from meeting the requirement. A UK degree or a non-UK degree taught in English (with Ecctis confirmation) also qualifies.',
       displayOrder: 5,
       govLink: 'https://www.gov.uk/uk-family-visa/knowledge-of-language-and-life-in-the-uk',
       officialRequirement: 'You must prove your knowledge of the English language when you apply. For spouse visa initial application, you need A1 level (speaking and listening).',
@@ -862,7 +863,7 @@ export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
       required: false,
       priority: 'nice-to-have',
       formatRequired: 'Booking confirmation from local council',
-      tips: 'Ceremonies cost £80. You can choose a private ceremony (just you and a guest) or a group ceremony. Book early — popular dates fill up quickly.',
+      tips: 'The £130 ceremony fee is included in the £1,839 application fee. You can choose a private ceremony (just you and a guest) or a group ceremony. Book early — popular dates fill up quickly.',
       displayOrder: 23,
     },
     {
@@ -1066,7 +1067,7 @@ export const TIMELINES: Record<UrgencyKey, TimelineWeek[]> = {
       ],
       deadline: 'End of Week 8',
       notes:
-        'Congratulations on submitting! Now begins the wait. Standard processing is 8–24 weeks depending on visa type. Do not contact the Home Office for status updates before the published processing time has elapsed.',
+        'Congratulations on submitting! Now begins the wait. Processing times vary by visa type and whether you\'re inside or outside the UK. Do not contact the Home Office for status updates before the published processing time has elapsed.',
     },
   ],
 
@@ -1362,7 +1363,7 @@ export const RISKS: RiskRule[] = [
       'The Immigration Health Surcharge must be paid as part of your application. Failure to pay = application cannot be submitted. Current rate is £1,035/year.',
     severity: 'medium',
     recommendation:
-      'Budget for the full IHS amount upfront. For a 2.5-year spouse visa, this is £2,587.50. For Skilled Worker, it depends on your visa duration. Payment is made during the online application process.',
+      'Budget for the full IHS amount upfront. For a spouse visa (2 years 9 months), this is £3,105. For Skilled Worker, it depends on your visa duration (£1,035/year). Payment is made during the online application process.',
     conditions: {
       visaTypes: ['spouse', 'skilled_worker'],
     },
@@ -1403,7 +1404,7 @@ export const SUBMISSION_INFO: SubmissionInfo[] = [
         order: 2,
         title: 'Pay Application Fees',
         description:
-          'Pay the visa fee (£1,846) and Immigration Health Surcharge (£1,035/year × visa length) online. You can optionally pay for priority processing (£500–£800) for a 5–10 day decision.',
+          'Pay the visa fee (£2,064 outside UK / £1,407 inside UK) and Immigration Health Surcharge (£3,105 for 2 years 9 months) online. If applying from inside the UK, you may be able to pay £1,000 for the super priority service.',
         icon: '💳',
       },
       {
@@ -1424,7 +1425,7 @@ export const SUBMISSION_INFO: SubmissionInfo[] = [
         order: 5,
         title: 'Wait for Decision',
         description:
-          'Standard processing takes up to 24 weeks. Priority processing takes 5–10 working days. You\'ll receive a decision by email. Do not contact the Home Office before the published processing time elapses.',
+          'Processing takes approximately 12 weeks (outside UK) or 8 weeks (inside UK, if meeting financial and English requirements). Super priority (inside UK only, £1,000) can speed this up. You\'ll receive a decision by email.',
         icon: '⏳',
       },
       {
@@ -1439,8 +1440,8 @@ export const SUBMISSION_INFO: SubmissionInfo[] = [
       'Do NOT travel to the UK before your visa is granted (if applying from outside the UK).',
       'Keep a complete copy of all submitted documents for your records.',
       'If you are asked for additional information, respond within the deadline given.',
-      'Your visa will initially be granted for 2 years 9 months. You will need to apply for an extension before it expires.',
-      'After 5 years on a spouse visa, you can apply for Indefinite Leave to Remain (ILR).',
+      'Your visa will initially be granted for 2 years and 9 months. You will need to apply to extend before it expires.',
+      'Extensions grant a further 2 years and 6 months. After 5 years total on a family visa as a partner, you can apply for Indefinite Leave to Remain (ILR).',
     ],
     contactInfo: {
       name: 'UK Visas and Immigration (UKVI)',
@@ -1474,7 +1475,7 @@ export const SUBMISSION_INFO: SubmissionInfo[] = [
         order: 3,
         title: 'Pay Fees',
         description:
-          'Pay the visa fee (£719–£1,420) and Immigration Health Surcharge (£1,035/year). Some employers cover these costs — check your offer terms. Priority processing is available for £500.',
+          'Pay the visa fee (£819–£1,618 outside UK / £943–£1,865 inside UK — lower if on immigration salary list) and Immigration Health Surcharge (£1,035/year). Some employers cover these costs — check your offer terms. You may be able to pay for faster processing.',
         icon: '💳',
       },
       {
@@ -1495,7 +1496,7 @@ export const SUBMISSION_INFO: SubmissionInfo[] = [
         order: 6,
         title: 'Receive Decision',
         description:
-          'Standard processing: 3 weeks. Priority: 5 working days. Once approved, you\'ll receive a vignette or digital status. Your employer will be notified via the SMS. You can start work on the start date listed on your CoS.',
+          'Processing: 3 weeks (outside UK) or 8 weeks (inside UK). You may be able to pay for a faster decision. Once approved, you\'ll receive a vignette or digital status. Your employer will be notified via the SMS. You can start work on the start date listed on your CoS.',
         icon: '✅',
       },
     ],
@@ -1545,7 +1546,7 @@ export const SUBMISSION_INFO: SubmissionInfo[] = [
         order: 4,
         title: 'Pay Application Fee',
         description:
-          'The fee is £1,580 (non-refundable, even if refused). There is no priority processing for citizenship applications. Payment is made online at the time of submission.',
+          'The fee is £1,839 (includes £130 ceremony fee, non-refundable even if refused). There is no priority processing for citizenship applications. Payment is made online at the time of submission.',
         icon: '💳',
       },
       {
@@ -1571,12 +1572,13 @@ export const SUBMISSION_INFO: SubmissionInfo[] = [
       },
     ],
     importantNotes: [
-      'The £1,580 fee is non-refundable — ensure you meet all requirements before applying.',
+      'The £1,839 fee is non-refundable (includes £130 ceremony fee) — ensure you meet all requirements before applying.',
       'There is NO priority service for citizenship. Plan for a 6-month wait.',
+      'You must have held ILR or settled status for at least 12 months before applying.',
       'You cannot apply for a British passport until after your citizenship ceremony.',
       'Your existing nationality may be affected — check your home country\'s dual nationality rules.',
       'If refused, you can re-apply but will need to pay the full fee again.',
-      'Citizenship ceremonies cost £80 and must be attended within 3 months of approval.',
+      'Citizenship ceremony fee (£130) is included in the application fee. Must be attended within 3 months of approval.',
     ],
     contactInfo: {
       name: 'UK Visas and Immigration — Nationality Contact Centre',
