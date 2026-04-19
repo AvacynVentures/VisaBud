@@ -284,10 +284,17 @@ export const useApplicationStore = create<AppState>()(
         unlocked: state.unlocked,
         purchasedTier: state.purchasedTier,
         // Strip fileData from persisted uploads to avoid localStorage bloat
+        // Also reset transitional states (uploading/validating) to idle — these
+        // should never persist because there's no active request on rehydration
         documentUploads: Object.fromEntries(
           Object.entries(state.documentUploads).map(([k, v]) => [
             k,
-            { status: v.status, feedback: v.feedback, fileName: v.fileName, mimeType: v.mimeType || null },
+            {
+              status: (v.status === 'uploading' || v.status === 'validating') ? 'idle' : v.status,
+              feedback: (v.status === 'uploading' || v.status === 'validating') ? null : v.feedback,
+              fileName: (v.status === 'uploading' || v.status === 'validating') ? null : v.fileName,
+              mimeType: v.mimeType || null,
+            },
           ])
         ),
         premiumReview: state.premiumReview,

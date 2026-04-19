@@ -73,6 +73,9 @@ export default function DocumentUpload({ docId, requirement, locked = false }: D
     });
   };
 
+  // AbortController for cancellation
+  const abortRef = useRef<AbortController | null>(null);
+
   const handleFile = useCallback(async (file: File) => {
     const error = validateFile(file);
     if (error) {
@@ -80,27 +83,49 @@ export default function DocumentUpload({ docId, requirement, locked = false }: D
       return;
     }
 
+    // Cancel any in-flight request
+    abortRef.current?.abort();
+    abortRef.current = new AbortController();
+    const signal = abortRef.current.signal;
+
     setDocumentUpload(docId, { status: 'uploading', feedback: null, fileName: file.name });
 
     try {
       const base64 = await fileToBase64(file);
+
+      if (signal.aborted) return;
       setDocumentUpload(docId, { status: 'validating', feedback: null, fileName: file.name });
 
       let validationResult: { valid: boolean; feedback: string } | null = null;
 
       try {
+        // 25-second timeout to prevent infinite spinner
+        const timeoutId = setTimeout(() => abortRef.current?.abort(), 25000);
+
         const response = await fetch('/api/validate-document', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ image: base64, requirement, mimeType: file.type }),
+          signal,
         });
+
+        clearTimeout(timeoutId);
 
         if (response.ok) {
           validationResult = await response.json();
         }
-      } catch {
+      } catch (fetchErr: any) {
+        if (fetchErr?.name === 'AbortError') {
+          // Check if user cancelled or timeout
+          if (signal.aborted) {
+            setDocumentUpload(docId, { status: 'error', feedback: 'Validation timed out. Your document was saved — try again or upload a clearer copy.', fileName: file.name, fileData: base64, mimeType: file.type });
+            return;
+          }
+        }
         // AI validation unavailable — accept document anyway
       }
+
+      if (signal.aborted) return;
 
       // Store file data for download regardless of validation result
       const baseUpload = { fileName: file.name, fileData: base64, mimeType: file.type };
@@ -116,10 +141,16 @@ export default function DocumentUpload({ docId, requirement, locked = false }: D
         setDocumentUpload(docId, { ...baseUpload, status: 'valid', feedback: 'Document uploaded successfully.' });
       }
     } catch (err) {
+      if (signal.aborted) return;
       const message = err instanceof Error ? err.message : 'Upload failed. Please try again.';
       setDocumentUpload(docId, { status: 'error', feedback: message, fileName: file.name });
     }
   }, [docId, requirement, setDocumentUpload]);
+
+  const handleCancel = () => {
+    abortRef.current?.abort();
+    setDocumentUpload(docId, { status: 'idle', feedback: null, fileName: null });
+  };
 
   const onFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -234,6 +265,13 @@ export default function DocumentUpload({ docId, requirement, locked = false }: D
                 <p className="text-sm font-medium text-blue-700">Uploading...</p>
                 {fileName && <p className="text-xs text-blue-500 truncate">{fileName}</p>}
               </div>
+              <button
+                onClick={handleCancel}
+                className="p-1.5 rounded-lg hover:bg-blue-100 transition-colors flex-shrink-0"
+                title="Cancel upload"
+              >
+                <X className="w-4 h-4 text-blue-400 hover:text-blue-600" />
+              </button>
             </div>
             <div className="mt-2 w-full h-1.5 bg-blue-100 rounded-full overflow-hidden">
               <motion.div
@@ -264,6 +302,13 @@ export default function DocumentUpload({ docId, requirement, locked = false }: D
                 <p className="text-sm font-medium text-violet-700">AI is checking your document...</p>
                 {fileName && <p className="text-xs text-violet-500 truncate">{fileName}</p>}
               </div>
+              <button
+                onClick={handleCancel}
+                className="p-1.5 rounded-lg hover:bg-violet-100 transition-colors flex-shrink-0"
+                title="Cancel"
+              >
+                <X className="w-4 h-4 text-violet-400 hover:text-violet-600" />
+              </button>
             </div>
             <div className="mt-2 flex gap-1">
               <span className="w-1.5 h-1.5 rounded-full bg-violet-400 animate-bounce" style={{ animationDelay: '0ms' }} />
@@ -321,6 +366,13 @@ export default function DocumentUpload({ docId, requirement, locked = false }: D
                 </button>
               </div>
             </div>
+            <button
+              onClick={handleRetry}
+              className="mt-2 w-full flex items-center justify-center gap-2 px-3 py-2 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 text-xs font-semibold rounded-lg transition-all touch-target"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+              Upload New Version
+            </button>
           </motion.div>
         )}
 
@@ -349,7 +401,7 @@ export default function DocumentUpload({ docId, requirement, locked = false }: D
               className="mt-2 w-full flex items-center justify-center gap-2 px-3 py-2 bg-amber-100 hover:bg-amber-200 text-amber-700 text-xs font-semibold rounded-lg transition-all touch-target"
             >
               <RefreshCw className="w-3.5 h-3.5" />
-              Upload again
+              Upload New Version
             </button>
           </motion.div>
         )}
