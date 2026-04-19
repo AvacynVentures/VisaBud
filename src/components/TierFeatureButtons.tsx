@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Lock, FileText, Sparkles, ShieldCheck, Users, Phone, ArrowRight, X,
-  AlertTriangle, CheckCircle, AlertCircle, Upload
+  AlertTriangle, CheckCircle, Upload
 } from 'lucide-react';
 import { useApplicationStore, type PurchasedTier } from '@/lib/store';
 import { CHECKLISTS, type VisaTypeKey } from '@/lib/visa-data';
@@ -321,7 +321,7 @@ function ReadinessPanel({ visaType, onClose }: { visaType?: string; onClose: () 
         {reviewedDocs > 0 && (
           <div className="space-y-2 mb-4">
             <p className="text-xs font-semibold text-gray-700">Category Breakdown</p>
-            {categoryScores.map(({ category, avg, count, total }) => (
+            {categoryScores.map(({ category, avg, total }) => (
               <div key={category} className="flex items-center gap-2">
                 <span className="text-xs text-gray-600 w-20">{catLabels[category]}</span>
                 <div className="flex-1 h-2 bg-white/60 rounded-full overflow-hidden">

@@ -40,7 +40,7 @@ import {
   AlertTriangle,
   Info,
   CreditCard,
-  PartyPopper,
+
   ArrowRight,
   Users,
   Zap,
@@ -109,7 +109,7 @@ const CATEGORY_CONFIG: Record<DocumentCategory, { label: string; icon: string }>
  */
 function getItemNotApplicableReason(
   itemId: string,
-  visaType: string | null,
+  _visaType: string | null,
   annualIncomeRange: string | null,
   employmentStatus: string | null,
 ): string | null {
@@ -952,7 +952,7 @@ function ChecklistTab({
   unlocked: boolean;
   onUnlock: () => void;
 }) {
-  const { documentUploads, documentReports } = useApplicationStore();
+  const { documentUploads, documentReports, visaType: storeVisaType, annualIncomeRange: storeIncome, employmentStatus: storeEmployment } = useApplicationStore();
   const verifiedCount = Object.values(documentUploads).filter((u) => u.status === 'valid').length;
 
   // Risk-aware completion analysis
@@ -1053,7 +1053,7 @@ function ChecklistTab({
               </div>
               <div className="divide-y divide-gray-50">
                 {items.map((item) => (
-                  <ChecklistItemRow key={item.id} item={item} checked={!!checkedDocs[item.id]} onToggle={() => toggleDoc(item.id)} unlocked={unlocked} notApplicableReason={getItemNotApplicableReason(item.id, visaType, annualIncomeRange, employmentStatus)} />
+                  <ChecklistItemRow key={item.id} item={item} checked={!!checkedDocs[item.id]} onToggle={() => toggleDoc(item.id)} unlocked={unlocked} notApplicableReason={getItemNotApplicableReason(item.id, storeVisaType, storeIncome, storeEmployment)} />
                 ))}
               </div>
             </motion.div>
@@ -1086,7 +1086,7 @@ function ChecklistTab({
         </div>
         <div className="divide-y divide-gray-50">
           {personalTeaser.map((item) => (
-            <ChecklistItemRow key={item.id} item={item} checked={!!checkedDocs[item.id]} onToggle={() => toggleDoc(item.id)} unlocked={unlocked} notApplicableReason={getItemNotApplicableReason(item.id, visaType, annualIncomeRange, employmentStatus)} />
+            <ChecklistItemRow key={item.id} item={item} checked={!!checkedDocs[item.id]} onToggle={() => toggleDoc(item.id)} unlocked={unlocked} notApplicableReason={getItemNotApplicableReason(item.id, storeVisaType, storeIncome, storeEmployment)} />
           ))}
           {personalLockedCount > 0 && (
             <div className="px-5 sm:px-6 py-3 bg-amber-50/50 text-sm text-amber-700 flex items-center gap-2">
@@ -1758,7 +1758,6 @@ function SubmitTab({
 
   // Readiness traffic light
   const isReady = readiness === 100 && highRisks === 0;
-  const needsWork = readiness < 100 || highRisks > 0;
 
   if (unlocked) {
     return (
