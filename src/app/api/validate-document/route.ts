@@ -45,6 +45,40 @@ export async function POST(req: NextRequest) {
 
     console.log(`[validate-document] classification: isDoc=${classification.isDocument} visaRelevant=${classification.isVisaRelevant} type=${classification.detectedType} match=${classification.matchesRequirement}`);
 
+    // ── Relationship photo path ─────────────────────────────────────────
+    // Photos of couples are NOT documents — they need a different validation path.
+    const isRelationshipPhotoItem = requirement.toLowerCase().includes('relationship photograph') ||
+      requirement.toLowerCase().includes('communication history');
+
+    if (isRelationshipPhotoItem) {
+      // Skip document classification — validate as a relationship photo instead
+      const result = await provider.validateDocument({
+        image,
+        requirement: `RELATIONSHIP EVIDENCE PHOTO: ${requirement}. 
+
+This is a photo being submitted as relationship evidence for a UK spouse/partner visa. Do NOT evaluate it as a document. Evaluate it as a relationship photo.
+
+Check:
+1. Does this show two or more people together? (Solo selfies, landscapes, or screenshots are not suitable)
+2. Does this look like a genuine relationship context? (couple, family event, holiday, daily life, celebration)
+3. Is the photo clear enough to identify the people in it?
+4. Does it appear to be from a specific time/place? (Visible dates, landmarks, seasonal cues help)
+
+Tips to include in feedback:
+- The Home Office wants photos from different times and places spanning your relationship
+- Include photos from: holidays, family gatherings, your home together, cultural events, special occasions
+- 15-20 photos total is a good target — quality over quantity
+- Photos with visible dates or metadata are strongest
+
+If valid: confirm it looks suitable and suggest what other types of photos would complement it.
+If invalid: explain specifically why (e.g., "This appears to be a solo photo — you need photos showing you together with your partner").`,
+        mimeType,
+      });
+
+      console.log(`[validate-document] relationship-photo provider=${result.provider} latency=${result.latencyMs}ms valid=${result.valid}`);
+      return NextResponse.json(result);
+    }
+
     if (!classification.isDocument || !classification.isVisaRelevant) {
       return NextResponse.json({
         valid: false,
