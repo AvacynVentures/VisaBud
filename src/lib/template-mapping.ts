@@ -48,10 +48,12 @@ export const CHECKLIST_TO_TEMPLATE: Record<string, string> = {
   // Supporting Documents
   'ATAS Certificate (if applicable)': 'SkilledWorker_ATASCertificate.docx',
   'Cover Letter': 'SkilledWorker_CoverLetter.docx',
+  'Current CV / Resume': 'SkilledWorker_CoverLetter.docx',
   
   // ========== BRITISH CITIZENSHIP ==========
   
   // Personal Documents
+  'Biometric Residence Permit (BRP) / ILR Evidence': 'Citizenship_ResidenceProof.docx',
   'Current Passport': 'Citizenship_ResidenceProof.docx',
   'Life in the UK Test Pass Certificate': 'Citizenship_LifeInUKTest.docx',
   'English Language Evidence (B1+)': 'Citizenship_EnglishLanguageTest.docx',
@@ -70,7 +72,7 @@ export const CHECKLIST_TO_TEMPLATE: Record<string, string> = {
   "British Citizen Spouse's Passport (if 3-year route)": 'Citizenship_PartnerPassport.docx',
   'Citizenship Ceremony Booking': 'Citizenship_CeremonyBooking.docx',
   'Name Change Evidence (if applicable)': 'Citizenship_NameChange.docx',
-  'Children — Registration as British Citizens (if applicable)': 'Citizenship_ChildrenRegistration.docx',
+  'Children - Registration as British Citizens (if applicable)': 'Citizenship_ChildrenRegistration.docx',
 };
 
 /**
