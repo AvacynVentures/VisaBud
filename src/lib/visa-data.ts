@@ -470,11 +470,11 @@ export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
       required: false,
       priority: 'important',
       formatRequired: 'Per child: passport, birth certificate, consent from other parent (if applicable)',
-      tips: 'Each child costs an additional £2,064 (outside UK) / £1,407 (inside UK) plus IHS (£1,940–£3,880 depending on visa duration). Documents needed per child: valid passport, birth certificate (proving relationship to you), and written consent from the other parent if they are not travelling with the child. If you have sole custody, provide the court order. For complex custody situations, seek professional immigration advice before applying.',
+      tips: 'Each child costs an additional £2,064 (outside UK) / £1,407 (inside UK) plus IHS (£1,940-£3,880 depending on visa duration). Documents needed per child: valid passport, birth certificate (proving relationship to you), and written consent from the other parent if they are not travelling with the child. If you have sole custody, provide the court order. For complex custody situations, seek professional immigration advice before applying.',
       displayOrder: 27,
       govLink: 'https://www.gov.uk/uk-family-visa/child',
-      commonMistakes: ['Forgetting to include consent from the other parent', 'Not including birth certificate for each child', 'Underbudgeting — each child has separate fees + IHS'],
-      bestPractices: ['Budget £2,064 + IHS per child before starting', 'Get written consent from the other parent early — this can take time', 'If separated/divorced, include custody court orders', 'Children 18+ have different rules — check gov.uk/uk-family-visa/child'],
+      commonMistakes: ['Forgetting to include consent from the other parent', 'Not including birth certificate for each child', 'Underbudgeting - each child has separate fees + IHS'],
+      bestPractices: ['Budget £2,064 + IHS per child before starting', 'Get written consent from the other parent early - this can take time', 'If separated/divorced, include custody court orders', 'Children 18+ have different rules - check gov.uk/uk-family-visa/child'],
     },
   ],
 
@@ -659,6 +659,7 @@ export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
       formatRequired: 'Original ATAS certificate',
       tips: 'Processing takes up to 20 working days. Check if your SOC code requires ATAS at gov.uk. Your employer should know if this applies.',
       displayOrder: 20,
+      govLink: 'https://www.gov.uk/guidance/academic-technology-approval-scheme',
     },
     {
       id: 'sw-cover-letter',
@@ -693,11 +694,11 @@ export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
       required: false,
       priority: 'important',
       formatRequired: 'Per child: passport, birth certificate, proof of relationship, maintenance funds evidence',
-      tips: 'Each child pays the same application fee as you (based on visa duration) plus IHS (£776/year for under-18s). Documents needed: valid passport, birth certificate, and proof of maintenance funds (unless your employer certifies for dependants too). If the other parent is not applying, you need their written consent. For children 18+, different rules apply — check gov.uk.',
+      tips: 'Each child pays the same application fee as you (based on visa duration) plus IHS (£776/year for under-18s). Documents needed: valid passport, birth certificate, and proof of maintenance funds (unless your employer certifies for dependants too). If the other parent is not applying, you need their written consent. For children 18+, different rules apply - check gov.uk.',
       displayOrder: 23,
       govLink: 'https://www.gov.uk/skilled-worker-visa/your-partner-and-children',
       commonMistakes: ['Not budgeting for dependant fees', 'Missing consent from other parent', 'Not checking if employer certifies maintenance for dependants'],
-      bestPractices: ['Ask your employer if they certify maintenance for dependants (saves providing bank statements)', 'Get written consent from other parent early', 'Children 18+ have different eligibility — check before applying'],
+      bestPractices: ['Ask your employer if they certify maintenance for dependants (saves providing bank statements)', 'Get written consent from other parent early', 'Children 18+ have different eligibility - check before applying'],
     },
   ],
 
@@ -873,6 +874,7 @@ export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
       formatRequired: 'Original + certified English translation if applicable',
       tips: 'The marriage must have been in effect for the entire 3-year qualifying period. If you married during this period, the qualifying date changes.',
       displayOrder: 21,
+      govLink: 'https://www.gov.uk/apply-citizenship-indefinite-leave-to-remain',
     },
     {
       id: 'ct-partner-passport',
@@ -885,6 +887,7 @@ export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
       formatRequired: 'Colour copy of bio page',
       tips: 'If your spouse naturalised, include their naturalisation certificate as well.',
       displayOrder: 22,
+      govLink: 'https://www.gov.uk/apply-citizenship-indefinite-leave-to-remain',
     },
     {
       id: 'ct-ceremony-booking',
@@ -895,8 +898,9 @@ export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
       required: false,
       priority: 'nice-to-have',
       formatRequired: 'Booking confirmation from local council',
-      tips: 'The £130 ceremony fee is included in the £1,839 application fee. You can choose a private ceremony (just you and a guest) or a group ceremony. Book early - popular dates fill up quickly.',
+      tips: 'The £130 ceremony fee is included in the £1,839 application fee. You can choose a private ceremony (just you and a guest) or a group ceremony. Book early — popular dates fill up quickly.',
       displayOrder: 23,
+      govLink: 'https://www.gov.uk/citizenship-ceremonies',
     },
     {
       id: 'ct-name-change',
@@ -909,20 +913,21 @@ export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
       formatRequired: 'Original deed poll, marriage certificate, or statutory declaration',
       tips: 'All name changes must be declared. Ensure your current passport reflects your current legal name.',
       displayOrder: 24,
+      govLink: 'https://www.gov.uk/change-name-deed-poll',
     },
     {
       id: 'ct-children-registration',
-      title: 'Children — Registration as British Citizens (if applicable)',
+      title: 'Children - Registration as British Citizens (if applicable)',
       description:
         'If you have children under 18 who are not already British citizens, they may be eligible to register as British citizens once you naturalise. This is a separate application. Skip if not applicable.',
       category: 'supporting',
       required: false,
       priority: 'important',
       formatRequired: 'Separate application (Form MN1) per child + child\'s passport + birth certificate',
-      tips: 'Children born in the UK to a parent who later becomes a British citizen can register as British. Cost is £1,214 per child (as of 2024 — check gov.uk for current fee). This is a separate process from your own naturalisation — apply after your citizenship is confirmed. Children born outside the UK may also be eligible depending on circumstances. Seek professional advice for complex family situations.',
+      tips: 'Children born in the UK to a parent who later becomes a British citizen can register as British. Cost is £1,214 per child (as of 2024 - check gov.uk for current fee). This is a separate process from your own naturalisation - apply after your citizenship is confirmed. Children born outside the UK may also be eligible depending on circumstances. Seek professional advice for complex family situations.',
       displayOrder: 25,
       govLink: 'https://www.gov.uk/register-british-citizen/born-in-uk',
-      commonMistakes: ['Assuming children automatically become British when you do', 'Not budgeting for separate registration fees per child', 'Waiting too long — some routes have age limits'],
+      commonMistakes: ['Assuming children automatically become British when you do', 'Not budgeting for separate registration fees per child', 'Waiting too long - some routes have age limits'],
       bestPractices: ['Apply for child registration after your own citizenship ceremony', 'Budget £1,214 per child', 'Check specific eligibility at gov.uk/register-british-citizen', 'For children born outside the UK, check gov.uk/register-british-citizen/born-outside-the-uk'],
     },
   ],
@@ -1344,7 +1349,7 @@ export const RISKS: RiskRule[] = [
   // =========================================================================
   {
     id: 'RISK_PREVIOUS_REFUSAL',
-    title: 'Previous Visa Refusal — Must Be Declared',
+    title: 'Previous Visa Refusal - Must Be Declared',
     description:
       'You indicated you have a previous visa refusal. This MUST be declared and explained. Failure to disclose = automatic refusal and potential 10-year re-entry ban for deception.',
     severity: 'high',
@@ -1357,7 +1362,7 @@ export const RISKS: RiskRule[] = [
   },
   {
     id: 'RISK_OVERSTAY_HISTORY',
-    title: 'Previous Overstay — Must Be Declared',
+    title: 'Previous Overstay - Must Be Declared',
     description:
       'You indicated you have previously overstayed a visa. Even by 1 day, this must be declared and will be scrutinised. Overstays can result in a re-entry ban of 1-10 years.',
     severity: 'high',
@@ -1706,12 +1711,12 @@ export function getApplicableRisks(profile: {
       return false;
     }
 
-    // Previous refusal check — only show if user confirmed they have one
+    // Previous refusal check - only show if user confirmed they have one
     if (risk.conditions.hasPreviousRefusal === true && !profile.hasPreviousRefusal) {
       return false;
     }
 
-    // Previous overstay check — only show if user confirmed they have one
+    // Previous overstay check - only show if user confirmed they have one
     if (risk.conditions.hasPreviousOverstay === true && !profile.hasPreviousOverstay) {
       return false;
     }

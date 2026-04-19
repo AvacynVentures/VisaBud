@@ -41,6 +41,101 @@ function calculateFinalScore(dimensions: DimensionScore): number {
   return Math.round(Math.min(100, Math.max(0, weighted)));
 }
 
+// ─── Document-Specific AI Criteria ──────────────────────────────────────────
+// Per-document checks that the AI should prioritise during premium review.
+
+function getDocumentSpecificCriteria(docId: string, docTitle: string): string | null {
+  const lower = (docId + ' ' + docTitle).toLowerCase();
+
+  if (lower.includes('passport')) return `- Is the bio data page fully visible (photo, full name, DOB, passport number, expiry date)?
+- Does the passport have at least 6 months validity remaining?
+- Are ALL pages scanned (including blank pages)?
+- Are any previous passports included?
+- Is the name consistent with other documents?`;
+
+  if (lower.includes('bank-statement') || lower.includes('bank statement')) return `- Is the account holder name visible?
+- Are sort code and account number visible?
+- Does it cover the full 6-month period required?
+- Are salary credits visible and do they match payslip amounts?
+- Is this an official bank statement (stamped or digitally verified), not a screenshot?`;
+
+  if (lower.includes('payslip')) return `- Is the employer name visible?
+- Is the gross salary clearly shown (not just net)?
+- Are tax deductions and NI contributions shown?
+- Does it cover the correct period?
+- Does the salary match what's declared in the application?`;
+
+  if (lower.includes('employer-letter') || lower.includes('employer letter')) return `- Is it on official company letterhead?
+- Is it dated within 28 days of the application date?
+- Does it state: job title, gross salary, start date, and contract type (permanent/fixed)?
+- Is it signed by a named individual?
+- Does the salary match the payslips?`;
+
+  if (lower.includes('photo')) return `- Is the background plain and light-coloured (white, cream, or light grey)?
+- Was the photo taken within the last month?
+- Is the person facing forward with a plain expression, mouth closed?
+- Are eyes open and visible, with no hair covering them?
+- No glasses (unless medically required)?
+- No head covering (unless religious/medical)?
+- No shadows on face or behind?`;
+
+  if (lower.includes('tb-test') || lower.includes('tb test') || lower.includes('tuberculosis')) return `- Is this from a Home Office approved clinic?
+- Is the test date within the last 6 months (TB certs expire after 6 months)?
+- Does the applicant name match the passport?
+- Is the result clearly stated (clear/negative)?`;
+
+  if (lower.includes('marriage') || lower.includes('civil partnership')) return `- Is this an official marriage/civil partnership certificate?
+- If not in English, is a certified translation included?
+- If married overseas, is an apostille/legalisation present?
+- Are both partners' names clearly visible?
+- Is the date of marriage/partnership visible?`;
+
+  if (lower.includes('cos') || lower.includes('certificate of sponsorship')) return `- Is the CoS reference number visible?
+- Is the SOC code visible and does it match the job?
+- Is the salary stated and does it meet the minimum threshold?
+- Is the employer name visible?
+- Is the start date visible?
+- Is the CoS still within its 3-month validity?`;
+
+  if (lower.includes('english') || lower.includes('ielts') || lower.includes('selt')) return `- Is this from an approved SELT provider (e.g., IELTS, Trinity)?
+- Is the CEFR level clearly shown?
+- Is the test certificate within its validity period?
+- Does the name match the passport?
+- For spouse initial: minimum A1. For skilled worker/ILR: minimum B1.`;
+
+  if (lower.includes('brp') || lower.includes('biometric residence')) return `- Is the front AND back of the BRP scanned?
+- Is the immigration status clearly shown (e.g., Indefinite Leave to Remain)?
+- Is the expiry date visible?
+- Does the name match the passport?`;
+
+  if (lower.includes('life in the uk') || lower.includes('life-in-uk')) return `- Is the pass notification letter clearly visible?
+- Is the applicant name visible?
+- Is the test date visible?
+- Note: Life in the UK test certificates do not expire.`;
+
+  if (lower.includes('birth certificate')) return `- Is this an official birth certificate (not a photocopy)?
+- If not in English, is a certified translation included?
+- Are both parents' names visible?
+- Is the date and place of birth clearly shown?`;
+
+  if (lower.includes('accommodation') || lower.includes('tenancy')) return `- Is the address clearly visible?
+- Does the document show the applicant or sponsor's name?
+- Is it a tenancy agreement, mortgage statement, or landlord letter?
+- If a landlord letter: does it confirm permission to stay and number of occupants?`;
+
+  if (lower.includes('savings') || lower.includes('cash savings')) return `- Does the balance meet the required threshold?
+- Has the amount been held for at least 28 consecutive days?
+- Is the account holder name visible?
+- Are the funds in an accessible account (not locked/pension)?`;
+
+  if (lower.includes('self-employ') || lower.includes('self employ')) return `- Are SA302 tax calculations included?
+- Are tax year overviews from HMRC included?
+- Is the accountant letter on headed paper and dated?
+- Do the figures cover the last 2 full tax years?`;
+
+  return null;
+}
+
 export class ClaudeVisionProvider implements VisionProvider {
   readonly name = 'claude';
   private apiKey: string;
@@ -271,10 +366,14 @@ Risk level criteria:
 - MEDIUM: Document has issues that could delay processing or trigger a request for more info. Fixable.
 - LOW: Document looks good. Minor suggestions only.`;
 
+    // Document-specific criteria injection
+    const docSpecificCriteria = getDocumentSpecificCriteria(input.docId, input.docTitle);
+
     const userPrompt = `Review this document for a UK ${input.visaType} visa application.
 
 Document type: ${input.docTitle} (ID: ${input.docId})
 Requirement: ${input.requirement}
+${docSpecificCriteria ? `\nDOCUMENT-SPECIFIC CHECKS (prioritise these):\n${docSpecificCriteria}\n` : ''}
 
 Analyze this document across 4 dimensions:
 
@@ -312,8 +411,11 @@ Also check THOROUGHLY against real UKVI requirements:
 - For bank statements: account holder name, sort code, account number, full 6-month period, salary credits visible?
 - For payslips: employer name, gross salary, tax deductions, NI number, matching period?
 - For employer letters: letterhead, dated within 28 days, job title, salary, start date, contract type?
-- For photos: white background, correct size, recent (within 6 months)?
-- For certificates: issuing authority, dates, reference numbers, not expired?
+- For photos: plain light-coloured background (white/cream/light grey), correct size, recent (within 1 month)? No glasses unless medically required?
+- For TB test certificates: issued by approved clinic, valid for 6 months from test date, correct applicant name?
+- For marriage certificates: original or certified copy, certified English translation if not in English, apostille if married overseas?
+- For CoS/sponsorship: reference number visible, SOC code, salary matches contract?
+- For certificates (general): issuing authority, dates, reference numbers, not expired?
 
 Be SPECIFIC. Don't say "document looks unclear" — say exactly what's wrong and where.
 

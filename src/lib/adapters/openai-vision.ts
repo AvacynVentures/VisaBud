@@ -277,7 +277,18 @@ Analyze this document across 4 dimensions:
    - 25: Expired or significant authenticity concerns
    - 0: Clearly expired or fraudulent
 
-Also check THOROUGHLY against real UKVI requirements. Be SPECIFIC about issues.
+Also check THOROUGHLY against real UKVI requirements:
+- For passports: bio page visible, 6+ months validity, all pages included?
+- For bank statements: account holder name, sort code, account number, full 6-month period, salary credits visible?
+- For payslips: employer name, gross salary, tax deductions, NI number, matching period?
+- For employer letters: letterhead, dated within 28 days, job title, salary, start date, contract type?
+- For photos: plain light-coloured background (white/cream/light grey), correct size, recent (within 1 month)? No glasses unless medically required?
+- For TB test certificates: issued by approved clinic, valid for 6 months from test date, correct applicant name?
+- For marriage certificates: original or certified copy, certified English translation if not in English, apostille if married overseas?
+- For CoS/sponsorship: reference number visible, SOC code, salary matches contract?
+- For certificates (general): issuing authority, dates, reference numbers, not expired?
+
+Be SPECIFIC about issues found.
 
 Respond with JSON only.`;
 
