@@ -1,11 +1,11 @@
 // =============================================================================
-// visa-data.ts — VisaBud Complete Content Layer
+// visa-data.ts - VisaBud Complete Content Layer
 // All visa types, checklists, timelines, risk rules, and submission info.
-// Standalone constants — no imports required.
+// Standalone constants - no imports required.
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-// Types (local to this file — consumers can import from types.ts if needed)
+// Types (local to this file - consumers can import from types.ts if needed)
 // -----------------------------------------------------------------------------
 
 export type VisaTypeKey = 'spouse' | 'skilled_worker' | 'citizenship';
@@ -70,6 +70,8 @@ export interface RiskRule {
     relationshipDurationMonths?: { max?: number; min?: number };
     employmentStatus?: string[];
     nationality?: string[];
+    hasPreviousRefusal?: boolean;
+    hasPreviousOverstay?: boolean;
   };
 }
 
@@ -95,7 +97,7 @@ export interface SubmissionInfo {
 }
 
 // -----------------------------------------------------------------------------
-// VISA TYPES — Core reference for each route
+// VISA TYPES - Core reference for each route
 // -----------------------------------------------------------------------------
 
 export const VISA_TYPES: Record<VisaTypeKey, VisaTypeInfo> = {
@@ -128,15 +130,15 @@ export const VISA_TYPES: Record<VisaTypeKey, VisaTypeInfo> = {
     icon: '💼',
     description:
       'For people with a confirmed job offer from a UK employer who holds a valid sponsor licence. The general salary threshold is £38,700/year, though some occupations have lower going rates. Check the specific eligibility for your job.',
-    govFee: '£819–£1,618 (outside UK) / £943–£1,865 (inside UK) — lower if on immigration salary list',
+    govFee: '£819-£1,618 (outside UK) / £943-£1,865 (inside UK) - lower if on immigration salary list',
     ihsSurcharge: '£1,035/year',
     processingTime: '3 weeks (outside UK) / 8 weeks (inside UK)',
     priorityAvailable: true,
-    priorityFee: 'Varies — you\'ll be told if faster processing is available when you apply',
+    priorityFee: 'Varies - you\'ll be told if faster processing is available when you apply',
     keyRequirements: [
       'Valid Certificate of Sponsorship (CoS) from licensed employer',
       'Job at RQF Level 3+ (A-level equivalent or above)',
-      'Salary meets minimum threshold — general is £38,700+ but varies by occupation and CoS date (check going rate for your specific SOC code)',
+      'Salary meets minimum threshold - general is £38,700+ but varies by occupation and CoS date (check going rate for your specific SOC code)',
       'English language at B1 level (CEFR)',
       'Maintenance funds of £1,270 held for 28+ consecutive days (unless employer certifies)',
       'Criminal record certificate (if role involves vulnerable persons)',
@@ -161,7 +163,7 @@ export const VISA_TYPES: Record<VisaTypeKey, VisaTypeInfo> = {
       'No more than 450 days outside UK in 5-year period',
       'No more than 90 days outside UK in final 12 months',
       'Must be physically present in UK exactly 5 years before application received',
-      'Good character — no serious criminal convictions',
+      'Good character - no serious criminal convictions',
       'Life in the UK test passed',
       'English language at B1 level or above (or Welsh/Scottish Gaelic)',
     ],
@@ -169,7 +171,7 @@ export const VISA_TYPES: Record<VisaTypeKey, VisaTypeInfo> = {
 };
 
 // -----------------------------------------------------------------------------
-// CHECKLISTS — Per visa type, every document needed
+// CHECKLISTS - Per visa type, every document needed
 // -----------------------------------------------------------------------------
 
 export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
@@ -203,7 +205,7 @@ export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
       required: true,
       priority: 'critical',
       formatRequired: 'Digital confirmation or appointment receipt',
-      tips: 'You can only book biometrics AFTER submitting your online application. Once submitted, book immediately — slots fill up fast, especially Jan–Mar.',
+      tips: 'You can only book biometrics AFTER submitting your online application. Once submitted, book immediately - slots fill up fast, especially Jan-Mar.',
       displayOrder: 2,
       govLink: 'https://www.gov.uk/find-a-visa-application-centre',
       officialRequirement: 'Once you submit your visa application, UKVI will ask you to book and attend a biometrics appointment. You will receive an appointment confirmation receipt.',
@@ -214,16 +216,16 @@ export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
       id: 'sp-photos',
       title: 'Passport-Style Photographs',
       description:
-        'Passport-style photos taken within the last month. For online applications: digital photo (min 600×750 pixels, 50KB–10MB). For paper applications: 2 identical printed photos (45mm × 35mm).',
+        'Passport-style photos taken within the last month. For online applications: digital photo (min 600×750 pixels, 50KB-10MB). For paper applications: 2 identical printed photos (45mm × 35mm).',
       category: 'personal',
       required: true,
       priority: 'critical',
-      formatRequired: 'Digital photo for online applications (600×750px min, 50KB–10MB) OR 2 printed photos (45mm × 35mm) for paper forms',
-      tips: 'Photo booth or professional service recommended — these are more likely to be approved. You can use your own device but have someone else take the photo. Do not wear glasses unless medically required.',
+      formatRequired: 'Digital photo for online applications (600×750px min, 50KB-10MB) OR 2 printed photos (45mm × 35mm) for paper forms',
+      tips: 'Photo booth or professional service recommended - these are more likely to be approved. You can use your own device but have someone else take the photo. Do not wear glasses unless medically required.',
       displayOrder: 3,
       govLink: 'https://www.gov.uk/photos-for-passports',
-      commonMistakes: ['Photos older than 1 month (gov.uk requires taken in the last month)', 'Wearing glasses (not allowed unless medically required)', 'Wrong background (must be plain light colour — white, cream, or light grey)', 'Shadows on face or behind you'],
-      bestPractices: ['Use a photo booth or professional service for best approval odds', 'Plain light-coloured background (white, cream, or light grey)', 'Plain expression, mouth closed, eyes open and visible', 'No head coverings unless for religious or medical reasons', 'Digital: at least 600×750 pixels, 50KB–10MB'],
+      commonMistakes: ['Photos older than 1 month (gov.uk requires taken in the last month)', 'Wearing glasses (not allowed unless medically required)', 'Wrong background (must be plain light colour - white, cream, or light grey)', 'Shadows on face or behind you'],
+      bestPractices: ['Use a photo booth or professional service for best approval odds', 'Plain light-coloured background (white, cream, or light grey)', 'Plain expression, mouth closed, eyes open and visible', 'No head coverings unless for religious or medical reasons', 'Digital: at least 600×750 pixels, 50KB-10MB'],
     },
     {
       id: 'sp-tb-test',
@@ -239,7 +241,7 @@ export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
       govLink: 'https://www.gov.uk/tb-test-visa',
       officialRequirement: 'If you are applying from a country where TB screening is required, you must provide a valid TB test certificate from an approved clinic.',
       commonMistakes: ['Certificate expired (valid only 6 months)', 'Using non-approved clinic', 'Not checking if your country requires it'],
-      bestPractices: ['Schedule early — some clinics have long waits', 'Check approved clinic list on gov.uk', 'Keep original certificate safe'],
+      bestPractices: ['Schedule early - some clinics have long waits', 'Check approved clinic list on gov.uk', 'Keep original certificate safe'],
     },
     {
       id: 'sp-english-lang',
@@ -277,12 +279,12 @@ export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
       id: 'sp-previous-visas',
       title: 'Previous UK Visa / Immigration History',
       description:
-        'Copies of all previous UK visas, BRPs, entry stamps, and any refusal letters. Disclose everything — undisclosed refusals are a common reason for rejection. If you have no previous visa history, simply confirm this on the application form — no documents needed for this item.',
+        'Copies of all previous UK visas, BRPs, entry stamps, and any refusal letters. Disclose everything - undisclosed refusals are a common reason for rejection. If you have no previous visa history, simply confirm this on the application form - no documents needed for this item.',
       category: 'personal',
       required: false,
       priority: 'important',
       formatRequired: 'Colour copies of all relevant documents (if applicable). If none, confirm on the form.',
-      tips: 'If you have previous visas: include refusals and curtailments from ANY country, not just the UK. Honesty is critical — omissions are treated as deception. If this is your first ever visa application, you can skip this item — just answer honestly on the form.',
+      tips: 'If you have previous visas: include refusals and curtailments from ANY country, not just the UK. Honesty is critical - omissions are treated as deception. If this is your first ever visa application, you can skip this item - just answer honestly on the form.',
       displayOrder: 7,
       govLink: 'https://www.gov.uk/uk-family-visa/documents-youll-need-to-apply',
       commonMistakes: ['Omitting refusals from other countries', 'Not including curtailment notices', 'Missing old BRP copies'],
@@ -347,7 +349,7 @@ export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
       required: false,
       priority: 'important',
       formatRequired: 'Official bank statements covering the full 28-day period',
-      tips: 'The formula is: (£29,000 − actual income) × 2.5 = required savings. Funds must be accessible (not locked in pensions, property, or investments).',
+      tips: 'The formula is: (£29,000 - actual income) × 2.5 = required savings. Funds must be accessible (not locked in pensions, property, or investments).',
       displayOrder: 13,
       govLink: 'https://www.gov.uk/uk-family-visa/proof-income',
       commonMistakes: ['Dipping below threshold during 28-day period', 'Using locked funds (pensions, ISAs)', 'Not covering full 28 consecutive days'],
@@ -379,7 +381,7 @@ export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
       required: true,
       priority: 'important',
       formatRequired: 'Printed photos with written dates/descriptions, or a digital album with captions',
-      tips: 'Quality over quantity. 15–20 photos spanning your entire relationship. Show: holidays, family events, daily life. Metadata-intact digital photos are strongest.',
+      tips: 'Quality over quantity. 15-20 photos spanning your entire relationship. Show: holidays, family events, daily life. Metadata-intact digital photos are strongest.',
       displayOrder: 20,
       govLink: 'https://www.gov.uk/uk-family-visa/documents-youll-need-to-apply',
     },
@@ -404,7 +406,7 @@ export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
       category: 'supporting',
       required: true,
       priority: 'important',
-      formatRequired: 'Original documents or certified copies — must be less than 4 years old and from an official source',
+      formatRequired: 'Original documents or certified copies - must be less than 4 years old and from an official source',
       tips: 'The more overlap in names + address, the better. Joint bank account statements are strong evidence. If you don\'t live together (e.g., due to work, study, or cultural reasons), provide evidence of: regular communication, financial support for each other, time spent together (holidays, events), and care for any shared children.',
       displayOrder: 22,
       govLink: 'https://www.gov.uk/uk-family-visa/partner-spouse',
@@ -443,7 +445,7 @@ export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
       category: 'supporting',
       required: false,
       priority: 'nice-to-have',
-      formatRequired: 'Typed letter, 1–2 pages, signed and dated',
+      formatRequired: 'Typed letter, 1-2 pages, signed and dated',
       tips: 'Keep it factual and chronological. Include: how you met, key milestones (moving in, engagement, marriage), and future plans. Do not make it overly emotional.',
       displayOrder: 25,
     },
@@ -456,7 +458,7 @@ export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
       required: false,
       priority: 'nice-to-have',
       formatRequired: 'Signed letters with writer\'s ID copy attached',
-      tips: 'Get 2–4 letters from different people (both sides of the relationship). Each letter should include their full name, relationship to you, and a copy of their ID.',
+      tips: 'Get 2-4 letters from different people (both sides of the relationship). Each letter should include their full name, relationship to you, and a copy of their ID.',
       displayOrder: 26,
     },
   ],
@@ -498,12 +500,12 @@ export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
     {
       id: 'sw-photos',
       title: 'Passport-Style Photographs',
-      description: 'Passport-style photos taken within the last month. For online applications: digital photo (min 600×750 pixels, 50KB–10MB). For paper applications: 2 identical printed photos (45mm × 35mm).',
+      description: 'Passport-style photos taken within the last month. For online applications: digital photo (min 600×750 pixels, 50KB-10MB). For paper applications: 2 identical printed photos (45mm × 35mm).',
       category: 'personal',
       required: true,
       priority: 'critical',
-      formatRequired: 'Digital photo for online applications (600×750px min, 50KB–10MB) OR 2 printed photos (45mm × 35mm) for paper forms',
-      tips: 'Photo booth or professional service recommended. Plain light-coloured background (white, cream, or light grey). No glasses unless medically required. Check VAC requirements for your country — some have additional specifications.',
+      formatRequired: 'Digital photo for online applications (600×750px min, 50KB-10MB) OR 2 printed photos (45mm × 35mm) for paper forms',
+      tips: 'Photo booth or professional service recommended. Plain light-coloured background (white, cream, or light grey). No glasses unless medically required. Check VAC requirements for your country - some have additional specifications.',
       displayOrder: 3,
       govLink: 'https://www.gov.uk/photos-for-passports',
     },
@@ -516,7 +518,7 @@ export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
       required: true,
       priority: 'critical',
       formatRequired: 'Original certificate',
-      tips: 'Valid for 6 months. Schedule this early — some clinics have long wait times.',
+      tips: 'Valid for 6 months. Schedule this early - some clinics have long wait times.',
       displayOrder: 4,
       govLink: 'https://www.gov.uk/tb-test-visa',
     },
@@ -550,12 +552,12 @@ export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
       id: 'sw-previous-visas',
       title: 'Previous UK Visa / Immigration History',
       description:
-        'All previous UK visas, BRPs, and any refusal/curtailment letters from any country. If you have no previous visa history, simply confirm this on the application form — no documents needed.',
+        'All previous UK visas, BRPs, and any refusal/curtailment letters from any country. If you have no previous visa history, simply confirm this on the application form - no documents needed.',
       category: 'personal',
       required: false,
       priority: 'important',
       formatRequired: 'Colour copies (if applicable). If none, confirm on the form.',
-      tips: 'If you have previous visas: disclose everything. Undisclosed refusals — even from other countries — count as deception and can lead to a 10-year ban. If this is your first visa application, just answer honestly on the form.',
+      tips: 'If you have previous visas: disclose everything. Undisclosed refusals - even from other countries - count as deception and can lead to a 10-year ban. If this is your first visa application, just answer honestly on the form.',
       displayOrder: 7,
       govLink: 'https://www.gov.uk/skilled-worker-visa/documents-youll-need-to-apply',
     },
@@ -599,7 +601,7 @@ export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
       required: false,
       priority: 'important',
       formatRequired: 'Official bank statements (28-day period)',
-      tips: 'Most employers will certify maintenance — check with your HR. If they don\'t, ensure the £1,270 is in YOUR name (not a family member\'s) and don\'t dip below the threshold.',
+      tips: 'Most employers will certify maintenance - check with your HR. If they don\'t, ensure the £1,270 is in YOUR name (not a family member\'s) and don\'t dip below the threshold.',
       displayOrder: 12,
       govLink: 'https://www.gov.uk/skilled-worker-visa/money-you-need',
     },
@@ -625,7 +627,7 @@ export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
       required: false,
       priority: 'important',
       formatRequired: 'Original certificates + ECCTIS/ENIC confirmation for non-UK qualifications',
-      tips: 'Not always required but strengthens your application, especially if salary is near the threshold. ECCTIS takes 10–15 working days to process.',
+      tips: 'Not always required but strengthens your application, especially if salary is near the threshold. ECCTIS takes 10-15 working days to process.',
       displayOrder: 14,
       govLink: 'https://www.gov.uk/skilled-worker-visa/documents-youll-need-to-apply',
     },
@@ -683,7 +685,7 @@ export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
       required: true,
       priority: 'critical',
       formatRequired: 'Original current passport + all previous passports',
-      tips: 'Lost old passports? Request entry/exit records from the Home Office using a Subject Access Request (SAR). This takes 1–3 months.',
+      tips: 'Lost old passports? Request entry/exit records from the Home Office using a Subject Access Request (SAR). This takes 1-3 months.',
       displayOrder: 1,
       govLink: 'https://www.gov.uk/apply-citizenship-indefinite-leave-to-remain',
       officialRequirement: 'You must send your current passport and any previous passports you hold. These are used to verify your travel history and time spent in the UK.',
@@ -707,12 +709,12 @@ export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
       id: 'ct-life-in-uk',
       title: 'Life in the UK Test Pass Certificate',
       description:
-        'Certificate proving you passed the Life in the UK test. There is no expiry — once passed, it\'s valid forever.',
+        'Certificate proving you passed the Life in the UK test. There is no expiry - once passed, it\'s valid forever.',
       category: 'personal',
       required: true,
       priority: 'critical',
       formatRequired: 'Original pass notification letter',
-      tips: 'Book at: lifeintheuktest.gov.uk. Cost is £50. Study the official handbook — most questions come directly from it. Pass mark is 75% (18/24).',
+      tips: 'Book at: lifeintheuktest.gov.uk. Cost is £50. Study the official handbook - most questions come directly from it. Pass mark is 75% (18/24).',
       displayOrder: 3,
       govLink: 'https://www.gov.uk/life-in-the-uk-test',
       officialRequirement: 'You must have passed the Life in the UK test. The pass letter does not expire.',
@@ -754,7 +756,7 @@ export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
       required: true,
       priority: 'critical',
       formatRequired: 'Colour copies of all documents, chronologically ordered',
-      tips: 'The Home Office will cross-reference everything. Missing information delays processing significantly (sometimes months). Include ALL visas and status changes — your path to ILR is part of the story.',
+      tips: 'The Home Office will cross-reference everything. Missing information delays processing significantly (sometimes months). Include ALL visas and status changes - your path to ILR is part of the story.',
       displayOrder: 6,
       govLink: 'https://www.gov.uk/apply-citizenship-indefinite-leave-to-remain',
     },
@@ -769,7 +771,7 @@ export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
       required: true,
       priority: 'critical',
       formatRequired: 'Spreadsheet or typed document listing all absences with exact dates',
-      tips: 'Max 450 days outside UK in 5 years AND max 90 days in the final 12 months. Count carefully — even 1 day over = automatic refusal. ALSO: you must have been physically in the UK exactly 5 years before your application is received. Example: if you apply 20 June 2027, you must have been in the UK on 20 June 2022. Use passport stamps + flight bookings to verify.',
+      tips: 'Max 450 days outside UK in 5 years AND max 90 days in the final 12 months. Count carefully - even 1 day over = automatic refusal. ALSO: you must have been physically in the UK exactly 5 years before your application is received. Example: if you apply 20 June 2027, you must have been in the UK on 20 June 2022. Use passport stamps + flight bookings to verify.',
       displayOrder: 10,
       govLink: 'https://www.gov.uk/apply-citizenship-indefinite-leave-to-remain',
       officialRequirement: 'You must not have spent more than 450 days outside the UK during the 5-year period, and not more than 90 days outside the UK in the last 12 months.',
@@ -806,7 +808,7 @@ export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
       id: 'ct-criminal-record',
       title: 'Criminal Record Declaration',
       description:
-        'You must declare ALL criminal convictions, cautions, and penalties — including driving offences and overseas convictions. Even spent convictions must be declared for citizenship.',
+        'You must declare ALL criminal convictions, cautions, and penalties - including driving offences and overseas convictions. Even spent convictions must be declared for citizenship.',
       category: 'financial',
       required: true,
       priority: 'critical',
@@ -863,7 +865,7 @@ export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
       required: false,
       priority: 'nice-to-have',
       formatRequired: 'Booking confirmation from local council',
-      tips: 'The £130 ceremony fee is included in the £1,839 application fee. You can choose a private ceremony (just you and a guest) or a group ceremony. Book early — popular dates fill up quickly.',
+      tips: 'The £130 ceremony fee is included in the £1,839 application fee. You can choose a private ceremony (just you and a guest) or a group ceremony. Book early - popular dates fill up quickly.',
       displayOrder: 23,
     },
     {
@@ -882,28 +884,28 @@ export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
 };
 
 // -----------------------------------------------------------------------------
-// TIMELINES — Week-by-week action plans by urgency
+// TIMELINES - Week-by-week action plans by urgency
 // -----------------------------------------------------------------------------
 
 export const TIMELINES: Record<UrgencyKey, TimelineWeek[]> = {
   // =========================================================================
-  // URGENT — 4-week sprint
+  // URGENT - 4-week sprint
   // =========================================================================
   urgent: [
     {
       week: 1,
       title: 'Emergency Preparation',
       actions: [
-        'Complete online application form on gov.uk (DO NOT SUBMIT YET — save as draft)',
+        'Complete online application form on gov.uk (DO NOT SUBMIT YET - save as draft)',
         'Research nearest VAC location and check appointment availability (you can only book AFTER submitting)',
         'Book TB test if required (check gov.uk list of countries)',
-        'Request bank statements from your bank (allow 3–5 working days)',
+        'Request bank statements from your bank (allow 3-5 working days)',
         'Ask sponsor/employer for employment letter immediately',
-        'Check passport validity — if expiring within 6 months, start emergency renewal',
+        'Check passport validity - if expiring within 6 months, start emergency renewal',
       ],
       deadline: 'End of Day 7',
       notes:
-        'Priority processing costs £500–£800 extra but reduces wait from 24 weeks to 5–10 working days. Budget for this. Do NOT submit without all critical documents — a refusal costs more than waiting an extra week.',
+        'Priority processing costs £500-£800 extra but reduces wait from 24 weeks to 5-10 working days. Budget for this. Do NOT submit without all critical documents - a refusal costs more than waiting an extra week.',
     },
     {
       week: 2,
@@ -924,7 +926,7 @@ export const TIMELINES: Record<UrgencyKey, TimelineWeek[]> = {
       week: 3,
       title: 'Review & Quality Check',
       actions: [
-        'Cross-reference every document against the checklist — no gaps allowed',
+        'Cross-reference every document against the checklist - no gaps allowed',
         'Verify all dates, names, and reference numbers match across documents',
         'Have someone else review the application form for errors',
         'Attend TB test appointment (if not yet done)',
@@ -948,12 +950,12 @@ export const TIMELINES: Record<UrgencyKey, TimelineWeek[]> = {
       ],
       deadline: 'End of Day 28',
       notes:
-        'After submission, do NOT travel or change your circumstances without consulting the application guidance. Keep your phone and email accessible — the Home Office may contact you.',
+        'After submission, do NOT travel or change your circumstances without consulting the application guidance. Keep your phone and email accessible - the Home Office may contact you.',
     },
   ],
 
   // =========================================================================
-  // NORMAL — 8-week plan (1–3 months)
+  // NORMAL - 8-week plan (1-3 months)
   // =========================================================================
   normal: [
     {
@@ -968,7 +970,7 @@ export const TIMELINES: Record<UrgencyKey, TimelineWeek[]> = {
       ],
       deadline: 'End of Week 1',
       notes:
-        'This week is about understanding, not doing. The biggest cause of refusals is misunderstanding the requirements. Read the guidance properly — don\'t rely on forums or hearsay.',
+        'This week is about understanding, not doing. The biggest cause of refusals is misunderstanding the requirements. Read the guidance properly - don\'t rely on forums or hearsay.',
     },
     {
       week: 2,
@@ -982,7 +984,7 @@ export const TIMELINES: Record<UrgencyKey, TimelineWeek[]> = {
       ],
       deadline: 'End of Week 2',
       notes:
-        'Passport renewals take 3–6 weeks. English language tests need to be booked in advance. Do these early to avoid bottlenecks.',
+        'Passport renewals take 3-6 weeks. English language tests need to be booked in advance. Do these early to avoid bottlenecks.',
     },
     {
       week: 3,
@@ -1023,7 +1025,7 @@ export const TIMELINES: Record<UrgencyKey, TimelineWeek[]> = {
       ],
       deadline: 'End of Week 5',
       notes:
-        'The online form is long (spouse visa forms can take 2–3 hours). Don\'t rush it. Incorrect answers — even accidental — can be treated as dishonesty.',
+        'The online form is long (spouse visa forms can take 2-3 hours). Don\'t rush it. Incorrect answers - even accidental - can be treated as dishonesty.',
     },
     {
       week: 6,
@@ -1037,7 +1039,7 @@ export const TIMELINES: Record<UrgencyKey, TimelineWeek[]> = {
       ],
       deadline: 'End of Week 6',
       notes:
-        'Consider paying for a professional document review at this stage (£150–£300 from an immigration advisor). Much cheaper than a refusal + re-application.',
+        'Consider paying for a professional document review at this stage (£150-£300 from an immigration advisor). Much cheaper than a refusal + re-application.',
     },
     {
       week: 7,
@@ -1072,7 +1074,7 @@ export const TIMELINES: Record<UrgencyKey, TimelineWeek[]> = {
   ],
 
   // =========================================================================
-  // AHEAD — 16-week plan (3+ months, planning ahead)
+  // AHEAD - 16-week plan (3+ months, planning ahead)
   // =========================================================================
   ahead: [
     {
@@ -1081,7 +1083,7 @@ export const TIMELINES: Record<UrgencyKey, TimelineWeek[]> = {
       actions: [
         'Read the complete Immigration Rules for your visa category on legislation.gov.uk',
         'Research recent refusal trends and common mistakes on forums (but verify with official sources)',
-        'Assess your overall eligibility honestly — identify weaknesses',
+        'Assess your overall eligibility honestly - identify weaknesses',
         'Consider whether professional immigration advice is worth the investment',
       ],
       deadline: 'End of Week 1',
@@ -1093,7 +1095,7 @@ export const TIMELINES: Record<UrgencyKey, TimelineWeek[]> = {
       title: 'Address Weaknesses',
       actions: [
         'If income is borderline: explore ways to increase salary or build savings',
-        'If English test needed: start studying and book the test for Week 6–8',
+        'If English test needed: start studying and book the test for Week 6-8',
         'If relationship evidence is thin: start building a deliberate evidence trail now',
         'If travel history is close to limits: stop unnecessary international travel immediately',
       ],
@@ -1107,7 +1109,7 @@ export const TIMELINES: Record<UrgencyKey, TimelineWeek[]> = {
       actions: [
         'Request long-form documents (birth certificates, police clearances, etc.)',
         'Start the certified translation process for non-English documents',
-        'Order ECCTIS qualification assessment if needed (takes 10–15 working days)',
+        'Order ECCTIS qualification assessment if needed (takes 10-15 working days)',
         'Request Subject Access Request from Home Office if missing immigration records',
       ],
       deadline: 'End of Week 6',
@@ -1165,19 +1167,19 @@ export const TIMELINES: Record<UrgencyKey, TimelineWeek[]> = {
       ],
       deadline: 'End of Week 14',
       notes:
-        'An OISC-regulated advisor or solicitor review costs £200–£500 but provides peace of mind. They catch issues you won\'t spot yourself.',
+        'An OISC-regulated advisor or solicitor review costs £200-£500 but provides peace of mind. They catch issues you won\'t spot yourself.',
     },
     {
       week: 15,
       title: 'Final Preparation & Submission',
       actions: [
-        'Submit application online — then immediately book biometrics appointment',
+        'Submit application online - then immediately book biometrics appointment',
         'Attend biometrics at VAC (bring passport + application confirmation)',
-        'Final document review — check all dates are within validity windows',
+        'Final document review - check all dates are within validity windows',
         'Make copies of everything for your records',
         'Submit application, pay fees, and upload documents',
         'Submit physical documents at VAC if required',
-        'Celebrate — you\'ve done everything possible to succeed',
+        'Celebrate - you\'ve done everything possible to succeed',
       ],
       deadline: 'End of Week 16',
       notes:
@@ -1187,7 +1189,7 @@ export const TIMELINES: Record<UrgencyKey, TimelineWeek[]> = {
 };
 
 // -----------------------------------------------------------------------------
-// RISK RULES — Dynamic risk engine
+// RISK RULES - Dynamic risk engine
 // -----------------------------------------------------------------------------
 
 export const RISKS: RiskRule[] = [
@@ -1201,7 +1203,7 @@ export const RISKS: RiskRule[] = [
       'Your sponsor\'s income appears to be below the £29,000 minimum threshold for a spouse visa. Without sufficient savings to compensate, this will result in automatic refusal.',
     severity: 'high',
     recommendation:
-      'Either increase income above £29,000 before applying, or demonstrate cash savings of at least £62,500 held for 28+ days. Formula: (£29,000 − actual income) × 2.5 = savings needed.',
+      'Either increase income above £29,000 before applying, or demonstrate cash savings of at least £62,500 held for 28+ days. Formula: (£29,000 - actual income) × 2.5 = savings needed.',
     conditions: {
       visaTypes: ['spouse'],
       incomeRange: ['under29k'],
@@ -1244,7 +1246,7 @@ export const RISKS: RiskRule[] = [
       'You have selected an urgent timeline (under 4 weeks). This significantly increases the risk of submitting incomplete or inconsistent documents.',
     severity: 'high',
     recommendation:
-      'Budget for priority processing fees (£500–£800). Start ALL document requests immediately — do not wait. Consider whether delaying by 2–4 weeks would meaningfully improve your application quality.',
+      'Budget for priority processing fees (£500-£800). Start ALL document requests immediately - do not wait. Consider whether delaying by 2-4 weeks would meaningfully improve your application quality.',
     conditions: {
       visaTypes: ['spouse', 'skilled_worker', 'citizenship'],
       urgency: ['urgent'],
@@ -1297,26 +1299,28 @@ export const RISKS: RiskRule[] = [
   // =========================================================================
   {
     id: 'RISK_PREVIOUS_REFUSAL',
-    title: 'Previous Visa Refusal Detected',
+    title: 'Previous Visa Refusal — Must Be Declared',
     description:
-      'Any previous visa refusal (from any country) must be declared and explained. Failure to disclose = automatic refusal and potential 10-year re-entry ban for deception.',
+      'You indicated you have a previous visa refusal. This MUST be declared and explained. Failure to disclose = automatic refusal and potential 10-year re-entry ban for deception.',
     severity: 'high',
     recommendation:
       'Declare ALL previous refusals honestly. Provide a clear explanation of the circumstances and what has changed since. If the refusal was from another country, include a copy of the refusal letter with a certified translation.',
     conditions: {
       visaTypes: ['spouse', 'skilled_worker', 'citizenship'],
+      hasPreviousRefusal: true,
     },
   },
   {
     id: 'RISK_OVERSTAY_HISTORY',
-    title: 'Possible Overstay on Previous Visa',
+    title: 'Previous Overstay — Must Be Declared',
     description:
-      'If you have ever overstayed a visa in the UK (even by 1 day), this must be declared and will be scrutinised. Overstays can result in a re-entry ban of 1–10 years.',
+      'You indicated you have previously overstayed a visa. Even by 1 day, this must be declared and will be scrutinised. Overstays can result in a re-entry ban of 1-10 years.',
     severity: 'high',
     recommendation:
       'Declare the overstay and explain the circumstances. If the overstay was brief and unintentional, explain what happened. If you received a removal notice, include it in your application. Professional legal advice is strongly recommended.',
     conditions: {
       visaTypes: ['spouse', 'skilled_worker', 'citizenship'],
+      hasPreviousOverstay: true,
     },
   },
   {
@@ -1375,7 +1379,7 @@ export const RISKS: RiskRule[] = [
       'Some documents have strict validity windows. Employer letters must be dated within 28 days, bank statements within 28 days, and TB test certificates within 6 months.',
     severity: 'medium',
     recommendation:
-      'Plan your document gathering backwards from your target submission date. Request time-sensitive documents (employer letter, bank statements) last, ideally within 1–2 weeks of submission.',
+      'Plan your document gathering backwards from your target submission date. Request time-sensitive documents (employer letter, bank statements) last, ideally within 1-2 weeks of submission.',
     conditions: {
       visaTypes: ['spouse', 'skilled_worker', 'citizenship'],
     },
@@ -1383,14 +1387,14 @@ export const RISKS: RiskRule[] = [
 ];
 
 // -----------------------------------------------------------------------------
-// SUBMISSION INFO — What happens after the checklist is complete & payment made
+// SUBMISSION INFO - What happens after the checklist is complete & payment made
 // -----------------------------------------------------------------------------
 
 export const SUBMISSION_INFO: SubmissionInfo[] = [
   {
     visaType: 'spouse',
     summaryIntro:
-      'Your Spouse/Partner Visa checklist is complete. Here\'s what happens next — follow these steps in order to submit your application to the Home Office.',
+      'Your Spouse/Partner Visa checklist is complete. Here\'s what happens next - follow these steps in order to submit your application to the Home Office.',
     applicationUrl: 'https://www.gov.uk/uk-family-visa/partner-spouse',
     steps: [
       {
@@ -1418,7 +1422,7 @@ export const SUBMISSION_INFO: SubmissionInfo[] = [
         order: 4,
         title: 'Upload Supporting Documents',
         description:
-          'Upload all documents from your checklist via the online portal. Scan or photograph clearly — blurry documents may be rejected. Organise by category for faster processing.',
+          'Upload all documents from your checklist via the online portal. Scan or photograph clearly - blurry documents may be rejected. Organise by category for faster processing.',
         icon: '📤',
       },
       {
@@ -1447,14 +1451,14 @@ export const SUBMISSION_INFO: SubmissionInfo[] = [
       name: 'UK Visas and Immigration (UKVI)',
       url: 'https://www.gov.uk/contact-ukvi-inside-outside-uk',
       phone: '+44 300 123 2241 (inside UK) / +44 203 481 1736 (outside UK)',
-      hours: 'Monday to Friday, 9:00–17:30 GMT',
+      hours: 'Monday to Friday, 9:00-17:30 GMT',
     },
   },
 
   {
     visaType: 'skilled_worker',
     summaryIntro:
-      'Your Skilled Worker Visa checklist is complete. Here\'s the submission process — coordinate closely with your employer\'s HR team, as they play a key role.',
+      'Your Skilled Worker Visa checklist is complete. Here\'s the submission process - coordinate closely with your employer\'s HR team, as they play a key role.',
     applicationUrl: 'https://www.gov.uk/skilled-worker-visa/apply',
     steps: [
       {
@@ -1475,7 +1479,7 @@ export const SUBMISSION_INFO: SubmissionInfo[] = [
         order: 3,
         title: 'Pay Fees',
         description:
-          'Pay the visa fee (£819–£1,618 outside UK / £943–£1,865 inside UK — lower if on immigration salary list) and Immigration Health Surcharge (£1,035/year). Some employers cover these costs — check your offer terms. You may be able to pay for faster processing.',
+          'Pay the visa fee (£819-£1,618 outside UK / £943-£1,865 inside UK - lower if on immigration salary list) and Immigration Health Surcharge (£1,035/year). Some employers cover these costs - check your offer terms. You may be able to pay for faster processing.',
         icon: '💳',
       },
       {
@@ -1501,7 +1505,7 @@ export const SUBMISSION_INFO: SubmissionInfo[] = [
       },
     ],
     importantNotes: [
-      'You can only start working for the employer on your CoS — not any other employer.',
+      'You can only start working for the employer on your CoS - not any other employer.',
       'If you want to change jobs, your new employer must sponsor you with a new CoS.',
       'Your visa length depends on your CoS: usually up to 5 years.',
       'After 5 years, you can apply for Indefinite Leave to Remain (ILR) if you still meet the salary threshold.',
@@ -1511,14 +1515,14 @@ export const SUBMISSION_INFO: SubmissionInfo[] = [
       name: 'UK Visas and Immigration (UKVI)',
       url: 'https://www.gov.uk/contact-ukvi-inside-outside-uk',
       phone: '+44 300 123 2241 (inside UK) / +44 203 481 1736 (outside UK)',
-      hours: 'Monday to Friday, 9:00–17:30 GMT',
+      hours: 'Monday to Friday, 9:00-17:30 GMT',
     },
   },
 
   {
     visaType: 'citizenship',
     summaryIntro:
-      'Your British Citizenship checklist is complete. The naturalisation process is different from visa applications — here\'s exactly what to do.',
+      'Your British Citizenship checklist is complete. The naturalisation process is different from visa applications - here\'s exactly what to do.',
     applicationUrl: 'https://www.gov.uk/apply-citizenship-indefinite-leave-to-remain',
     steps: [
       {
@@ -1572,19 +1576,19 @@ export const SUBMISSION_INFO: SubmissionInfo[] = [
       },
     ],
     importantNotes: [
-      'The £1,839 fee is non-refundable (includes £130 ceremony fee) — ensure you meet all requirements before applying.',
+      'The £1,839 fee is non-refundable (includes £130 ceremony fee) - ensure you meet all requirements before applying.',
       'There is NO priority service for citizenship. Plan for a 6-month wait.',
       'You must have held ILR or settled status for at least 12 months before applying.',
       'You cannot apply for a British passport until after your citizenship ceremony.',
-      'Your existing nationality may be affected — check your home country\'s dual nationality rules.',
+      'Your existing nationality may be affected - check your home country\'s dual nationality rules.',
       'If refused, you can re-apply but will need to pay the full fee again.',
       'Citizenship ceremony fee (£130) is included in the application fee. Must be attended within 3 months of approval.',
     ],
     contactInfo: {
-      name: 'UK Visas and Immigration — Nationality Contact Centre',
+      name: 'UK Visas and Immigration - Nationality Contact Centre',
       url: 'https://www.gov.uk/contact-ukvi-inside-outside-uk',
       phone: '+44 300 123 2241',
-      hours: 'Monday to Friday, 9:00–17:30 GMT',
+      hours: 'Monday to Friday, 9:00-17:30 GMT',
     },
   },
 ];
@@ -1613,6 +1617,8 @@ export function getApplicableRisks(profile: {
   currentlyInUk?: boolean;
   relationshipDurationMonths?: number;
   employmentStatus?: string;
+  hasPreviousRefusal?: boolean;
+  hasPreviousOverstay?: boolean;
 }): RiskRule[] {
   return RISKS.filter((risk) => {
     // Must match visa type
@@ -1652,6 +1658,16 @@ export function getApplicableRisks(profile: {
     if (risk.conditions.employmentStatus && profile.employmentStatus) {
       if (!risk.conditions.employmentStatus.includes(profile.employmentStatus)) return false;
     } else if (risk.conditions.employmentStatus && !profile.employmentStatus) {
+      return false;
+    }
+
+    // Previous refusal check — only show if user confirmed they have one
+    if (risk.conditions.hasPreviousRefusal === true && !profile.hasPreviousRefusal) {
+      return false;
+    }
+
+    // Previous overstay check — only show if user confirmed they have one
+    if (risk.conditions.hasPreviousOverstay === true && !profile.hasPreviousOverstay) {
       return false;
     }
 

@@ -629,7 +629,7 @@ function FullDashboard({
   showPaywall: boolean;
   setShowPaywall: (v: boolean) => void;
 }) {
-  const { visaType, urgency, annualIncomeRange, employmentStatus, currentlyInUk, relationshipDurationMonths, unlocked, purchasedTier } = store;
+  const { visaType, urgency, annualIncomeRange, employmentStatus, currentlyInUk, relationshipDurationMonths, unlocked, purchasedTier, hasPreviousRefusal, hasPreviousOverstay } = store;
 
   const [activeTab, setActiveTab] = useState<TabId>('checklist');
 
@@ -664,9 +664,11 @@ function FullDashboard({
             currentlyInUk: currentlyInUk ?? undefined,
             relationshipDurationMonths: relationshipDurationMonths ?? undefined,
             employmentStatus: undefined,
+            hasPreviousRefusal: hasPreviousRefusal ?? undefined,
+            hasPreviousOverstay: hasPreviousOverstay ?? undefined,
           })
         : [],
-    [validVisaType, annualIncomeRange, validUrgency, currentlyInUk, relationshipDurationMonths]
+    [validVisaType, annualIncomeRange, validUrgency, currentlyInUk, relationshipDurationMonths, hasPreviousRefusal, hasPreviousOverstay]
   );
 
   const visaLabel = VISA_LABELS[visaType || ''] || visaType || '';

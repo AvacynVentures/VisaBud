@@ -75,6 +75,8 @@ export default function Onboarding() {
     relationshipDurationMonths,
     annualIncomeRange,
     urgency,
+    hasPreviousRefusal,
+    hasPreviousOverstay,
     setVisaType,
     setNationality,
     setRelationshipStatus,
@@ -82,6 +84,8 @@ export default function Onboarding() {
     setRelationshipDurationMonths,
     setAnnualIncomeRange,
     setUrgency,
+    setHasPreviousRefusal,
+    setHasPreviousOverstay,
     nextStep,
     prevStep,
     setCurrentStep,
@@ -103,7 +107,7 @@ export default function Onboarding() {
     switch (currentStep) {
       case 1: return !!visaType;
       case 2: return !!nationality;
-      case 3: return visaType !== 'unsure' && typeof currentlyInUk === 'boolean' && (visaType !== 'spouse' || !!relationshipStatus);
+      case 3: return visaType !== 'unsure' && typeof currentlyInUk === 'boolean' && (visaType !== 'spouse' || !!relationshipStatus) && hasPreviousRefusal !== null && hasPreviousOverstay !== null;
       case 4:
         if (visaType === 'spouse') return !!annualIncomeRange;
         if (visaType === 'skilled_worker') return !!annualIncomeRange;
@@ -349,6 +353,57 @@ export default function Onboarding() {
                           </div>
                         </div>
                       )}
+
+                      {/* Immigration history — applies to all visa types */}
+                      <div>
+                        <p className="text-sm font-semibold text-gray-700 mb-3">Have you ever been refused a visa from any country?</p>
+                        <div className="grid grid-cols-2 gap-2">
+                          {[
+                            { val: true, label: 'Yes', detail: "We'll flag this so you declare it correctly" },
+                            { val: false, label: 'No', detail: 'No action needed' },
+                          ].map((opt) => (
+                            <button
+                              key={String(opt.val)}
+                              onClick={() => setHasPreviousRefusal(opt.val)}
+                              className={`text-left p-4 rounded-xl border-2 transition-all duration-200 touch-target
+                                ${hasPreviousRefusal === opt.val
+                                  ? 'border-blue-600 bg-blue-50 shadow-sm'
+                                  : 'border-gray-100 hover:border-blue-200 hover:bg-gray-50'
+                                }`}
+                            >
+                              <p className={`font-semibold text-sm ${hasPreviousRefusal === opt.val ? 'text-blue-800' : 'text-gray-800'}`}>
+                                {opt.label}
+                              </p>
+                              <p className="text-xs text-gray-500 mt-0.5">{opt.detail}</p>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div>
+                        <p className="text-sm font-semibold text-gray-700 mb-3">Have you ever overstayed a visa?</p>
+                        <div className="grid grid-cols-2 gap-2">
+                          {[
+                            { val: true, label: 'Yes', detail: "We'll help you address this" },
+                            { val: false, label: 'No', detail: 'No action needed' },
+                          ].map((opt) => (
+                            <button
+                              key={String(opt.val)}
+                              onClick={() => setHasPreviousOverstay(opt.val)}
+                              className={`text-left p-4 rounded-xl border-2 transition-all duration-200 touch-target
+                                ${hasPreviousOverstay === opt.val
+                                  ? 'border-blue-600 bg-blue-50 shadow-sm'
+                                  : 'border-gray-100 hover:border-blue-200 hover:bg-gray-50'
+                                }`}
+                            >
+                              <p className={`font-semibold text-sm ${hasPreviousOverstay === opt.val ? 'text-blue-800' : 'text-gray-800'}`}>
+                                {opt.label}
+                              </p>
+                              <p className="text-xs text-gray-500 mt-0.5">{opt.detail}</p>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
                     </div>
                   )}
 

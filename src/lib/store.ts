@@ -73,6 +73,8 @@ interface AppState {
   documentsAvailable: Record<string, boolean>;
   urgency: Urgency | null;
   targetApplicationDate: string | null;
+  hasPreviousRefusal: boolean | null;
+  hasPreviousOverstay: boolean | null;
 
   // UI state
   currentStep: number;
@@ -106,6 +108,8 @@ interface AppState {
   setDocumentsAvailable: (doc: string, available: boolean) => void;
   setUrgency: (value: Urgency) => void;
   setTargetApplicationDate: (date: string) => void;
+  setHasPreviousRefusal: (value: boolean) => void;
+  setHasPreviousOverstay: (value: boolean) => void;
   nextStep: () => void;
   prevStep: () => void;
   setCurrentStep: (step: number) => void;
@@ -143,6 +147,8 @@ const initialState = {
   documentsAvailable: {} as Record<string, boolean>,
   urgency: null as Urgency | null,
   targetApplicationDate: null as string | null,
+  hasPreviousRefusal: null as boolean | null,
+  hasPreviousOverstay: null as boolean | null,
   currentStep: 1,
   isSubmitting: false,
   error: null as string | null,
@@ -183,6 +189,8 @@ export const useApplicationStore = create<AppState>()(
           },
         })),
       setUrgency: (value) => set({ urgency: value }),
+  setHasPreviousRefusal: (value) => set({ hasPreviousRefusal: value }),
+  setHasPreviousOverstay: (value) => set({ hasPreviousOverstay: value }),
       setTargetApplicationDate: (date) => set({ targetApplicationDate: date }),
 
       nextStep: () => set((state) => ({ currentStep: Math.min(state.currentStep + 1, 5) })),
@@ -280,6 +288,8 @@ export const useApplicationStore = create<AppState>()(
         documentsAvailable: state.documentsAvailable,
         urgency: state.urgency,
         targetApplicationDate: state.targetApplicationDate,
+        hasPreviousRefusal: state.hasPreviousRefusal,
+        hasPreviousOverstay: state.hasPreviousOverstay,
         currentStep: state.currentStep,
         unlocked: state.unlocked,
         purchasedTier: state.purchasedTier,
