@@ -102,6 +102,32 @@ const CATEGORY_CONFIG: Record<DocumentCategory, { label: string; icon: string }>
   supporting: { label: 'Supporting Evidence', icon: '📎' },
 };
 
+/**
+ * Determine if a checklist item is not applicable based on the user's onboarding answers.
+ * Returns null if applicable, or a reason string if N/A.
+ */
+function getItemNotApplicableReason(
+  itemId: string,
+  visaType: string | null,
+  annualIncomeRange: string | null,
+  employmentStatus: string | null,
+): string | null {
+  // Spouse visa: savings not needed if income meets threshold
+  if (itemId === 'sp-savings-evidence' && annualIncomeRange === 'over29k') {
+    return 'Not required — your sponsor\'s income meets the £29,000 threshold';
+  }
+
+  // Spouse visa: self-employment evidence only if self-employed
+  if (itemId === 'sp-self-employed-accounts' && employmentStatus && employmentStatus !== 'self-employed') {
+    return 'Not required — only needed if your sponsor is self-employed';
+  }
+
+  // Skilled worker: maintenance funds not needed if employer certifies
+  // (We can't auto-detect this, so we don't mark it N/A — user decides)
+
+  return null;
+}
+
 // ─── Main Component ─────────────────────────────────────────────────────────
 
 export default function DashboardPage() {
@@ -603,7 +629,7 @@ function FullDashboard({
   showPaywall: boolean;
   setShowPaywall: (v: boolean) => void;
 }) {
-  const { visaType, urgency, annualIncomeRange, currentlyInUk, relationshipDurationMonths, unlocked, purchasedTier } = store;
+  const { visaType, urgency, annualIncomeRange, employmentStatus, currentlyInUk, relationshipDurationMonths, unlocked, purchasedTier } = store;
 
   const [activeTab, setActiveTab] = useState<TabId>('checklist');
 
@@ -655,8 +681,10 @@ function FullDashboard({
       return updated;
     });
   };
-  const checkedCount = checklist.filter((d) => checkedDocs[d.id]).length;
-  const progressPct = checklist.length > 0 ? Math.round((checkedCount / checklist.length) * 100) : 0;
+  // Exclude N/A items from progress calculation
+  const applicableChecklist = checklist.filter((d) => !getItemNotApplicableReason(d.id, visaType, annualIncomeRange, employmentStatus));
+  const checkedCount = applicableChecklist.filter((d) => checkedDocs[d.id]).length;
+  const progressPct = applicableChecklist.length > 0 ? Math.round((checkedCount / applicableChecklist.length) * 100) : 0;
 
   const grouped: Record<Priority, ChecklistItem[]> = { critical: [], important: [], 'nice-to-have': [] };
   checklist.forEach((item) => {
@@ -963,7 +991,7 @@ function ChecklistTab({
               </div>
               <div className="divide-y divide-gray-50">
                 {items.map((item) => (
-                  <ChecklistItemRow key={item.id} item={item} checked={!!checkedDocs[item.id]} onToggle={() => toggleDoc(item.id)} unlocked={unlocked} />
+                  <ChecklistItemRow key={item.id} item={item} checked={!!checkedDocs[item.id]} onToggle={() => toggleDoc(item.id)} unlocked={unlocked} notApplicableReason={getItemNotApplicableReason(item.id, visaType, annualIncomeRange, employmentStatus)} />
                 ))}
               </div>
             </motion.div>
@@ -996,7 +1024,7 @@ function ChecklistTab({
         </div>
         <div className="divide-y divide-gray-50">
           {personalTeaser.map((item) => (
-            <ChecklistItemRow key={item.id} item={item} checked={!!checkedDocs[item.id]} onToggle={() => toggleDoc(item.id)} unlocked={unlocked} />
+            <ChecklistItemRow key={item.id} item={item} checked={!!checkedDocs[item.id]} onToggle={() => toggleDoc(item.id)} unlocked={unlocked} notApplicableReason={getItemNotApplicableReason(item.id, visaType, annualIncomeRange, employmentStatus)} />
           ))}
           {personalLockedCount > 0 && (
             <div className="px-5 sm:px-6 py-3 bg-amber-50/50 text-sm text-amber-700 flex items-center gap-2">
@@ -1109,12 +1137,34 @@ function ProgressCard({ checkedCount, total, progressPct, verifiedCount }: { che
   );
 }
 
-function ChecklistItemRow({ item, checked, onToggle, unlocked = false }: { item: ChecklistItem; checked: boolean; onToggle: () => void; unlocked?: boolean }) {
+function ChecklistItemRow({ item, checked, onToggle, unlocked = false, notApplicableReason = null }: { item: ChecklistItem; checked: boolean; onToggle: () => void; unlocked?: boolean; notApplicableReason?: string | null }) {
   const [justChecked, setJustChecked] = useState(false);
   const [showAIModal, setShowAIModal] = useState(false);
   const [isAILoading, setIsAILoading] = useState(false);
 
   const { documentUploads, documentReports, setDocumentReport, purchasedTier, visaType } = useApplicationStore();
+
+  // If item is not applicable, render a muted version
+  if (notApplicableReason) {
+    return (
+      <div className="px-5 sm:px-6 py-3.5 flex items-start gap-3 bg-gray-50/50 opacity-60">
+        <div className="mt-1 flex-shrink-0">
+          <div className="w-5 h-5 rounded-md border-2 border-gray-200 bg-gray-100 flex items-center justify-center">
+            <span className="text-xs text-gray-400">—</span>
+          </div>
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <p className="text-sm font-medium text-gray-400 line-through">{item.title}</p>
+            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 uppercase tracking-wide">
+              N/A
+            </span>
+          </div>
+          <p className="text-xs text-gray-400 mt-0.5">{notApplicableReason}</p>
+        </div>
+      </div>
+    );
+  }
   const upload = documentUploads[item.id];
   const report = documentReports[item.id] || null;
   const hasFileData = !!upload?.fileData;
