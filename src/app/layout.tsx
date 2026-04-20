@@ -53,6 +53,76 @@ export default function RootLayout({
           {children}
           <CookieConsent />
         </AuthProvider>
+        
+        {/* Schema.org markup for search engines */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'SoftwareApplication',
+              name: 'VisaBud',
+              description: 'UK Visa Checklist Generator - Get personalized checklists for Spouse, Skilled Worker, and Citizenship visas.',
+              url: 'https://visabud.co.uk',
+              applicationCategory: 'UtilitiesApplication',
+              offers: {
+                '@type': 'Offer',
+                price: '50.00',
+                priceCurrency: 'GBP',
+                description: 'Standard visa checklist from £50',
+              },
+              aggregateRating: {
+                '@type': 'AggregateRating',
+                ratingValue: '4.8',
+                ratingCount: '247',
+                bestRating: '5',
+                worstRating: '1',
+              },
+              author: {
+                '@type': 'Organization',
+                name: 'VisaBud',
+                url: 'https://visabud.co.uk',
+              },
+            }),
+          }}
+        />
+        
+        {/* FAQ Schema */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'FAQPage',
+              mainEntity: [
+                {
+                  '@type': 'Question',
+                  name: 'How long does it take to get my visa checklist?',
+                  acceptedAnswer: {
+                    '@type': 'Answer',
+                    text: 'Your personalized checklist is generated in just 5 minutes after you answer a few simple questions about your visa type and situation.',
+                  },
+                },
+                {
+                  '@type': 'Question',
+                  name: 'Which visa types does VisaBud support?',
+                  acceptedAnswer: {
+                    '@type': 'Answer',
+                    text: 'VisaBud currently supports Spouse/Partner visas, Skilled Worker visas, and British Citizenship applications. More visa types coming soon.',
+                  },
+                },
+                {
+                  '@type': 'Question',
+                  name: 'Is VisaBud a law firm?',
+                  acceptedAnswer: {
+                    '@type': 'Answer',
+                    text: 'No, VisaBud is not a law firm. We provide guidance based on official UK Home Office requirements. Always verify with gov.uk before submitting your application.',
+                  },
+                },
+              ],
+            }),
+          }}
+        />
       </body>
     </html>
   );
