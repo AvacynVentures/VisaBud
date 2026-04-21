@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { PageFadeIn, StaggerContainer, StaggerItem, FadeIn } from '@/lib/animations';
 import FooterEmailCapture from '@/components/FooterEmailCapture';
+import HomeNavigation from '@/components/HomeNavigation';
 
 export default function Home() {
   return (
@@ -11,7 +12,7 @@ export default function Home() {
         {/* Navigation */}
         <nav className="border-b border-slate-200">
           <div className="container-max flex items-center justify-between py-4">
-            <div className="flex items-center gap-2">
+            <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
               <svg viewBox="0 0 200 200" className="w-8 h-8 icon-hover-spin" xmlns="http://www.w3.org/2000/svg">
                 <path d="M 100 35 Q 70 50 60 80 Q 55 95 65 105" stroke="#D4AF37" strokeWidth="2.5" fill="none" strokeLinecap="round"/>
                 <path d="M 100 35 Q 130 50 140 80 Q 145 95 135 105" stroke="#D4AF37" strokeWidth="2.5" fill="none" strokeLinecap="round"/>
@@ -20,10 +21,8 @@ export default function Home() {
                 <line x1="88" y1="120" x2="112" y2="120" stroke="#D4AF37" strokeWidth="2.5" strokeLinecap="round"/>
               </svg>
               <span className="text-xl font-bold text-blue-900">VisaBud</span>
-            </div>
-            <Link href="/auth/signup" className="btn-primary text-sm py-2 px-4">
-              Start Free
             </Link>
+            <HomeNavigation variant="nav" />
           </div>
         </nav>
 
@@ -51,12 +50,7 @@ export default function Home() {
             </FadeIn>
             <FadeIn delay={0.2}>
               <div className="flex flex-col sm:flex-row gap-4 mb-6">
-                <Link href="/auth/signup" className="btn-primary flex items-center justify-center gap-2 text-base py-3.5 px-7 shadow-lg shadow-blue-200/50">
-                  Start Free
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </Link>
+                <HomeNavigation />
               </div>
               <p className="text-slate-500 text-sm flex items-center gap-2">
                 <svg className="w-4 h-4 text-emerald-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
