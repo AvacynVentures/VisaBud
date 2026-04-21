@@ -1,7 +1,6 @@
 'use client';
 
 import { useAuth } from '@/lib/auth-context';
-import { useApplicationStore } from '@/lib/store';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
@@ -15,7 +14,6 @@ import { createClient } from '@supabase/supabase-js';
  */
 export default function OnboardingGate({ children }: { children: React.ReactNode }) {
   const { user, loading: authLoading } = useAuth();
-  const { onboarding_completed } = useApplicationStore();
   const router = useRouter();
   const [checkingCompletion, setCheckingCompletion] = useState(true);
   const [isComplete, setIsComplete] = useState(false);
