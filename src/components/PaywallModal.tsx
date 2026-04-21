@@ -57,25 +57,6 @@ const TIERS = [
     priceId: 'premium',
     guarantee: 'Satisfaction guaranteed',
   },
-  {
-    id: 'expert',
-    name: 'Expert',
-    price: 299,
-    badge: null,
-    color: 'violet',
-    description: 'Review by qualified immigration expert for maximum confidence',
-    benefits: [
-      'Everything in Premium',
-      'Expert immigration review',
-      '24-hour turnaround',
-      'Priority support & follow-up',
-    ],
-    buttonLabel: 'Get Expert Review',
-    buttonStyle: 'bg-violet-600 hover:bg-violet-700 text-white',
-    cardStyle: 'border-violet-200 bg-white',
-    priceId: 'expert',
-    guarantee: 'Satisfaction guaranteed',
-  },
 ] as const;
 
 export default function PaywallModal({ isOpen, onClose, visaType }: PaywallModalProps) {

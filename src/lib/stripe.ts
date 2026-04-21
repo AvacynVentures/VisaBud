@@ -9,7 +9,6 @@ export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 export const STRIPE_PRICE_IDS = {
   standard: process.env.STRIPE_PRICE_STANDARD!,
   premium: process.env.STRIPE_PRICE_PREMIUM!,
-  expert: process.env.STRIPE_PRICE_EXPERT!,
 } as const;
 
 export type TierKey = keyof typeof STRIPE_PRICE_IDS;
@@ -60,25 +59,7 @@ export const TIER_METADATA: Record<TierKey, {
       'Direct consultation',
     ],
   },
-  expert: {
-    name: 'VisaBud Expert Pack',
-    shortName: 'Expert Human Review',
-    description: 'Everything in Premium + expert immigration review (24h turnaround) & priority support',
-    deliveryTime: 'Results within 24 hours',
-    includes: [
-      'Everything in AI Premium Review',
-      'Review by qualified immigration expert',
-      'Personalised written feedback',
-      'Priority recommendations specific to your case',
-      'Risk mitigation strategies',
-      'Follow-up clarification (1 round)',
-    ],
-    excludes: [
-      'Formal solicitor opinion / legal advice',
-      'Application form completion',
-      'Representation to UKVI',
-    ],
-  },
+
 };
 
 // ─── Utility functions ──────────────────────────────────────────────────────

@@ -15,11 +15,11 @@ const FAQ_ITEMS = [
   },
   {
     q: 'Can I upgrade later?',
-    a: 'Absolutely. You can start with Standard now and upgrade to Premium or Expert at any time. You\'ll only pay the difference between what you\'ve already paid and the new tier.',
+    a: 'You can purchase Premium at any time. Each purchase is one-time, so pick the tier that\'s right for you.',
   },
   {
-    q: 'Do I get email support?',
-    a: 'Yes — Premium and Expert tiers include email support with a 24-hour response time. Standard tier users can reach us at support@visabud.co.uk for general enquiries.',
+    q: 'Do I get support?',
+    a: 'Premium tier includes email support with a 24-hour response time. Standard tier users can reach us at support@visabud.co.uk for general enquiries.',
   },
   {
     q: 'Is this legal advice?',
