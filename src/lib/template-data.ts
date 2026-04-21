@@ -1782,7 +1782,7 @@ const CITIZENSHIP_TEMPLATES: DocumentTemplate[] = [
       'Bankruptcies/CCJs declared if applicable',
       'Police subject access report obtained (recommended)',
     ],
-    govUkReference: 'https://www.gov.uk/government/publications/good-character-nationality-policy-guidance',
+    govUkReference: 'https://www.gov.uk/government/publications/good-character',
     category: 'supporting',
     priority: 'critical',
   },

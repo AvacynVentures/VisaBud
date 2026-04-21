@@ -470,7 +470,7 @@ export const CITIZENSHIP_REQUIREMENTS: VisaRequirements = {
       description: 'Current valid passport',
       format: ['Original'],
       notes: ['Required for identity verification'],
-      govukLink: 'https://www.gov.uk/citizenship',
+      govukLink: 'https://www.gov.uk/becoming-a-british-citizen',
     },
     {
       id: 'birth_certificate',
@@ -480,7 +480,7 @@ export const CITIZENSHIP_REQUIREMENTS: VisaRequirements = {
       description: 'Original birth certificate (full, not short form)',
       format: ['Original or certified copy', 'Translated if not in English'],
       notes: ['Must show both parents'],
-      govukLink: 'https://www.gov.uk/citizenship',
+      govukLink: 'https://www.gov.uk/becoming-a-british-citizen',
     },
 
     // ─── CRITICAL: RESIDENCY PROOF ──────────────────────────────────────
@@ -496,7 +496,7 @@ export const CITIZENSHIP_REQUIREMENTS: VisaRequirements = {
         'If bills in partner\'s name: need marriage certificate + evidence of cohabitation',
         'Gaps in bills require explanation',
       ],
-      govukLink: 'https://www.gov.uk/citizenship',
+      govukLink: 'https://www.gov.uk/becoming-a-british-citizen',
     },
     {
       id: 'tenancy_agreements',
@@ -509,7 +509,7 @@ export const CITIZENSHIP_REQUIREMENTS: VisaRequirements = {
         'Required if you\'ve been renting during the 5 years',
         'If renting: must show continuous tenancy OR succession of tenancies',
       ],
-      govukLink: 'https://www.gov.uk/citizenship',
+      govukLink: 'https://www.gov.uk/becoming-a-british-citizen',
     },
     {
       id: 'utility_bills',
@@ -522,7 +522,7 @@ export const CITIZENSHIP_REQUIREMENTS: VisaRequirements = {
         'At least 2-3 different utilities recommended',
         'Helps corroborate continuous residence',
       ],
-      govukLink: 'https://www.gov.uk/citizenship',
+      govukLink: 'https://www.gov.uk/becoming-a-british-citizen',
     },
 
     // ─── CRITICAL: LANGUAGE & KNOWLEDGE ────────────────────────────────
@@ -539,7 +539,7 @@ export const CITIZENSHIP_REQUIREMENTS: VisaRequirements = {
         'Must be from accredited provider',
         'Exemptions: if native English speaker or degree-educated in English',
       ],
-      govukLink: 'https://www.gov.uk/citizenship',
+      govukLink: 'https://www.gov.uk/becoming-a-british-citizen',
     },
     {
       id: 'life_in_uk_test',
@@ -554,7 +554,7 @@ export const CITIZENSHIP_REQUIREMENTS: VisaRequirements = {
         'Certificate must accompany application',
         'Failing = application delayed until retest passed',
       ],
-      govukLink: 'https://www.gov.uk/citizenship',
+      govukLink: 'https://www.gov.uk/becoming-a-british-citizen',
     },
 
     // ─── CRITICAL: ABSENCE RECORD ───────────────────────────────────────
@@ -571,7 +571,7 @@ export const CITIZENSHIP_REQUIREMENTS: VisaRequirements = {
         'Absences <14 consecutive days may have reduced impact if explained',
         'Use passport stamps + travel tickets to document',
       ],
-      govukLink: 'https://www.gov.uk/citizenship',
+      govukLink: 'https://www.gov.uk/becoming-a-british-citizen',
     },
 
     // ─── SUPPORTING: CHARACTER & CONDUCT ────────────────────────────────
@@ -587,7 +587,7 @@ export const CITIZENSHIP_REQUIREMENTS: VisaRequirements = {
         'Different rules for different countries',
         'Must be recent (usually within 6 months)',
       ],
-      govukLink: 'https://www.gov.uk/citizenship',
+      govukLink: 'https://www.gov.uk/becoming-a-british-citizen',
     },
     {
       id: 'criminal_record',
@@ -601,7 +601,7 @@ export const CITIZENSHIP_REQUIREMENTS: VisaRequirements = {
         'Non-disclosure = grounds for refusal or revocation later',
         'Character requirement is strict for citizenship',
       ],
-      govukLink: 'https://www.gov.uk/citizenship',
+      govukLink: 'https://www.gov.uk/becoming-a-british-citizen',
     },
 
     // ─── SUPPORTING: FINANCIAL STABILITY ────────────────────────────────
@@ -616,7 +616,7 @@ export const CITIZENSHIP_REQUIREMENTS: VisaRequirements = {
         'Helpful to show you can support yourself',
         'Not always required but strengthens application',
       ],
-      govukLink: 'https://www.gov.uk/citizenship',
+      govukLink: 'https://www.gov.uk/becoming-a-british-citizen',
     },
 
     // ─── SUPPORTING: TRANSLATIONS ───────────────────────────────────────
@@ -628,7 +628,7 @@ export const CITIZENSHIP_REQUIREMENTS: VisaRequirements = {
       description: 'English translations of non-English documents',
       format: ['Certified translations'],
       notes: ['All non-English documents must be professionally translated'],
-      govukLink: 'https://www.gov.uk/citizenship',
+      govukLink: 'https://www.gov.uk/becoming-a-british-citizen',
     },
   ],
 };
