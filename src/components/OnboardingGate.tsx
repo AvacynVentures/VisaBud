@@ -69,7 +69,7 @@ export default function OnboardingGate({ children }: { children: React.ReactNode
     };
 
     checkOnboardingState();
-  }, [user, authLoading, onboarding_completed, router]);
+  }, [user, authLoading, router]);
 
   // Loading state
   if (authLoading || checkingCompletion) {

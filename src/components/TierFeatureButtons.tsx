@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Lock, FileText, Sparkles, ShieldCheck, ArrowRight,
-  AlertTriangle, CheckCircle, Upload
+  AlertTriangle, CheckCircle, Upload, X
 } from 'lucide-react';
 import { useApplicationStore, type PurchasedTier } from '@/lib/store';
 import { CHECKLISTS, type VisaTypeKey } from '@/lib/visa-data';
