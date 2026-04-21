@@ -19,7 +19,7 @@ interface FeatureButton {
   id: string;
   label: string;
   icon: typeof FileText;
-  minTier: 'premium' | 'expert';
+  minTier: 'premium';
   color: string;
   lockedColor: string;
   description: string;
@@ -66,7 +66,7 @@ const TIER_LABELS: Record<string, string> = {
   premium: 'Premium (£149)',
 };
 
-function isUnlocked(userTier: PurchasedTier, requiredTier: 'premium' | 'expert'): boolean {
+function isUnlocked(userTier: PurchasedTier, requiredTier: 'premium'): boolean {
   return TIER_RANK[userTier] >= TIER_RANK[requiredTier];
 }
 
@@ -102,7 +102,6 @@ export default function TierFeatureButtons({ purchasedTier, onUpgrade, visaType 
         <h3 className="font-semibold text-gray-900">Premium Features</h3>
         {purchasedTier !== 'none' && (
           <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
-            purchasedTier === 'expert' ? 'bg-violet-100 text-violet-700' :
             purchasedTier === 'premium' ? 'bg-emerald-100 text-emerald-700' :
             'bg-blue-100 text-blue-700'
           }`}>
