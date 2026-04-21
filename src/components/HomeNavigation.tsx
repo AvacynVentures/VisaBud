@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth-context';
-import { useApplicationStore } from '@/lib/store';
 import { useEffect, useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
 
@@ -20,7 +19,6 @@ interface HomeNavigationProps {
  */
 export default function HomeNavigation({ variant = 'hero' }: HomeNavigationProps) {
   const { user, loading } = useAuth();
-  const { onboarding_completed } = useApplicationStore();
   const [isComplete, setIsComplete] = useState(false);
   const [checkingCompletion, setCheckingCompletion] = useState(true);
 
@@ -30,13 +28,6 @@ export default function HomeNavigation({ variant = 'hero' }: HomeNavigationProps
     if (!user) {
       // Not logged in
       setIsComplete(false);
-      setCheckingCompletion(false);
-      return;
-    }
-
-    // Check if onboarding is complete
-    if (onboarding_completed) {
-      setIsComplete(true);
       setCheckingCompletion(false);
       return;
     }
@@ -70,7 +61,7 @@ export default function HomeNavigation({ variant = 'hero' }: HomeNavigationProps
         setCheckingCompletion(false);
       }
     })();
-  }, [user, loading, onboarding_completed]);
+  }, [user, loading]);
 
   if (loading || checkingCompletion) {
     return (
