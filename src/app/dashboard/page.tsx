@@ -1228,7 +1228,7 @@ function ChecklistItemRow({ item, checked, onToggle, unlocked = false, notApplic
   const upload = documentUploads[item.id];
   const report = documentReports[item.id] || null;
   const hasFileData = !!upload?.fileData;
-  const isPremiumPlus = purchasedTier === 'premium' || purchasedTier === 'expert';
+  const isPremiumPlus = purchasedTier === 'premium';
 
   // Template handling is done via GetTemplateButton component using getTemplateForItem()
 
