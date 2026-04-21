@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { ShieldCheck, Sparkles, Check, X, Loader2, Zap } from 'lucide-react';
+import { ShieldCheck, Sparkles, Check, Loader2, Zap } from 'lucide-react';
 import { useApplicationStore } from '@/lib/store';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
