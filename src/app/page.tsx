@@ -45,7 +45,7 @@ export default function Home() {
                 Get a personalised checklist, timeline, and guidance in 5 minutes. Free to start.
               </p>
               <p className="text-sm text-slate-500 mb-6">
-                Free checklist preview · Upgrade to AI verification (£149) or expert review (£299)
+                Free checklist preview · Upgrade to Premium for AI verification (£149)
               </p>
             </FadeIn>
             <FadeIn delay={0.2}>
