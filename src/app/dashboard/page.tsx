@@ -234,7 +234,7 @@ function DashboardContent() {
 
         // Also set tier from URL param if returning from payment
         if (tierParam) {
-          const validTiers = ['standard', 'premium', 'expert'] as const;
+          const validTiers = ['standard', 'premium'] as const;
           if (validTiers.includes(tierParam as any)) {
             setPurchasedTier(tierParam as any);
           }
@@ -710,12 +710,11 @@ function FullDashboard({
             <div className="flex items-center gap-3">
               {unlocked ? (
                 <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${
-                  purchasedTier === 'expert' ? 'bg-violet-50 text-violet-700' :
                   purchasedTier === 'premium' ? 'bg-emerald-50 text-emerald-700' :
                   'bg-blue-50 text-blue-700'
                 }`}>
                   <CheckCircle className="w-3.5 h-3.5" />
-                  {purchasedTier === 'expert' ? 'Expert' : purchasedTier === 'premium' ? 'Premium' : 'Standard'}
+                  {purchasedTier === 'premium' ? 'Premium' : 'Standard'}
                 </span>
               ) : (
                 <button
@@ -1390,7 +1389,7 @@ function ChecklistItemRow({ item, checked, onToggle, unlocked = false, notApplic
           <GetTemplateButton
             itemTitle={item.title}
             templateFilename={getTemplateForItem(item.title) || undefined}
-            isPremium={purchasedTier === 'premium' || purchasedTier === 'expert'}
+            isPremium={purchasedTier === 'premium'}
             onUnlock={() => {}} // Handled by parent
           />
 
