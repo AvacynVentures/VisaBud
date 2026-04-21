@@ -69,9 +69,9 @@ const GOV_UK_LINKS: Record<string, Record<string, string>> = {
     apply: 'https://www.gov.uk/apply-to-come-to-the-uk',
     documents: 'https://www.gov.uk/uk-family-visa/documents-you-must-provide',
     fees: 'https://www.gov.uk/uk-family-visa/fees-and-how-to-pay',
-    income: 'https://www.gov.uk/guidance/prove-your-income',
-    biometrics: 'https://www.gov.uk/guidance/book-a-biometric-appointment',
-    status: 'https://www.gov.uk/check-visa-application-status',
+    income: 'https://www.gov.uk/uk-family-visa',
+    biometrics: 'https://www.gov.uk/apply-to-come-to-the-uk',
+    status: 'https://www.gov.uk/browse/visas-immigration',
   },
   skilled_worker: {
     overview: 'https://www.gov.uk/skilled-worker-visa',
@@ -79,8 +79,8 @@ const GOV_UK_LINKS: Record<string, Record<string, string>> = {
     documents: 'https://www.gov.uk/skilled-worker-visa/documents-you-must-provide',
     fees: 'https://www.gov.uk/skilled-worker-visa/fees-and-how-to-pay',
     salary: 'https://www.gov.uk/skilled-worker-visa/salary-requirements',
-    cos: 'https://www.gov.uk/sponsor-a-worker',
-    status: 'https://www.gov.uk/check-visa-application-status',
+    cos: 'https://www.gov.uk/skilled-worker-visa',
+    status: 'https://www.gov.uk/browse/visas-immigration',
   },
   citizenship: {
     overview: 'https://www.gov.uk/becoming-a-british-citizen',
@@ -88,7 +88,7 @@ const GOV_UK_LINKS: Record<string, Record<string, string>> = {
     documents: 'https://www.gov.uk/becoming-a-british-citizen/documents-you-must-provide',
     fees: 'https://www.gov.uk/becoming-a-british-citizen/fees',
     lifeInUkTest: 'https://www.gov.uk/life-in-the-uk-test',
-    status: 'https://www.gov.uk/check-visa-application-status',
+    status: 'https://www.gov.uk/browse/visas-immigration',
   },
 };
 
