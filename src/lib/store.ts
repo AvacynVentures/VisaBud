@@ -13,7 +13,7 @@ export interface DocumentUploadState {
   mimeType?: string | null;    // file MIME type
 }
 
-export type PurchasedTier = 'none' | 'standard' | 'premium' | 'expert';
+export type PurchasedTier = 'none' | 'standard' | 'premium';
 
 // AI Report types
 export interface AIReportData {
