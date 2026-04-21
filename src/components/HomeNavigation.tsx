@@ -35,16 +35,10 @@ export default function HomeNavigation({ variant = 'hero' }: HomeNavigationProps
     // Check Supabase DB
     (async () => {
       try {
+        // Use the default Supabase client (auth-aware)
         const supabase = createClient(
           process.env.NEXT_PUBLIC_SUPABASE_URL!,
-          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-          {
-            global: {
-              headers: {
-                Authorization: `Bearer ${user.token || ''}`,
-              },
-            },
-          }
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
         );
 
         const { data } = await supabase

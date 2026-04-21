@@ -45,14 +45,7 @@ export default function OnboardingGate({ children }: { children: React.ReactNode
       try {
         const supabase = createClient(
           process.env.NEXT_PUBLIC_SUPABASE_URL!,
-          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-          {
-            global: {
-              headers: {
-                Authorization: `Bearer ${user.token || ''}`,
-              },
-            },
-          }
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
         );
 
         const { data, error } = await supabase
