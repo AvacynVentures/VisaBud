@@ -29,16 +29,6 @@ export default function OnboardingGate({ children }: { children: React.ReactNode
       }
 
       // User is authenticated, check if onboarding is complete
-      // Priority: Zustand store, then Supabase DB, then assume incomplete
-
-      if (onboarding_completed) {
-        // Already marked complete in store
-        setIsComplete(true);
-        setCheckingCompletion(false);
-        router.replace('/dashboard');
-        return;
-      }
-
       // Check Supabase DB for onboarding_completed flag
       try {
         const supabase = createClient(
