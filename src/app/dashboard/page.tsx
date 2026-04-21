@@ -222,9 +222,7 @@ function DashboardContent() {
             } else {
               // Fallback: infer from amount (for backwards compat with old payments)
               const amount = payments[0].amount_pence || 0;
-              if (amount >= 29900 || amount === 33) {
-                setPurchasedTier('expert');
-              } else if (amount >= 14900 || amount === 32 || amount === 2) {
+              if (amount >= 14900 || amount === 32 || amount === 2) {
                 setPurchasedTier('premium');
               } else {
                 setPurchasedTier('standard');
