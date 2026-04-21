@@ -13,7 +13,7 @@ import { createClient } from '@supabase/supabase-js';
  * - Shows loading spinner while checking state
  */
 export default function OnboardingGate({ children }: { children: React.ReactNode }) {
-  const { user, loading: authLoading } = useAuth();
+  const { user, session, loading: authLoading } = useAuth();
   const router = useRouter();
   const [checkingCompletion, setCheckingCompletion] = useState(true);
   const [isComplete, setIsComplete] = useState(false);
@@ -22,7 +22,7 @@ export default function OnboardingGate({ children }: { children: React.ReactNode
     const checkOnboardingState = async () => {
       if (authLoading) return; // Wait for auth to load
 
-      if (!user) {
+      if (!user || !session?.access_token) {
         // Not authenticated → redirect to login
         router.replace('/auth/login');
         return;
@@ -33,7 +33,14 @@ export default function OnboardingGate({ children }: { children: React.ReactNode
       try {
         const supabase = createClient(
           process.env.NEXT_PUBLIC_SUPABASE_URL!,
-          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+          {
+            global: {
+              headers: {
+                Authorization: `Bearer ${session.access_token}`,
+              },
+            },
+          }
         );
 
         const { data, error } = await supabase
@@ -69,7 +76,7 @@ export default function OnboardingGate({ children }: { children: React.ReactNode
     };
 
     checkOnboardingState();
-  }, [user, authLoading, router]);
+  }, [user, session, authLoading, router]);
 
   // Loading state
   if (authLoading || checkingCompletion) {

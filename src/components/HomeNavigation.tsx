@@ -18,14 +18,14 @@ interface HomeNavigationProps {
  * @param variant - 'nav' for navbar (small), 'hero' for hero section (large)
  */
 export default function HomeNavigation({ variant = 'hero' }: HomeNavigationProps) {
-  const { user, loading } = useAuth();
+  const { user, session, loading } = useAuth();
   const [isComplete, setIsComplete] = useState(false);
   const [checkingCompletion, setCheckingCompletion] = useState(true);
 
   useEffect(() => {
     if (loading) return;
 
-    if (!user) {
+    if (!user || !session?.access_token) {
       // Not logged in
       setIsComplete(false);
       setCheckingCompletion(false);
@@ -35,10 +35,17 @@ export default function HomeNavigation({ variant = 'hero' }: HomeNavigationProps
     // Check Supabase DB
     (async () => {
       try {
-        // Use the default Supabase client (auth-aware)
+        // Create Supabase client with auth token
         const supabase = createClient(
           process.env.NEXT_PUBLIC_SUPABASE_URL!,
-          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+          {
+            global: {
+              headers: {
+                Authorization: `Bearer ${session.access_token}`,
+              },
+            },
+          }
         );
 
         const { data } = await supabase
@@ -55,7 +62,7 @@ export default function HomeNavigation({ variant = 'hero' }: HomeNavigationProps
         setCheckingCompletion(false);
       }
     })();
-  }, [user, loading]);
+  }, [user, session, loading]);
 
   if (loading || checkingCompletion) {
     return (
@@ -85,11 +92,11 @@ export default function HomeNavigation({ variant = 'hero' }: HomeNavigationProps
     );
   }
 
-  // Logged in + onboarding complete → Go to Dashboard
+  // Logged in + onboarding complete → Welcome back, go to Dashboard
   if (isComplete) {
     return (
       <Link href="/dashboard" className={baseClasses}>
-        Go to Dashboard
+        Welcome Back, Go to Dashboard
         {showArrow && (
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
