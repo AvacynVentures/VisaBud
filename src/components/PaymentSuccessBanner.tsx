@@ -41,16 +41,7 @@ export default function PaymentSuccessBanner({ onDismiss }: { onDismiss?: () => 
         'Everything in Standard',
       ],
     },
-    expert: {
-      name: 'Expert Pack',
-      price: '£299',
-      features: [
-        'Expert immigration review (24h)',
-        'Priority support & follow-up',
-        'AI verification + templates',
-        'Everything in Premium',
-      ],
-    },
+
   };
 
   const info = tierInfo[tier] || tierInfo.standard;

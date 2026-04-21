@@ -9,7 +9,7 @@ import { NextRequest, NextResponse } from 'next/server';
  * Uses Stripe Price IDs (from env) — Stripe is the source of truth for amounts.
  * No hardcoded prices in this file.
  *
- * Body: { tier?: "standard" | "premium" | "expert" }
+ * Body: { tier?: "standard" | "premium" }
  * Headers: Authorization: Bearer <supabase_access_token>
  * Defaults to "standard" if no tier provided (backwards compat)
  */
@@ -140,7 +140,6 @@ export async function GET() {
       priceIds: {
         standard: STRIPE_PRICE_IDS.standard ? 'set' : 'NOT_SET',
         premium: STRIPE_PRICE_IDS.premium ? 'set' : 'NOT_SET',
-        expert: STRIPE_PRICE_IDS.expert ? 'set' : 'NOT_SET',
       },
     });
   } catch (err: any) {

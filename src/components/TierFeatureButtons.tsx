@@ -53,36 +53,17 @@ const FEATURES: FeatureButton[] = [
     lockedColor: 'bg-gray-100 text-gray-400 border border-gray-200',
     description: 'All AI-flagged issues across your documents, prioritised by severity with specific fixes.',
   },
-  {
-    id: 'expert-review',
-    label: 'Expert Human Review',
-    icon: Users,
-    minTier: 'expert',
-    color: 'bg-amber-600 hover:bg-amber-700 text-white',
-    lockedColor: 'bg-gray-100 text-gray-400 border border-gray-200',
-    description: 'Qualified immigration expert reviews your documents within 24 hours.',
-  },
-  {
-    id: 'live-call',
-    label: 'Schedule Live Call',
-    icon: Phone,
-    minTier: 'expert',
-    color: 'bg-rose-600 hover:bg-rose-700 text-white',
-    lockedColor: 'bg-gray-100 text-gray-400 border border-gray-200',
-    description: '30-minute live consulting call with an immigration specialist.',
-  },
+
 ];
 
 const TIER_RANK: Record<PurchasedTier, number> = {
   none: 0,
   standard: 1,
   premium: 2,
-  expert: 3,
 };
 
 const TIER_LABELS: Record<string, string> = {
   premium: 'Premium (£149)',
-  expert: 'Expert (£299)',
 };
 
 function isUnlocked(userTier: PurchasedTier, requiredTier: 'premium' | 'expert'): boolean {
@@ -107,12 +88,6 @@ export default function TierFeatureButtons({ purchasedTier, onUpgrade, visaType 
         case 'ai-validation':
           setShowIssues(true);
           setShowReadiness(false);
-          break;
-        case 'expert-review':
-          window.location.href = 'mailto:expert@visabud.co.uk?subject=Expert%20Document%20Review%20Request';
-          break;
-        case 'live-call':
-          window.location.href = 'mailto:expert@visabud.co.uk?subject=Schedule%20Live%20Consulting%20Call';
           break;
       }
     } else {

@@ -7,17 +7,17 @@ import { NextRequest, NextResponse } from 'next/server';
  * Create a Stripe checkout session for premium document review.
  *
  * Uses Stripe Price IDs — no hardcoded amounts.
- * Accepts tier: "premium" or "expert" (standard is handled by /api/checkout)
+ * Accepts tier: "premium" (standard is handled by /api/checkout)
  */
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const { tier } = body;
 
-    // Validate tier — only premium and expert are valid for review checkout
-    if (!tier || !['premium', 'expert'].includes(tier)) {
+    // Validate tier — only premium is valid for review checkout
+    if (!tier || tier !== 'premium') {
       return NextResponse.json(
-        { error: 'Invalid tier. Must be "premium" or "expert".' },
+        { error: 'Invalid tier. Must be "premium".' },
         { status: 400 }
       );
     }

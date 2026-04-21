@@ -103,7 +103,7 @@ function calculateChecklistScore(
 /**
  * POST /api/ai-confidence
  * AI Confidence Scoring with CHECKLIST and RECOMMENDATIONS (Fix 5: replaces SWOT)
- * Requires Premium or Expert tier
+ * Requires Premium tier
  */
 export async function POST(req: NextRequest) {
   const startTime = Date.now();
@@ -128,7 +128,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid or expired session' }, { status: 401 });
     }
 
-    // Verify tier access (premium or expert)
+    // Verify tier access (premium)
     const supabaseServer = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -151,11 +151,11 @@ export async function POST(req: NextRequest) {
 
       const payment = payments?.[0];
       if (!payment) {
-        return NextResponse.json({ error: 'Premium or Expert tier required for AI Confidence Scoring' }, { status: 403 });
+        return NextResponse.json({ error: 'Premium tier required for AI Confidence Scoring' }, { status: 403 });
       }
 
       if (payment.amount_pence < 14900 && payment.product_type !== 'premium_review') {
-        return NextResponse.json({ error: 'Upgrade to Premium or Expert for AI Confidence Scoring' }, { status: 403 });
+        return NextResponse.json({ error: 'Upgrade to Premium for AI Confidence Scoring' }, { status: 403 });
       }
     }
 
