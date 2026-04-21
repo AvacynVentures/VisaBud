@@ -113,19 +113,20 @@ function buildSystemPrompt(context: VisaAdvisorContext): string {
     .join('\n\n');
 
   // Financial requirements per visa type
+  // Note: Based on gov.uk guidance + VisaBud checklist research. Always verify on gov.uk.
   const financialRequirements = {
-    spouse: '- Minimum income: £29,000/year (as of April 2024)\n- Savings: £16,000 can substitute if income lower\n- Sponsor must prove financial ability',
-    skilled_worker: '- Salary threshold: £38,700/year (or going rate for role)\n- Financial requirement: £1,270 in account for 28 days\n- Check salary list on gov.uk for your occupation',
-    citizenship: '- No income requirement\n- Must have stable residence\n- Good character assessment required',
+    spouse: '📌 Financial Requirements (per VisaBud research; verify on gov.uk/uk-family-visa):\n- Minimum income: £29,000/year (as of April 2024)\n- Savings: £16,000 can substitute if income lower\n- Sponsor must prove financial ability\n- Income proof: Recent payslips (6+ months) showing employer name, gross salary, tax details',
+    skilled_worker: '📌 Financial Requirements (per VisaBud research; verify on gov.uk/skilled-worker-visa):\n- Salary threshold: £38,700/year (or going rate for role)\n- Financial requirement: £1,270 in account for 28 days\n- Check salary list on gov.uk for your occupation\n- Sponsor: Must be licensed employer with Certificate of Sponsorship (CoS)',
+    citizenship: '📌 Requirements (per VisaBud research; verify on gov.uk/british-citizenship):\n- No income requirement\n- Must have stable residence (typically 5+ years)\n- Good character assessment: Declare all convictions, cautions, bankruptcies\n- Life in the UK test required',
   };
 
   const financialText = financialRequirements[context.visaType as keyof typeof financialRequirements] || financialRequirements.spouse;
 
-  // Submission steps
+  // Submission steps (per VisaBud checklist + gov.uk; always verify before submitting)
   const submissionSteps = {
-    spouse: '1. Complete online application on gov.uk\n2. Pay visa fee (£719) + IHS surcharge (~£710 for 2.5 years)\n3. Upload supporting documents\n4. Receive confirmation + reference number\n5. Book biometrics appointment\n6. Attend biometrics (photos + fingerprints)\n7. Home Office processes (12 weeks standard, 5 days priority)',
-    skilled_worker: '1. Get Certificate of Sponsorship (CoS) from employer\n2. Gather documents (qualifications, criminal record, English proof)\n3. Apply online within 3 months of CoS\n4. Pay fee (£719) + IHS surcharge\n5. Biometrics appointment\n6. Processing (3 weeks standard)',
-    citizenship: '1. Confirm eligibility (5 years residence, absences <450 days total)\n2. Pass Life in the UK test\n3. Gather documents (passports, council tax, birth certificate, referees)\n4. Submit AN application (online or paper)\n5. Home Office processes (6 months)\n6. Attend citizenship ceremony',
+    spouse: '📌 Application Process (verify on gov.uk/apply-to-come-to-the-uk):\n1. Complete online application on gov.uk\n2. Pay visa fee (£719) + IHS surcharge (~£710 for 2.5 years)\n3. Upload supporting documents (payslips, bank statements, proof of relationship)\n4. Receive confirmation + reference number\n5. Book biometrics appointment at Visa Application Centre\n6. Attend biometrics (photos + fingerprints)\n7. Home Office processes (12 weeks standard, 5 days priority)\n⚠️ Do NOT travel until visa granted',
+    skilled_worker: '📌 Application Process (verify on gov.uk/skilled-worker-visa):\n1. Confirm employer is licensed sponsor\n2. Get Certificate of Sponsorship (CoS) from employer (valid 3 months)\n3. Gather documents (qualifications, criminal record, English proof, passport)\n4. Apply online within 3 months of CoS issuance\n5. Pay fee (£719) + IHS surcharge\n6. Book biometrics appointment\n7. Attend biometrics\n8. Processing (3 weeks standard, varies by location)\n⚠️ CoS window is 3 months - do not delay',
+    citizenship: '📌 Application Process (verify on gov.uk/british-citizenship):\n1. Confirm eligibility: 5 years UK residence + <450 days absences total\n2. Pass Life in the UK test (£50 fee, book ahead)\n3. Gather documents (all passports, council tax, birth certificate, referees)\n4. Declare good character: Convictions, cautions, bankruptcies (honesty is critical)\n5. Submit Form AN application (online preferred)\n6. Home Office processes (typically 6 months)\n7. Attend citizenship ceremony\n⚠️ Non-disclosure of convictions = automatic refusal',
   };
 
   const submissionText = submissionSteps[context.visaType as keyof typeof submissionSteps] || submissionSteps.spouse;
