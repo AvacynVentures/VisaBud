@@ -111,8 +111,22 @@ export default function DocumentUpload({ docId, requirement, locked = false }: D
 
         clearTimeout(timeoutId);
 
-        if (response.ok) {
+        // Always try to parse response, even if not ok
+        try {
           validationResult = await response.json();
+        } catch {
+          // Response wasn't JSON — network error or server issue
+          if (response.ok) {
+            validationResult = { valid: true, feedback: 'Document uploaded successfully.' };
+          } else {
+            throw new Error(`Validation failed: ${response.status} ${response.statusText}`);
+          }
+        }
+
+        // If response wasn't ok but we got JSON with error feedback, treat it as validation feedback
+        if (!response.ok && validationResult?.feedback) {
+          // Server returned error with guidance — show it to user
+          validationResult.valid = false;
         }
       } catch (fetchErr: any) {
         if (fetchErr?.name === 'AbortError') {
@@ -122,7 +136,8 @@ export default function DocumentUpload({ docId, requirement, locked = false }: D
             return;
           }
         }
-        // AI validation unavailable — accept document anyway
+        // Network error or API unavailable — accept document anyway but note it
+        console.error('[DocumentUpload] Validation fetch error:', fetchErr);
       }
 
       if (signal.aborted) return;
@@ -137,8 +152,8 @@ export default function DocumentUpload({ docId, requirement, locked = false }: D
           setDocumentUpload(docId, { ...baseUpload, status: 'invalid', feedback: validationResult.feedback });
         }
       } else {
-        // No AI available — mark as uploaded/valid
-        setDocumentUpload(docId, { ...baseUpload, status: 'valid', feedback: 'Document uploaded successfully.' });
+        // No AI available or network error — mark as uploaded/valid with note
+        setDocumentUpload(docId, { ...baseUpload, status: 'valid', feedback: 'Document uploaded. AI validation unavailable — you can still use this document for your application.' });
       }
     } catch (err) {
       if (signal.aborted) return;
