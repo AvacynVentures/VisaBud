@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Lock, FileText, Sparkles, ShieldCheck, Users, Phone, ArrowRight, X,
+  Lock, FileText, Sparkles, ShieldCheck, ArrowRight,
   AlertTriangle, CheckCircle, Upload
 } from 'lucide-react';
 import { useApplicationStore, type PurchasedTier } from '@/lib/store';
