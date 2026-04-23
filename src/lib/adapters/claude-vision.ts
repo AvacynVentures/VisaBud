@@ -438,6 +438,30 @@ Respond with JSON only.`;
       if (jsonMatch) {
         const parsed = JSON.parse(jsonMatch[0]);
 
+        // ── CRITICAL: Document Type Validation Gate ──────────────────────────
+        // If relevance is 0 (wrong document type), return 0% confidence immediately.
+        // Do NOT allow partial credit for wrong document types.
+        if (parsed.dimensions?.relevance?.score === 0) {
+          console.log(`[claude-premium] Wrong document type detected for requirement "${input.requirement}". Returning 0% confidence.`);
+          return {
+            riskLevel: 'high',
+            confidenceScore: 0,
+            feedback: `This is not the correct document type for the requirement. You've uploaded: "${parsed.detectedType || 'unknown document type'}". The requirement is: "${input.requirement}". Please upload the correct document type.`,
+            issues: [
+              {
+                type: 'mismatch',
+                severity: 'high',
+                message: `Wrong document type. Requirement: "${input.requirement}", but uploaded document appears to be: "${parsed.detectedType || 'unknown'}"`,
+                fix: `Upload the correct document type for this requirement. For example, if the requirement is "Life in the UK Test Pass Certificate", upload your official LIFE Test pass notification, not a language certificate or other document.`,
+              },
+            ],
+            positives: [],
+            provider: this.name,
+            latencyMs,
+            analysisComplete: true,
+          };
+        }
+
         // Fix 4: Calculate score from dimensions if present, don't trust raw LLM number
         let confidenceScore: number;
         let dimensions: DimensionScore | undefined;
