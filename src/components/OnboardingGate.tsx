@@ -3,7 +3,7 @@
 import { useAuth } from '@/lib/auth-context';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from '@/lib/supabase';
 
 /**
  * OnboardingGate: Enhanced auth + onboarding completion check
@@ -29,20 +29,8 @@ export default function OnboardingGate({ children }: { children: React.ReactNode
       }
 
       // User is authenticated, check if onboarding is complete
-      // Check Supabase DB for onboarding_completed flag
+      // Check Supabase DB for onboarding_completed flag using singleton (Fix #1: Consolidate Supabase initialization)
       try {
-        const supabase = createClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL!,
-          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-          {
-            global: {
-              headers: {
-                Authorization: `Bearer ${session.access_token}`,
-              },
-            },
-          }
-        );
-
         const { data, error } = await supabase
           .from('users')
           .select('onboarding_completed')

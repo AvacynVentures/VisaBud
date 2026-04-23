@@ -45,6 +45,9 @@ export default function DocumentUpload({ docId, requirement, locked = false }: D
   const feedback = upload.feedback;
   const fileName = upload.fileName;
 
+  // AbortController for cancellation (moved to ref level for better cleanup)
+  const abortRef = useRef<AbortController | null>(null);
+
   // Trigger confetti on valid status
   useEffect(() => {
     if (status === 'valid') {
@@ -53,6 +56,16 @@ export default function DocumentUpload({ docId, requirement, locked = false }: D
       return () => clearTimeout(timer);
     }
   }, [status]);
+
+  // Fix #3: Explicit cleanup on unmount
+  // Cancel any in-flight upload if component unmounts
+  useEffect(() => {
+    return () => {
+      if (abortRef.current) {
+        abortRef.current.abort();
+      }
+    };
+  }, []);
 
   const validateFile = (file: File): string | null => {
     if (!ACCEPTED_TYPES.includes(file.type)) return 'Please upload a JPG, PNG, or PDF file.';
@@ -72,9 +85,6 @@ export default function DocumentUpload({ docId, requirement, locked = false }: D
       reader.readAsDataURL(file);
     });
   };
-
-  // AbortController for cancellation
-  const abortRef = useRef<AbortController | null>(null);
 
   const handleFile = useCallback(async (file: File) => {
     const error = validateFile(file);

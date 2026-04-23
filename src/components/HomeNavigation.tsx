@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth-context';
 import { useEffect, useState } from 'react';
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from '@/lib/supabase';
 
 interface HomeNavigationProps {
   variant?: 'nav' | 'hero';
@@ -32,22 +32,9 @@ export default function HomeNavigation({ variant = 'hero' }: HomeNavigationProps
       return;
     }
 
-    // Check Supabase DB
+    // Check Supabase DB using singleton client (Fix #1: Consolidate Supabase initialization)
     (async () => {
       try {
-        // Create Supabase client with auth token
-        const supabase = createClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL!,
-          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-          {
-            global: {
-              headers: {
-                Authorization: `Bearer ${session.access_token}`,
-              },
-            },
-          }
-        );
-
         const { data } = await supabase
           .from('users')
           .select('onboarding_completed')
