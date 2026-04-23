@@ -87,8 +87,10 @@ export default function DocumentUpload({ docId, requirement, locked = false }: D
   };
 
   const handleFile = useCallback(async (file: File) => {
+    console.log(`[DocumentUpload] Starting upload for ${docId}`, file.name);
     const error = validateFile(file);
     if (error) {
+      console.log(`[DocumentUpload] Validation error: ${error}`);
       setDocumentUpload(docId, { status: 'error', feedback: error, fileName: file.name });
       return;
     }
@@ -98,19 +100,30 @@ export default function DocumentUpload({ docId, requirement, locked = false }: D
     abortRef.current = new AbortController();
     const signal = abortRef.current.signal;
 
+    console.log(`[DocumentUpload] Setting status to uploading`);
     setDocumentUpload(docId, { status: 'uploading', feedback: null, fileName: file.name });
 
     try {
+      console.log(`[DocumentUpload] Converting to base64...`);
       const base64 = await fileToBase64(file);
+      console.log(`[DocumentUpload] Base64 ready, length: ${base64.length}`);
 
-      if (signal.aborted) return;
+      if (signal.aborted) {
+        console.log(`[DocumentUpload] Aborted before validating`);
+        return;
+      }
+      console.log(`[DocumentUpload] Setting status to validating`);
       setDocumentUpload(docId, { status: 'validating', feedback: null, fileName: file.name });
 
       let validationResult: { valid: boolean; feedback: string } | null = null;
 
       try {
         // 25-second timeout to prevent infinite spinner
-        const timeoutId = setTimeout(() => abortRef.current?.abort(), 25000);
+        console.log(`[DocumentUpload] Fetching /api/validate-document...`);
+        const timeoutId = setTimeout(() => {
+          console.log(`[DocumentUpload] TIMEOUT: 25 seconds exceeded, aborting`);
+          abortRef.current?.abort();
+        }, 25000);
 
         const response = await fetch('/api/validate-document', {
           method: 'POST',
@@ -120,12 +133,15 @@ export default function DocumentUpload({ docId, requirement, locked = false }: D
         });
 
         clearTimeout(timeoutId);
+        console.log(`[DocumentUpload] Response received: ${response.status} ${response.statusText}`);
 
         // Always try to parse response, even if not ok
         try {
           validationResult = await response.json();
-        } catch {
+          console.log(`[DocumentUpload] Parsed JSON response:`, validationResult);
+        } catch (parseErr) {
           // Response wasn't JSON — network error or server issue
+          console.log(`[DocumentUpload] Failed to parse JSON:`, parseErr);
           if (response.ok) {
             validationResult = { valid: true, feedback: 'Document uploaded successfully.' };
           } else {
@@ -136,12 +152,15 @@ export default function DocumentUpload({ docId, requirement, locked = false }: D
         // If response wasn't ok but we got JSON with error feedback, treat it as validation feedback
         if (!response.ok && validationResult?.feedback) {
           // Server returned error with guidance — show it to user
+          console.log(`[DocumentUpload] Server returned error but with feedback`);
           validationResult.valid = false;
         }
       } catch (fetchErr: any) {
+        console.error(`[DocumentUpload] Fetch error:`, fetchErr);
         if (fetchErr?.name === 'AbortError') {
           // Check if user cancelled or timeout
           if (signal.aborted) {
+            console.log(`[DocumentUpload] Request aborted, setting timeout error state`);
             setDocumentUpload(docId, { status: 'error', feedback: 'Validation timed out. Your document was saved — try again or upload a clearer copy.', fileName: file.name, fileData: base64, mimeType: file.type });
             return;
           }
@@ -150,24 +169,35 @@ export default function DocumentUpload({ docId, requirement, locked = false }: D
         console.error('[DocumentUpload] Validation fetch error:', fetchErr);
       }
 
-      if (signal.aborted) return;
+      if (signal.aborted) {
+        console.log(`[DocumentUpload] Aborted after fetch`);
+        return;
+      }
 
       // Store file data for download regardless of validation result
       const baseUpload = { fileName: file.name, fileData: base64, mimeType: file.type };
 
       if (validationResult) {
         if (validationResult.valid) {
+          console.log(`[DocumentUpload] Setting status to VALID`);
           setDocumentUpload(docId, { ...baseUpload, status: 'valid', feedback: validationResult.feedback });
         } else {
+          console.log(`[DocumentUpload] Setting status to INVALID`);
           setDocumentUpload(docId, { ...baseUpload, status: 'invalid', feedback: validationResult.feedback });
         }
       } else {
         // No AI available or network error — mark as uploaded/valid with note
+        console.log(`[DocumentUpload] No validation result, setting to VALID with fallback message`);
         setDocumentUpload(docId, { ...baseUpload, status: 'valid', feedback: 'Document uploaded. AI validation unavailable — you can still use this document for your application.' });
       }
     } catch (err) {
-      if (signal.aborted) return;
+      console.error(`[DocumentUpload] Outer catch error:`, err);
+      if (signal.aborted) {
+        console.log(`[DocumentUpload] Signal aborted in outer catch`);
+        return;
+      }
       const message = err instanceof Error ? err.message : 'Upload failed. Please try again.';
+      console.log(`[DocumentUpload] Setting status to ERROR: ${message}`);
       setDocumentUpload(docId, { status: 'error', feedback: message, fileName: file.name });
     }
   }, [docId, requirement, setDocumentUpload]);
