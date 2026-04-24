@@ -22,7 +22,7 @@ const TIERS = [
   {
     id: 'standard',
     name: 'Standard',
-    price: 50,
+    price: 9.99,
     badge: null,
     color: 'blue',
     description: 'Perfect to get started — everything you need to prepare with confidence',
@@ -40,8 +40,8 @@ const TIERS = [
   },
   {
     id: 'premium',
-    name: 'Premium',
-    price: 149,
+    name: 'AI Premium',
+    price: 79.99,
     badge: 'Most Popular',
     color: 'emerald',
     description: 'AI-powered verification to catch mistakes before you submit',
@@ -51,7 +51,7 @@ const TIERS = [
       'Downloadable preparation templates',
       'Email support within 24 hours',
     ],
-    buttonLabel: 'Unlock Premium',
+    buttonLabel: 'Unlock AI Premium',
     buttonStyle: 'bg-emerald-600 hover:bg-emerald-700 text-white',
     cardStyle: 'border-emerald-400 bg-emerald-50/30 ring-2 ring-emerald-200 shadow-lg',
     priceId: 'premium',

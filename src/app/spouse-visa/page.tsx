@@ -95,7 +95,7 @@ export default function SpouseVisaPage() {
           <Link href="/auth/signup" className="inline-block bg-blue-600 text-white px-8 py-4 rounded-lg font-bold hover:bg-blue-700">
             Get Your Spouse Visa Checklist
           </Link>
-          <p className="text-sm text-slate-600 mt-4">Free preview · Upgrade to AI review from £149</p>
+          <p className="text-sm text-slate-600 mt-4">Free preview · Standard £9.99 · AI Premium £79.99</p>
         </div>
 
         <div className="mt-12 pt-8 border-t">
