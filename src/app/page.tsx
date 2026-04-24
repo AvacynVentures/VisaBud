@@ -1,11 +1,65 @@
 'use client';
 
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { supabase } from '@/lib/supabase';
+import { useApplicationStore } from '@/lib/store';
 import { PageFadeIn, StaggerContainer, StaggerItem, FadeIn } from '@/lib/animations';
 import FooterEmailCapture from '@/components/FooterEmailCapture';
 import HomeNavigation from '@/components/HomeNavigation';
+import { Loader2 } from 'lucide-react';
 
 export default function Home() {
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [hasWizardComplete, setHasWizardComplete] = useState(false);
+  const applicationState = useApplicationStore();
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        // Check if user is logged in
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session?.user) {
+          setIsLoggedIn(true);
+          
+          // Check if wizard is complete (has visa type selected)
+          if (applicationState.visaType) {
+            setHasWizardComplete(true);
+            // Redirect to dashboard
+            router.push('/dashboard');
+          } else {
+            // Redirect to continue wizard
+            router.push('/app/start');
+          }
+        } else {
+          setIsLoggedIn(false);
+          setIsLoading(false);
+        }
+      } catch (error) {
+        console.error('Auth check failed:', error);
+        setIsLoading(false);
+      }
+    };
+
+    checkAuth();
+  }, [router, applicationState.visaType]);
+
+  // Show loading state while checking auth
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-slate-50 to-white">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+          <p className="text-slate-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <PageFadeIn>
       <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
