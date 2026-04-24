@@ -218,6 +218,13 @@ function SuccessContent() {
         });
         // Unlock the dashboard content
         store.setUnlocked(true);
+        // Set the purchased tier based on payment amount
+        const amount = data.payment.amount_pence || 0;
+        if (amount >= 7999) {
+          store.setPurchasedTier('premium');
+        } else {
+          store.setPurchasedTier('standard');
+        }
         setStatus('verified');
       } catch (err) {
         console.error('Session verification error:', err);
