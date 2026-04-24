@@ -187,14 +187,6 @@ function DashboardContent() {
 
   // Check unlock status — runs on mount AND polls when returning from payment
   useEffect(() => {
-    // Fast-path: if purchasedTier is already set in store (from success page), mark as unlocked immediately
-    // This avoids waiting for database webhook when store already has the tier
-    const currentPurchasedTier = store.purchasedTier;
-    if (currentPurchasedTier && currentPurchasedTier !== 'none') {
-      setUnlocked(true);
-      return; // Skip polling, user is already unlocked
-    }
-
     let pollCount = 0;
     let pollTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -255,6 +247,12 @@ function DashboardContent() {
       }
     }
 
+    // Fast-path: if purchasedTier is already in store, don't poll
+    if (store.purchasedTier && store.purchasedTier !== 'none') {
+      setUnlocked(true);
+      return;
+    }
+
     // Initial check
     checkUnlockStatus().then((found) => {
       // If returning from payment and not yet unlocked, poll for webhook completion
@@ -274,7 +272,7 @@ function DashboardContent() {
     return () => {
       if (pollTimer) clearTimeout(pollTimer);
     };
-  }, [setUnlocked, setPurchasedTier, isPaymentReturn, unlocked, tierParam, store.purchasedTier]);
+  }, [setUnlocked, setPurchasedTier, isPaymentReturn, unlocked, tierParam, store]);
 
   const [showPaywall, setShowPaywall] = useState(false);
 
