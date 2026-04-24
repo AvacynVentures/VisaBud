@@ -8,7 +8,7 @@ import { useApplicationStore } from '@/lib/store';
 import { CheckCircle, ArrowRight, ArrowLeft } from 'lucide-react';
 import { PageFadeIn } from '@/lib/animations';
 import { VisaType, RelationshipStatus, Urgency } from '@/lib/types';
-import EmailCapture from './EmailCapture';
+
 
 const VISA_TYPES = [
   { id: 'spouse', icon: '👰', label: 'Spouse / Partner Visa', sub: 'Your partner sponsors you. Income must be £29,000+/year (or savings to compensate)' },
@@ -94,7 +94,6 @@ export default function Onboarding() {
 
   const { user } = useAuth();
   const [direction, setDirection] = useState(1);
-  const [showEmailCapture, setShowEmailCapture] = useState(false);
 
   const [hydrated, setHydrated] = useState(false);
   useEffect(() => { setHydrated(true); }, []);
@@ -123,7 +122,8 @@ export default function Onboarding() {
   const handleNext = () => {
     setDirection(1);
     if (currentStep === 5) {
-      setShowEmailCapture(true);
+      // Skip email capture, user is logged in and email is already captured
+      router.push('/dashboard');
     } else {
       nextStep();
     }
@@ -145,15 +145,7 @@ export default function Onboarding() {
     );
   }
 
-  // Show email capture screen after wizard Step 5, before dashboard
-  if (showEmailCapture) {
-    return (
-      <EmailCapture
-        onComplete={() => router.push('/dashboard')}
-        onSkip={() => router.push('/dashboard')}
-      />
-    );
-  }
+
 
   return (
     <PageFadeIn>
