@@ -187,6 +187,14 @@ function DashboardContent() {
 
   // Check unlock status — runs on mount AND polls when returning from payment
   useEffect(() => {
+    // Fast-path: if purchasedTier is already set in store (from success page), mark as unlocked immediately
+    // This avoids waiting for database webhook when store already has the tier
+    const currentPurchasedTier = store.purchasedTier;
+    if (currentPurchasedTier && currentPurchasedTier !== 'none') {
+      setUnlocked(true);
+      return; // Skip polling, user is already unlocked
+    }
+
     let pollCount = 0;
     let pollTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -266,7 +274,7 @@ function DashboardContent() {
     return () => {
       if (pollTimer) clearTimeout(pollTimer);
     };
-  }, [setUnlocked, setPurchasedTier, isPaymentReturn, unlocked, tierParam]);
+  }, [setUnlocked, setPurchasedTier, isPaymentReturn, unlocked, tierParam, store.purchasedTier]);
 
   const [showPaywall, setShowPaywall] = useState(false);
 
@@ -289,6 +297,7 @@ function DashboardContent() {
       <>
         <PaymentSuccessBanner />
         <FreemiumWelcomeDashboard
+          store={store}
           showPaywall={showPaywall}
           setShowPaywall={setShowPaywall}
           unlocked={unlocked}
@@ -313,9 +322,12 @@ function DashboardContent() {
 // ─── Freemium Welcome Dashboard (NEW) ──────────────────────────────────────
 
 function FreemiumWelcomeDashboard({
+  store,
   showPaywall,
   setShowPaywall,
+  unlocked,
 }: {
+  store: any;
   showPaywall: boolean;
   setShowPaywall: (v: boolean) => void;
   unlocked: boolean;
@@ -356,17 +368,25 @@ function FreemiumWelcomeDashboard({
               <span className="font-bold text-blue-900 tracking-tight text-lg hidden sm:inline">VisaBud</span>
             </Link>
             <div className="flex items-center gap-3">
-              <span className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-semibold">
-                Free Plan
-              </span>
-              <button
-                onClick={() => setShowPaywall(true)}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-xl shadow-sm hover:shadow-md transition-all btn-hover"
-              >
-                <Zap className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Unlock Premium</span>
-                <span className="sm:hidden">Upgrade</span>
-              </button>
+              {unlocked || (store.purchasedTier && store.purchasedTier !== 'none') ? (
+                <span className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full text-xs font-semibold">
+                  ✓ Premium
+                </span>
+              ) : (
+                <span className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-semibold">
+                  Free Plan
+                </span>
+              )}
+              {!(unlocked || (store.purchasedTier && store.purchasedTier !== 'none')) && (
+                <button
+                  onClick={() => setShowPaywall(true)}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-xl shadow-sm hover:shadow-md transition-all btn-hover"
+                >
+                  <Zap className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Unlock Premium</span>
+                  <span className="sm:hidden">Upgrade</span>
+                </button>
+              )}
             </div>
           </div>
         </nav>
