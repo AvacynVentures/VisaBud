@@ -13,8 +13,6 @@ import { Loader2 } from 'lucide-react';
 export default function Home() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [hasWizardComplete, setHasWizardComplete] = useState(false);
   const applicationState = useApplicationStore();
 
   useEffect(() => {
@@ -24,11 +22,8 @@ export default function Home() {
         const { data: { session } } = await supabase.auth.getSession();
         
         if (session?.user) {
-          setIsLoggedIn(true);
-          
           // Check if wizard is complete (has visa type selected)
           if (applicationState.visaType) {
-            setHasWizardComplete(true);
             // Redirect to dashboard
             router.push('/dashboard');
           } else {
@@ -36,7 +31,6 @@ export default function Home() {
             router.push('/app/start');
           }
         } else {
-          setIsLoggedIn(false);
           setIsLoading(false);
         }
       } catch (error) {
