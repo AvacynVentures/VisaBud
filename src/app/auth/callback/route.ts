@@ -69,7 +69,7 @@ export async function GET(request: NextRequest) {
       const isNewUser = !existingUser;
 
       // Upsert user record (create if doesn't exist, update if it does)
-      const { data: userData } = await supabaseAdmin
+      const { data: userData, error: upsertError } = await supabaseAdmin
         .from('users')
         .upsert(
           {
@@ -83,6 +83,10 @@ export async function GET(request: NextRequest) {
         )
         .select('created_at')
         .single();
+      
+      if (upsertError) {
+        console.error('[auth/callback] Upsert error:', upsertError);
+      }
 
       // Send welcome email to new users (fire-and-forget)
       const userEmail = data.user.email;
