@@ -34,7 +34,7 @@ export default function OnboardingGate({ children }: { children: React.ReactNode
         const { data, error } = await supabase
           .from('users')
           .select('onboarding_completed')
-          .eq('id', user.id)
+          .eq('auth_id', user.id)
           .single();
 
         if (error) {

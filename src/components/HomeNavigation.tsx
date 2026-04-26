@@ -38,7 +38,7 @@ export default function HomeNavigation({ variant = 'hero' }: HomeNavigationProps
         const { data } = await supabase
           .from('users')
           .select('onboarding_completed')
-          .eq('id', user.id)
+          .eq('auth_id', user.id)
           .single();
 
         setIsComplete(data?.onboarding_completed || false);
