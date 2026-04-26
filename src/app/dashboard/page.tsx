@@ -247,11 +247,7 @@ function DashboardContent() {
       }
     }
 
-    // Fast-path: if purchasedTier is already in store, don't poll
-    if (store.purchasedTier && store.purchasedTier !== 'none') {
-      setUnlocked(true);
-      return;
-    }
+
 
     // Initial check
     checkUnlockStatus().then((found) => {
@@ -272,7 +268,7 @@ function DashboardContent() {
     return () => {
       if (pollTimer) clearTimeout(pollTimer);
     };
-  }, [setUnlocked, setPurchasedTier, isPaymentReturn, unlocked, tierParam, store]);
+  }, [setUnlocked, setPurchasedTier, isPaymentReturn, unlocked, tierParam]);
 
   const [showPaywall, setShowPaywall] = useState(false);
 
