@@ -39,7 +39,7 @@ export default function HomeNavigation({ variant = 'hero' }: HomeNavigationProps
           .from('users')
           .select('onboarding_completed')
           .eq('auth_id', user.id)
-          .single();
+          .maybeSingle(); // Use maybeSingle to handle missing rows (new signups)
 
         setIsComplete(data?.onboarding_completed || false);
       } catch (err) {

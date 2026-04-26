@@ -29,23 +29,26 @@ export default function OnboardingGate({ children }: { children: React.ReactNode
       }
 
       // User is authenticated, check if onboarding is complete
-      // Check Supabase DB for onboarding_completed flag using singleton (Fix #1: Consolidate Supabase initialization)
       try {
         const { data, error } = await supabase
           .from('users')
           .select('onboarding_completed')
           .eq('auth_id', user.id)
-          .single();
+          .maybeSingle(); // Use maybeSingle instead of single to handle missing rows gracefully
 
-        if (error) {
+        if (error && error.code !== 'PGRST116') {
+          // Only log actual errors (ignore "no rows" errors)
           console.warn('[OnboardingGate] Failed to check DB completion:', error);
-          // On error, assume incomplete and show onboarding
+        }
+
+        // If data is null, user record doesn't exist yet (new signup) → show onboarding
+        if (!data) {
           setIsComplete(false);
           setCheckingCompletion(false);
           return;
         }
 
-        if (data?.onboarding_completed) {
+        if (data.onboarding_completed) {
           // DB says complete → redirect to dashboard
           setIsComplete(true);
           setCheckingCompletion(false);
@@ -57,7 +60,7 @@ export default function OnboardingGate({ children }: { children: React.ReactNode
         }
       } catch (err) {
         console.error('[OnboardingGate] Error checking onboarding:', err);
-        // On error, assume incomplete
+        // On error, assume incomplete and show onboarding
         setIsComplete(false);
         setCheckingCompletion(false);
       }
