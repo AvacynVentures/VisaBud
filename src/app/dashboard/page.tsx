@@ -268,7 +268,7 @@ function DashboardContent() {
     return () => {
       if (pollTimer) clearTimeout(pollTimer);
     };
-  }, [setUnlocked, setPurchasedTier, isPaymentReturn, unlocked, tierParam]);
+  }, [setUnlocked, setPurchasedTier, isPaymentReturn, tierParam]);
 
   const [showPaywall, setShowPaywall] = useState(false);
 
