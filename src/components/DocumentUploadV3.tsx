@@ -262,6 +262,7 @@ export default function DocumentUploadV3({
 
       // Fire the AI check — endpoint awaits pipeline completion
       // Meanwhile, polling picks up status changes from DB
+      // When fetch completes, do a final status check as safety net
       fetch(`/api/documents/${uploadId}/ai-check`, {
         method: 'POST',
         headers: {
@@ -270,13 +271,40 @@ export default function DocumentUploadV3({
         },
       }).then(async (response) => {
         const result = await response.json();
-        if (!result.success) {
-          console.error('[ai-check] Endpoint returned error:', result.error);
-          // Polling will pick up the 'failed' status from DB
+        console.log('[ai-check] Endpoint returned:', result);
+        
+        // Safety net: fetch final status after pipeline completes
+        // In case polling missed the terminal state
+        try {
+          const statusRes = await fetch(`/api/documents/${uploadId}/status`, { cache: 'no-store' });
+          if (statusRes.ok) {
+            const statusData: DocumentStatusResponse = await statusRes.json();
+            console.log('[ai-check] Final status:', statusData.aiStatus);
+            
+            if (statusData.aiStatus === 'complete' || statusData.aiStatus === 'failed') {
+              // Stop polling if still running
+              if (pollRef.current) {
+                clearInterval(pollRef.current);
+                pollRef.current = null;
+              }
+              setAiStatus(statusData.aiStatus);
+              setConfidenceScore(statusData.confidenceScore);
+              setAiFeedback(statusData.scoringFeedback || statusData.classificationFeedback);
+              setIsDocument(statusData.isDocument);
+              onAIComplete?.(statusData);
+            }
+          }
+        } catch (statusErr) {
+          console.warn('[ai-check] Final status check failed:', statusErr);
         }
       }).catch((err) => {
         console.error('[ai-check] Fetch error:', err);
-        // Polling will pick up the 'failed' status from DB
+        setAiStatus('failed');
+        setAiFeedback('AI check failed. Please try again.');
+        if (pollRef.current) {
+          clearInterval(pollRef.current);
+          pollRef.current = null;
+        }
       });
     } catch (err: any) {
       console.error('[ai-check] Error:', err);
