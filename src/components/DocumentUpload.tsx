@@ -118,12 +118,12 @@ export default function DocumentUpload({ docId, requirement, locked = false }: D
       let validationResult: { valid: boolean; feedback: string } | null = null;
 
       try {
-        // 25-second timeout to prevent infinite spinner
+        // 60-second timeout to prevent infinite spinner (Claude can be slow on first request)
         console.log(`[DocumentUpload] Fetching /api/validate-document...`);
         const timeoutId = setTimeout(() => {
-          console.log(`[DocumentUpload] TIMEOUT: 25 seconds exceeded, aborting`);
+          console.log(`[DocumentUpload] TIMEOUT: 60 seconds exceeded, aborting`);
           abortRef.current?.abort();
-        }, 25000);
+        }, 60000);
 
         const response = await fetch('/api/validate-document', {
           method: 'POST',
@@ -161,7 +161,7 @@ export default function DocumentUpload({ docId, requirement, locked = false }: D
           // Check if user cancelled or timeout
           if (signal.aborted) {
             console.log(`[DocumentUpload] Request aborted, setting timeout error state`);
-            setDocumentUpload(docId, { status: 'error', feedback: 'Validation timed out. Your document was saved — try again or upload a clearer copy.', fileName: file.name, fileData: base64, mimeType: file.type });
+            setDocumentUpload(docId, { status: 'error', feedback: 'Validation timed out after 60 seconds. Your document was saved — try again or upload a clearer copy.', fileName: file.name, fileData: base64, mimeType: file.type });
             return;
           }
         }
