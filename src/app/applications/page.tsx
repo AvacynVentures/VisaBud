@@ -7,6 +7,7 @@ import { motion } from 'framer-motion';
 import AuthGate from '@/components/AuthGate';
 import { useAuth } from '@/lib/auth-context';
 import { supabase } from '@/lib/supabase';
+import { useApplicationStore } from '@/lib/store';
 import { Plus, FileText, Sparkles, ArrowRight, Loader2 } from 'lucide-react';
 import { PageFadeIn } from '@/lib/animations';
 import type { ApplicationSummary } from '@/lib/application-types';
@@ -17,6 +18,7 @@ function ApplicationsContent() {
   const router = useRouter();
   const [applications, setApplications] = useState<ApplicationSummary[]>([]);
   const [loading, setLoading] = useState(true);
+  const resetStore = useApplicationStore((s) => s.reset);
 
   useEffect(() => {
     async function loadApplications() {
@@ -169,7 +171,11 @@ function ApplicationsContent() {
               transition={{ delay: applications.length * 0.08 }}
             >
               <button
-                onClick={() => router.push('/app/start')}
+                onClick={() => {
+                  // Reset wizard state so it starts from step 1
+                  resetStore();
+                  router.push('/app/start');
+                }}
                 className="w-full h-full min-h-[200px] text-left bg-white rounded-2xl border-2 border-dashed border-gray-300 p-5 hover:border-blue-400 hover:bg-blue-50/30 transition-all group flex flex-col items-center justify-center gap-3"
               >
                 <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center group-hover:bg-blue-200 transition">

@@ -135,6 +135,11 @@ export default function Onboarding() {
           return;
         }
 
+        console.log('[Onboarding] Creating application:', {
+          visaType: visaType === 'unsure' ? 'spouse' : visaType,
+          nationality, urgency,
+        });
+
         const response = await fetch('/api/applications', {
           method: 'POST',
           headers: {
@@ -155,14 +160,16 @@ export default function Onboarding() {
           }),
         });
 
-        if (response.ok) {
-          const { application } = await response.json();
-          // Redirect to dashboard with the new application ID
-          router.push(`/dashboard?app=${application.id}`);
+        const responseData = await response.json();
+        console.log('[Onboarding] API response:', response.status, responseData);
+
+        if (response.ok && responseData.application) {
+          // Redirect to applications hub to see the new application
+          router.push('/applications');
         } else {
-          // Fallback to old behavior if API fails
-          console.error('[Onboarding] Failed to create application, falling back');
-          router.push('/dashboard');
+          console.error('[Onboarding] Failed to create application:', responseData);
+          // Still redirect to applications hub
+          router.push('/applications');
         }
       } catch (err) {
         console.error('[Onboarding] Error creating application:', err);
