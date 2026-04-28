@@ -15,7 +15,7 @@ const supabaseAdmin = createClient(
 );
 
 export async function GET(
-  req: NextRequest,
+  _req: NextRequest,
   { params }: { params: { documentId: string } }
 ): Promise<NextResponse<DocumentStatusResponse | { error: string }>> {
   const { documentId } = params;

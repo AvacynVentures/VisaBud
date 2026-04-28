@@ -53,7 +53,7 @@ export async function GET(req: NextRequest) {
     }
 
     // Transform to frontend-friendly format
-    const documents = (docs || []).map((doc) => ({
+    const documents = (docs || []).map((doc: Record<string, any>) => ({
       id: doc.id,
       checklistItemId: doc.checklist_item_id,
       fileName: doc.file_name,

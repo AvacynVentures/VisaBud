@@ -143,14 +143,14 @@ export async function POST(req: NextRequest): Promise<NextResponse<UploadRespons
         .from('document_uploads')
         .update({ replaced_by: doc.id })
         .eq('id', existing.id)
-        .catch((err) => console.warn('[upload] Failed to mark replaced:', err));
+        .catch((err: unknown) => console.warn('[upload] Failed to mark replaced:', err));
 
       // Clean up old file from storage (best effort)
       if (existing.file_path) {
         await supabaseAdmin.storage
           .from('documents')
           .remove([existing.file_path])
-          .catch(() => {});
+          .catch((_err: unknown) => {});
       }
     }
 

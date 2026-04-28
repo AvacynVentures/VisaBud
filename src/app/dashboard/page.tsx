@@ -51,7 +51,7 @@ import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import PaywallModal from '@/components/PaywallModal';
 import PaymentSuccessBanner from '@/components/PaymentSuccessBanner';
-import DocumentUpload from '@/components/DocumentUpload';
+import DocumentUploadV3 from '@/components/DocumentUploadV3';
 import TierFeatureButtons from '@/components/TierFeatureButtons';
 import AIReportModal from '@/components/AIReportModal';
 import TemplatesGallery from '@/components/TemplatesGallery';
@@ -650,6 +650,38 @@ function FullDashboard({
     if (unlocked) setActiveTab('checklist');
   }, [unlocked]);
 
+  // ── Server-side document state ──────────────────────────────────────────
+  const [serverDocs, setServerDocs] = useState<Record<string, any>>({});
+
+  useEffect(() => {
+    async function loadDocuments() {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.access_token) return;
+
+        const response = await fetch('/api/documents/my', {
+          headers: { 'Authorization': `Bearer ${session.access_token}` },
+        });
+
+        if (!response.ok) return;
+
+        const { documents } = await response.json();
+        if (!Array.isArray(documents)) return;
+
+        // Index by checklistItemId for easy lookup
+        const docMap: Record<string, any> = {};
+        for (const doc of documents) {
+          docMap[doc.checklistItemId] = doc;
+        }
+        setServerDocs(docMap);
+      } catch (err) {
+        console.warn('[Dashboard] Failed to load documents:', err);
+      }
+    }
+
+    loadDocuments();
+  }, []);
+
   const [checkedDocs, setCheckedDocs] = useState<Record<string, boolean>>(() => {
     if (typeof window !== 'undefined') {
       try {
@@ -862,6 +894,7 @@ function FullDashboard({
                   progressPct={progressPct}
                   unlocked={unlocked}
                   onUnlock={() => setShowPaywall(true)}
+                  serverDocs={serverDocs}
                 />
               )}
               {activeTab === 'timeline' && (
@@ -952,6 +985,7 @@ function ChecklistTab({
   progressPct,
   unlocked,
   onUnlock,
+  serverDocs = {},
 }: {
   grouped: Record<Priority, ChecklistItem[]>;
   byCategory: Record<DocumentCategory, ChecklistItem[]>;
@@ -962,6 +996,7 @@ function ChecklistTab({
   progressPct: number;
   unlocked: boolean;
   onUnlock: () => void;
+  serverDocs?: Record<string, any>;
 }) {
   const { documentUploads, documentReports, visaType: storeVisaType, annualIncomeRange: storeIncome, employmentStatus: storeEmployment } = useApplicationStore();
   const verifiedCount = Object.values(documentUploads).filter((u) => u.status === 'valid').length;
@@ -1064,7 +1099,7 @@ function ChecklistTab({
               </div>
               <div className="divide-y divide-gray-50">
                 {items.map((item) => (
-                  <ChecklistItemRow key={item.id} item={item} checked={!!checkedDocs[item.id]} onToggle={() => toggleDoc(item.id)} unlocked={unlocked} notApplicableReason={getItemNotApplicableReason(item.id, storeVisaType, storeIncome, storeEmployment)} />
+                  <ChecklistItemRow key={item.id} item={item} checked={!!checkedDocs[item.id]} onToggle={() => toggleDoc(item.id)} unlocked={unlocked} notApplicableReason={getItemNotApplicableReason(item.id, storeVisaType, storeIncome, storeEmployment)} serverDoc={serverDocs[item.id] || null} onShowPaywall={onUnlock} />
                 ))}
               </div>
             </motion.div>
@@ -1097,7 +1132,7 @@ function ChecklistTab({
         </div>
         <div className="divide-y divide-gray-50">
           {personalTeaser.map((item) => (
-            <ChecklistItemRow key={item.id} item={item} checked={!!checkedDocs[item.id]} onToggle={() => toggleDoc(item.id)} unlocked={unlocked} notApplicableReason={getItemNotApplicableReason(item.id, storeVisaType, storeIncome, storeEmployment)} />
+            <ChecklistItemRow key={item.id} item={item} checked={!!checkedDocs[item.id]} onToggle={() => toggleDoc(item.id)} unlocked={unlocked} notApplicableReason={getItemNotApplicableReason(item.id, storeVisaType, storeIncome, storeEmployment)} serverDoc={serverDocs[item.id] || null} onShowPaywall={onUnlock} />
           ))}
           {personalLockedCount > 0 && (
             <div className="px-5 sm:px-6 py-3 bg-amber-50/50 text-sm text-amber-700 flex items-center gap-2">
@@ -1210,12 +1245,12 @@ function ProgressCard({ checkedCount, total, progressPct, verifiedCount }: { che
   );
 }
 
-function ChecklistItemRow({ item, checked, onToggle, unlocked = false, notApplicableReason = null }: { item: ChecklistItem; checked: boolean; onToggle: () => void; unlocked?: boolean; notApplicableReason?: string | null }) {
+function ChecklistItemRow({ item, checked, onToggle, unlocked = false, notApplicableReason = null, serverDoc = null, onShowPaywall }: { item: ChecklistItem; checked: boolean; onToggle: () => void; unlocked?: boolean; notApplicableReason?: string | null; serverDoc?: any; onShowPaywall?: () => void }) {
   const [justChecked, setJustChecked] = useState(false);
   const [showAIModal, setShowAIModal] = useState(false);
-  const [isAILoading, setIsAILoading] = useState(false);
+  const [_isAILoading, _setIsAILoading] = useState(false);
 
-  const { documentUploads, documentReports, setDocumentReport, purchasedTier, visaType } = useApplicationStore();
+  const { documentReports, setDocumentReport, purchasedTier } = useApplicationStore();
 
   // If item is not applicable, render a muted version
   if (notApplicableReason) {
@@ -1238,10 +1273,7 @@ function ChecklistItemRow({ item, checked, onToggle, unlocked = false, notApplic
       </div>
     );
   }
-  const upload = documentUploads[item.id];
   const report = documentReports[item.id] || null;
-  const hasFileData = !!upload?.fileData;
-  const isPremiumPlus = purchasedTier === 'premium';
 
   // Template handling is done via GetTemplateButton component using getTemplateForItem()
 
@@ -1253,109 +1285,11 @@ function ChecklistItemRow({ item, checked, onToggle, unlocked = false, notApplic
     onToggle();
   }, [checked, onToggle]);
 
-  // Confidence KPI display
-  const getConfidenceDisplay = () => {
-    if (!isPremiumPlus) {
-      return { text: '🔒', className: 'text-gray-400 cursor-not-allowed', clickable: false };
-    }
-    if (!report) {
-      return { text: 'Not assessed', className: 'text-gray-400 hover:text-gray-600 cursor-pointer', clickable: true };
-    }
-    const score = report.confidence;
-    if (score >= 70) return { text: `${score}% 🟢`, className: 'text-emerald-600 hover:text-emerald-700 cursor-pointer font-semibold', clickable: true };
-    if (score >= 40) return { text: `${score}% 🟡`, className: 'text-amber-600 hover:text-amber-700 cursor-pointer font-semibold', clickable: true };
-    return { text: `${score}% 🔴`, className: 'text-red-600 hover:text-red-700 cursor-pointer font-semibold', clickable: true };
-  };
-
-  const confidenceDisplay = getConfidenceDisplay();
-
-  // AI Ready Check handler
-  const handleAIReadyCheck = async (forceNew = false) => {
-    if (!isPremiumPlus) return;
-    if (!hasFileData && !report) return;
-
-    // If report exists and not forcing new, show cached
-    if (report && !forceNew) {
+  // AI Ready Check handler (legacy — now handled by DocumentUploadV3)
+  const handleAIReadyCheck = (_forceNew = false) => {
+    if (report) {
       setShowAIModal(true);
-      return;
     }
-
-    // Generate new report
-    setShowAIModal(true);
-    setIsAILoading(true);
-
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) {
-        throw new Error('Not authenticated');
-      }
-
-      const response = await fetch('/api/ai-confidence', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({
-          image: upload?.fileData,
-          requirement: `${item.title}: ${item.description}`,
-          mimeType: upload?.mimeType || 'image/jpeg',
-          docTitle: item.title,
-          visaType: visaType || 'spouse',
-        }),
-      });
-
-      if (!response.ok) {
-        const errData = await response.json().catch(() => ({}));
-        throw new Error(errData.error || `API error: ${response.status}`);
-      }
-
-      const result = await response.json();
-
-      // Transform API response to AIReportData format
-      const reportData: AIReportData = {
-        documentId: item.id,
-        documentName: item.title,
-        confidence: result.confidence,
-        flags: Array.isArray(result.flags)
-          ? result.flags.map((f: string | { text: string; severity: string }) =>
-              typeof f === 'string' ? { text: f, severity: 'medium' } : f
-            )
-          : [],
-        swot: result.swot || { strengths: [], weaknesses: [], opportunities: [], threats: [] },
-        recommendations: Array.isArray(result.recommendations)
-          ? result.recommendations.map((r: string | { step: string; description: string }) =>
-              typeof r === 'string' ? { step: '', description: r } : r
-            )
-          : [],
-        generatedAt: new Date().toISOString(),
-        version: report ? report.version + 1 : 1,
-      };
-
-      setDocumentReport(item.id, reportData);
-    } catch (err) {
-      console.error('AI confidence check failed:', err);
-    } finally {
-      setIsAILoading(false);
-    }
-  };
-
-  // Document download handler
-  const handleDocumentDownload = () => {
-    if (!upload?.fileData) return;
-    const data = upload.fileData;
-    const mime = upload.mimeType || 'application/octet-stream';
-    const name = upload.fileName || 'document';
-    const byteChars = atob(data);
-    const byteNums = new Array(byteChars.length);
-    for (let i = 0; i < byteChars.length; i++) byteNums[i] = byteChars.charCodeAt(i);
-    const blob = new Blob([new Uint8Array(byteNums)], { type: mime });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = name;
-    a.click();
-    URL.revokeObjectURL(url);
   };
 
   return (
@@ -1420,68 +1354,52 @@ function ChecklistItemRow({ item, checked, onToggle, unlocked = false, notApplic
             </a>
           )}
 
-          {/* Confidence KPI — Premium+ */}
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              if (confidenceDisplay.clickable) {
-                if (report) {
-                  setShowAIModal(true);
-                } else if (hasFileData) {
-                  handleAIReadyCheck();
-                }
-              }
-            }}
-            disabled={!confidenceDisplay.clickable}
-            className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg border transition-colors ${
-              confidenceDisplay.clickable
-                ? 'border-gray-200 hover:bg-gray-50'
-                : 'border-gray-100 bg-gray-50 cursor-not-allowed'
-            } ${confidenceDisplay.className}`}
-          >
-            <Sparkles className="w-3 h-3" />
-            {confidenceDisplay.text}
-          </button>
-
-          {/* AI Ready Check — Premium+ */}
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              if (isPremiumPlus) handleAIReadyCheck();
-            }}
-            disabled={!isPremiumPlus || (!hasFileData && !report)}
-            className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
-              isPremiumPlus && (hasFileData || report)
-                ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200'
-                : !isPremiumPlus
-                ? 'bg-amber-50 text-amber-700 border border-amber-200 cursor-not-allowed'
-                : 'bg-gray-50 text-gray-400 border border-gray-100 cursor-not-allowed'
-            }`}
-            title={!isPremiumPlus ? 'Premium: AI document analysis' : !hasFileData && !report ? 'Upload a document first' : 'Run AI analysis'}
-          >
-            <ShieldCheck className="w-3 h-3" />
-            AI Ready Check
-            {!isPremiumPlus && <Lock className="w-2.5 h-2.5" />}
-          </button>
-
-          {/* Download — visible if document uploaded */}
-          {hasFileData && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleDocumentDownload();
-              }}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 hover:text-gray-800 bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-200 transition-colors"
-            >
-              <Download className="w-3 h-3" />
-              Download
-            </button>
-          )}
         </div>
 
-        {/* Document Upload */}
+        {/* Document Upload + AI Check (V3 — handles upload, download, AI check all in one) */}
         <div className="ml-9 mt-2">
-          <DocumentUpload docId={item.id} requirement={`${item.title}: ${item.description}`} locked={!unlocked} />
+          <DocumentUploadV3
+            checklistItemId={item.id}
+            requirement={`${item.title}: ${item.description}`}
+            locked={!unlocked}
+            isPremium={purchasedTier === 'premium'}
+            onUpgradeClick={onShowPaywall}
+            serverDoc={serverDoc ? {
+              id: serverDoc.id,
+              fileName: serverDoc.fileName,
+              downloadUrl: serverDoc.downloadUrl || `/api/documents/${serverDoc.id}/download`,
+              aiStatus: serverDoc.aiStatus || 'none',
+              confidenceScore: serverDoc.confidenceScore,
+              scoringFeedback: serverDoc.scoringFeedback,
+              classificationFeedback: serverDoc.classificationFeedback,
+              isDocument: serverDoc.isDocument,
+            } : null}
+            onAIComplete={(result) => {
+              // Bridge to existing AI report modal system
+              if (result.confidenceScore !== null && result.checklistItems) {
+                const reportData: AIReportData = {
+                  documentId: item.id,
+                  documentName: item.title,
+                  confidence: result.confidenceScore,
+                  flags: (result.flags || []).map((f) =>
+                    typeof f === 'string' ? { text: f, severity: 'medium' } : f
+                  ),
+                  swot: {
+                    strengths: (result.checklistItems || []).filter((i) => i.met).map((i) => `${i.requirement}: ${i.evidence}`),
+                    weaknesses: (result.checklistItems || []).filter((i) => !i.met).map((i) => `${i.requirement}: ${i.evidence}`),
+                    opportunities: result.recommendations || [],
+                    threats: (result.criticalMissing || []).map((c) => `Critical: ${c}`),
+                  },
+                  recommendations: (result.recommendations || []).map((r) =>
+                    typeof r === 'string' ? { step: '', description: r } : r
+                  ),
+                  generatedAt: new Date().toISOString(),
+                  version: report ? report.version + 1 : 1,
+                };
+                setDocumentReport(item.id, reportData);
+              }
+            }}
+          />
         </div>
       </div>
 
@@ -1492,7 +1410,7 @@ function ChecklistItemRow({ item, checked, onToggle, unlocked = false, notApplic
         report={report}
         documentId={item.id}
         documentName={item.title}
-        isLoading={isAILoading}
+        isLoading={false}
         onGenerateNew={() => handleAIReadyCheck(true)}
         onViewFullReport={() => {
           setShowAIModal(false);

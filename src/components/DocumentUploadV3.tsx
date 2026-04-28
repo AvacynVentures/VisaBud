@@ -4,7 +4,6 @@ import { useRef, useState, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Upload,
-  CheckCircle,
   AlertTriangle,
   Loader2,
   RefreshCw,
@@ -18,9 +17,7 @@ import {
 import { supabase } from '@/lib/supabase';
 import type {
   AIStatus,
-  DocumentState,
   DocumentStatusResponse,
-  EMPTY_DOCUMENT_STATE,
 } from '@/lib/document-upload-types';
 import { ConfettiBurst } from '@/lib/animations';
 
@@ -55,7 +52,7 @@ const MAX_POLL_ATTEMPTS = 120; // 4 minutes
 
 export default function DocumentUploadV3({
   checklistItemId,
-  requirement,
+  requirement: _requirement,
   locked = false,
   isPremium = false,
   onUpgradeClick,
@@ -66,7 +63,7 @@ export default function DocumentUploadV3({
   const pollRef = useRef<NodeJS.Timeout | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
-  const [pollCount, setPollCount] = useState(0);
+  const [_pollCount, setPollCount] = useState(0);
 
   // Local state (merges server state with upload progress)
   const [uploadState, setUploadState] = useState<'idle' | 'uploading' | 'error'>('idle');
@@ -85,7 +82,7 @@ export default function DocumentUploadV3({
 
   const hasSavedFile = !!uploadId;
   const isAIRunning = aiStatus === 'queued' || aiStatus === 'classifying' || aiStatus === 'analyzing';
-  const isAIDone = aiStatus === 'complete' || aiStatus === 'failed';
+  // const isAIDone = aiStatus === 'complete' || aiStatus === 'failed';
 
   // Sync server doc changes
   useEffect(() => {
