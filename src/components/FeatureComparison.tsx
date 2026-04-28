@@ -30,8 +30,8 @@ export default function FeatureComparison() {
         <thead>
           <tr className="border-b border-gray-200">
             <th className="text-left py-2 px-3 text-gray-500 font-medium">Feature</th>
-            <th className="text-center py-2 px-2 text-blue-700 font-semibold">Standard<br /><span className="font-normal text-gray-400">£50</span></th>
-            <th className="text-center py-2 px-2 text-emerald-700 font-semibold">Premium<br /><span className="font-normal text-gray-400">£149</span></th>
+            <th className="text-center py-2 px-2 text-blue-700 font-semibold">Standard<br /><span className="font-normal text-gray-400">£9.99</span></th>
+            <th className="text-center py-2 px-2 text-emerald-700 font-semibold">Premium<br /><span className="font-normal text-gray-400">£79.99</span></th>
           </tr>
         </thead>
         <tbody>
