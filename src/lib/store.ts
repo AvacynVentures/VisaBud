@@ -3,7 +3,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import { Application, VisaType, RelationshipStatus, IncomeRange, Urgency } from './types';
 
 // Document upload tracking
-export type UploadStatus = 'idle' | 'uploading' | 'validating' | 'valid' | 'invalid' | 'error';
+export type UploadStatus = 'idle' | 'uploading' | 'pending' | 'validating' | 'valid' | 'invalid' | 'error';
 
 export interface DocumentUploadState {
   status: UploadStatus;
