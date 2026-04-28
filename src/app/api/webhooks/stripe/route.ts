@@ -160,6 +160,9 @@ async function handleCheckoutSessionCompleted(session: any) {
     const email = session.customer_email;
     const productType = session.metadata?.productType;
     const tier = session.metadata?.tier;
+    const applicationId = session.metadata?.applicationId;
+
+    console.log(`[webhook] checkout.session.completed — userId=${authUserId}, tier=${tier}, productType=${productType}, applicationId=${applicationId || 'NONE'}, amount=${session.amount_total}`);
 
     if (!authUserId) {
       console.error('No userId in session metadata');
