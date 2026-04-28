@@ -23,7 +23,7 @@ export default function PaymentSuccessBanner({ onDismiss }: { onDismiss?: () => 
   const tierInfo: Record<string, { name: string; price: string; features: string[] }> = {
     standard: {
       name: 'Standard Pack',
-      price: '£50',
+      price: '£9.99',
       features: [
         'Personalised document checklist',
         'Step-by-step submission timeline',
@@ -33,7 +33,7 @@ export default function PaymentSuccessBanner({ onDismiss }: { onDismiss?: () => 
     },
     premium: {
       name: 'Premium Pack',
-      price: '£149',
+      price: '£79.99',
       features: [
         'AI document verification & scoring',
         'Downloadable preparation templates',

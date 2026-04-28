@@ -2061,7 +2061,7 @@ function SubmitTab({
             🔥 Early access pricing — locked in
           </div>
           <p className="text-sm text-gray-600 mb-2">Starting from</p>
-          <p className="text-5xl font-bold text-blue-900 mb-1">£50</p>
+          <p className="text-5xl font-bold text-blue-900 mb-1">£9.99</p>
           <p className="text-sm text-gray-500 mb-2">One-time payment. No subscription. Yours forever.</p>
           <p className="text-xs text-gray-400 mb-6">💬 1,000+ applicants have already unlocked their plans</p>
           <button

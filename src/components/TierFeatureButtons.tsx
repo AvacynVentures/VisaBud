@@ -63,7 +63,7 @@ const TIER_RANK: Record<PurchasedTier, number> = {
 };
 
 const TIER_LABELS: Record<string, string> = {
-  premium: 'Premium (£149)',
+  premium: 'Premium (£79.99)',
 };
 
 function isUnlocked(userTier: PurchasedTier, requiredTier: 'premium'): boolean {
