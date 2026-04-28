@@ -96,6 +96,7 @@ export default function Onboarding() {
 
   const { user } = useAuth();
   const [direction, setDirection] = useState(1);
+  const [applicationName, setApplicationName] = useState('');
 
   const [hydrated, setHydrated] = useState(false);
   useEffect(() => { setHydrated(true); }, []);
@@ -155,14 +156,7 @@ export default function Onboarding() {
             annualIncomeRange,
             employmentStatus,
             urgency,
-            // Auto-generate name from user email + visa type
-            name: user?.email
-              ? `${user.email.split('@')[0]} — ${
-                  visaType === 'spouse' ? 'Spouse Visa' :
-                  visaType === 'skilled_worker' ? 'Skilled Worker Visa' :
-                  visaType === 'citizenship' ? 'British Citizenship' : 'Visa Application'
-                }`
-              : undefined,
+            name: applicationName.trim() || undefined,
           }),
         });
 
@@ -573,6 +567,34 @@ export default function Onboarding() {
                           )}
                         </motion.button>
                       ))}
+
+                      {/* Application name input */}
+                      {urgency && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 8 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.2, duration: 0.2 }}
+                          className="mt-6 pt-5 border-t border-gray-100"
+                        >
+                          <label className="block text-sm font-semibold text-gray-800 mb-2">
+                            📝 Name this application
+                          </label>
+                          <p className="text-xs text-gray-500 mb-3">
+                            Helps you identify it later — especially if you have multiple applications.
+                          </p>
+                          <input
+                            type="text"
+                            value={applicationName}
+                            onChange={(e) => setApplicationName(e.target.value)}
+                            placeholder={`e.g. ${user?.email?.split('@')[0] || 'Your name'} — ${
+                              visaType === 'spouse' ? 'Spouse Visa' :
+                              visaType === 'skilled_worker' ? 'Skilled Worker Visa' :
+                              visaType === 'citizenship' ? 'British Citizenship' : 'Visa Application'
+                            }`}
+                            className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none text-sm transition-all"
+                          />
+                        </motion.div>
+                      )}
                     </div>
                   )}
 
