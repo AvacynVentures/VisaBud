@@ -13,6 +13,8 @@ import {
   Download,
   ShieldCheck,
   Sparkles,
+  ClipboardList,
+  FileDown,
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import type {
@@ -41,6 +43,8 @@ interface DocumentUploadV3Props {
     isDocument: boolean | null;
   } | null;
   onAIComplete?: (result: DocumentStatusResponse) => void;
+  onViewReport?: () => void;
+  onDownloadReport?: () => void;
 }
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
@@ -58,6 +62,8 @@ export default function DocumentUploadV3({
   onUpgradeClick,
   serverDoc,
   onAIComplete,
+  onViewReport,
+  onDownloadReport,
 }: DocumentUploadV3Props) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const pollRef = useRef<NodeJS.Timeout | null>(null);
@@ -565,6 +571,26 @@ export default function DocumentUploadV3({
                   <Lock className="w-3 h-3" />
                   <Sparkles className="w-3 h-3" />
                   AI Ready Check
+                </button>
+              )}
+
+              {/* View Report — only when AI complete */}
+              {aiStatus === 'complete' && confidenceScore !== null && onViewReport && (
+                <button
+                  onClick={onViewReport}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-indigo-700 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 rounded-lg border border-indigo-200 transition"
+                >
+                  <ClipboardList className="w-3 h-3" /> View Report
+                </button>
+              )}
+
+              {/* Download Report PDF — only when AI complete */}
+              {aiStatus === 'complete' && confidenceScore !== null && onDownloadReport && (
+                <button
+                  onClick={onDownloadReport}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 hover:text-gray-800 bg-white hover:bg-gray-100 rounded-lg border border-gray-200 transition"
+                >
+                  <FileDown className="w-3 h-3" /> Download Report
                 </button>
               )}
             </div>

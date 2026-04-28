@@ -1374,6 +1374,30 @@ function ChecklistItemRow({ item, checked, onToggle, unlocked = false, notApplic
               classificationFeedback: serverDoc.classificationFeedback,
               isDocument: serverDoc.isDocument,
             } : null}
+            onViewReport={() => {
+              if (report) {
+                setShowAIModal(true);
+              } else {
+                // Navigate to full report page
+                window.location.href = `/dashboard/${item.id}/ai-report`;
+              }
+            }}
+            onDownloadReport={() => {
+              if (report) {
+                // Use existing PDF export
+                import('@/lib/pdf-ai-report').then(({ generateAIReportPDF, downloadAIReportPDF }) => {
+                  const blob = generateAIReportPDF({
+                    documentName: report.documentName,
+                    confidence: report.confidence,
+                    flags: report.flags,
+                    swot: report.swot,
+                    recommendations: report.recommendations,
+                    generatedAt: report.generatedAt,
+                  });
+                  downloadAIReportPDF(report.documentName, blob);
+                });
+              }
+            }}
             onAIComplete={(result) => {
               // Bridge to existing AI report modal system
               if (result.confidenceScore !== null && result.checklistItems) {
