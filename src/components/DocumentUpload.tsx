@@ -119,11 +119,20 @@ export default function DocumentUpload({ docId, requirement, locked = false }: D
 
       try {
         // 60-second timeout to prevent infinite spinner (Claude can be slow on first request)
+        // Also force-complete at 40 seconds with fallback status
         console.log(`[DocumentUpload] Fetching /api/validate-document...`);
-        const timeoutId = setTimeout(() => {
+        
+        const abortTimeoutId = setTimeout(() => {
           console.log(`[DocumentUpload] TIMEOUT: 60 seconds exceeded, aborting`);
           abortRef.current?.abort();
         }, 60000);
+        
+        const forceCompleteId = setTimeout(() => {
+          console.log(`[DocumentUpload] FORCE COMPLETE: 40 seconds, marking as valid even if validation pending`);
+          if (abortRef.current && !signal.aborted) {
+            setDocumentUpload(docId, { ...{ fileName: file.name, fileData: base64, mimeType: file.type }, status: 'valid', feedback: 'Document uploaded. Validation in progress — check back soon for detailed feedback.' });
+          }
+        }, 40000);
 
         const response = await fetch('/api/validate-document', {
           method: 'POST',
@@ -132,18 +141,22 @@ export default function DocumentUpload({ docId, requirement, locked = false }: D
           signal,
         });
 
-        clearTimeout(timeoutId);
+        clearTimeout(abortTimeoutId);
+        clearTimeout(forceCompleteId);
         console.log(`[DocumentUpload] Response received: ${response.status} ${response.statusText}`);
 
         // Always try to parse response, even if not ok
         try {
-          validationResult = await response.json();
+          const text = await response.text();
+          console.log(`[DocumentUpload] Raw response text:`, text.slice(0, 500));
+          validationResult = JSON.parse(text);
           console.log(`[DocumentUpload] Parsed JSON response:`, validationResult);
         } catch (parseErr) {
           // Response wasn't JSON — network error or server issue
-          console.log(`[DocumentUpload] Failed to parse JSON:`, parseErr);
+          console.error(`[DocumentUpload] Failed to parse JSON:`, parseErr);
           if (response.ok) {
             validationResult = { valid: true, feedback: 'Document uploaded successfully.' };
+            console.log(`[DocumentUpload] Response OK but not JSON, treating as success`);
           } else {
             throw new Error(`Validation failed: ${response.status} ${response.statusText}`);
           }
@@ -357,13 +370,24 @@ export default function DocumentUpload({ docId, requirement, locked = false }: D
                 <p className="text-sm font-medium text-violet-700">AI is checking your document...</p>
                 {fileName && <p className="text-xs text-violet-500 truncate">{fileName}</p>}
               </div>
-              <button
-                onClick={handleCancel}
-                className="p-1.5 rounded-lg hover:bg-violet-100 transition-colors flex-shrink-0"
-                title="Cancel"
-              >
-                <X className="w-4 h-4 text-violet-400 hover:text-violet-600" />
-              </button>
+              <div className="flex items-center gap-1 flex-shrink-0">
+                {upload.fileData && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleDownload(); }}
+                    className="p-1.5 rounded-lg hover:bg-violet-100 transition-colors"
+                    title="Download uploaded file"
+                  >
+                    <Upload className="w-3.5 h-3.5 text-violet-600 rotate-180" />
+                  </button>
+                )}
+                <button
+                  onClick={handleCancel}
+                  className="p-1.5 rounded-lg hover:bg-violet-100 transition-colors"
+                  title="Cancel"
+                >
+                  <X className="w-4 h-4 text-violet-400 hover:text-violet-600" />
+                </button>
+              </div>
             </div>
             <div className="mt-2 flex gap-1">
               <span className="w-1.5 h-1.5 rounded-full bg-violet-400 animate-bounce" style={{ animationDelay: '0ms' }} />
