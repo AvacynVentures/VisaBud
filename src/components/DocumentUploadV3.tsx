@@ -501,11 +501,18 @@ export default function DocumentUploadV3({
 
             {/* File info row */}
             <div className="flex items-center gap-3">
-              <FileText className="w-5 h-5 text-gray-500 flex-shrink-0" />
+              <FileText className="w-5 h-5 text-blue-600 flex-shrink-0" />
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-gray-900 truncate">{fileName}</p>
+                {/* Filename — always prominent */}
+                <p className="text-sm font-semibold text-gray-900 truncate">
+                  📎 {fileName || 'Document'}
+                </p>
 
-                {/* AI Status line */}
+                {/* Status line */}
+                {aiStatus === 'none' && (
+                  <p className="text-xs text-emerald-600 font-medium mt-1">✅ Uploaded & saved</p>
+                )}
+
                 {isAIRunning && (
                   <div className="flex items-center gap-2 mt-1">
                     <Loader2 className="w-3 h-3 text-violet-600 animate-spin" />
@@ -513,7 +520,6 @@ export default function DocumentUploadV3({
                   </div>
                 )}
 
-                {/* AI Complete: Confidence score */}
                 {aiStatus === 'complete' && confidenceScore !== null && isDocument !== false && (
                   <div className="flex items-center gap-2 mt-1">
                     <span className={`text-xs font-bold ${getConfidenceColor(confidenceScore).text}`}>
@@ -522,55 +528,43 @@ export default function DocumentUploadV3({
                   </div>
                 )}
 
-                {/* AI Complete: Not a document */}
                 {aiStatus === 'complete' && isDocument === false && (
                   <p className="text-xs text-red-700 mt-1 font-medium">
                     ❌ This doesn't appear to be a valid document
                   </p>
                 )}
 
-                {/* AI Failed */}
                 {aiStatus === 'failed' && (
                   <p className="text-xs text-amber-700 mt-1">
                     ⚠️ {aiFeedback || 'Analysis failed. Document is saved.'}
                   </p>
                 )}
 
-                {/* AI feedback summary */}
                 {aiStatus === 'complete' && aiFeedback && isDocument !== false && (
                   <p className="text-xs text-gray-600 mt-1 line-clamp-2">{aiFeedback}</p>
                 )}
-
-                {/* No AI yet — prompt */}
-                {aiStatus === 'none' && (
-                  <p className="text-xs text-gray-500 mt-1">✅ Saved</p>
-                )}
               </div>
 
-              {/* Action buttons */}
-              <div className="flex items-center gap-1 flex-shrink-0">
-                {/* Download */}
-                <button
-                  onClick={handleDownload}
-                  className="p-2 rounded-lg hover:bg-gray-200/50 transition-colors"
-                  title="Download"
-                >
-                  <Download className="w-4 h-4 text-gray-500" />
-                </button>
-
-                {/* Remove */}
-                <button
-                  onClick={handleRemove}
-                  className="p-2 rounded-lg hover:bg-gray-200/50 transition-colors"
-                  title="Remove"
-                >
-                  <X className="w-4 h-4 text-gray-400" />
-                </button>
-              </div>
+              {/* Remove button */}
+              <button
+                onClick={handleRemove}
+                className="p-2 rounded-lg hover:bg-gray-200/50 transition-colors flex-shrink-0"
+                title="Remove"
+              >
+                <X className="w-4 h-4 text-gray-400" />
+              </button>
             </div>
 
             {/* Action row */}
-            <div className="flex items-center gap-2 mt-3">
+            <div className="flex flex-wrap items-center gap-2 mt-3">
+              {/* Download button — always visible */}
+              <button
+                onClick={handleDownload}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-700 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 rounded-lg border border-blue-200 transition"
+              >
+                <Download className="w-3 h-3" /> Download
+              </button>
+
               {/* Replace button */}
               <button
                 onClick={() => fileInputRef.current?.click()}
