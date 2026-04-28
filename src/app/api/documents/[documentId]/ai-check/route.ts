@@ -106,13 +106,20 @@ export async function POST(
       );
     }
 
-    // 4. Don't re-run if already in progress
-    if (doc.ai_status === 'queued' || doc.ai_status === 'classifying' || doc.ai_status === 'analyzing') {
+    // 4. Check if genuinely in progress (requested within last 2 minutes)
+    const isInProgress = doc.ai_status === 'queued' || doc.ai_status === 'classifying' || doc.ai_status === 'analyzing';
+    const requestedAt = doc.ai_requested_at ? new Date(doc.ai_requested_at).getTime() : 0;
+    const isRecent = (Date.now() - requestedAt) < 2 * 60 * 1000; // 2 minutes
+
+    if (isInProgress && isRecent) {
+      // Genuinely running — don't re-trigger
+      console.log(`[ai-check] Already in progress for ${documentId} (${doc.ai_status}, ${Math.round((Date.now() - requestedAt) / 1000)}s ago)`);
       return NextResponse.json({
         success: true,
         statusUrl: `/api/documents/${documentId}/status`,
       });
     }
+    // If stale (>2 min) or not in progress, allow re-run
 
     // 5. Mark as queued
     await supabaseAdmin
