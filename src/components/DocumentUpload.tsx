@@ -11,13 +11,15 @@ import {
   FileText,
   X,
   Lock,
+  Download,
 } from 'lucide-react';
 import { useApplicationStore } from '@/lib/store';
 import { ConfettiBurst } from '@/lib/animations';
+import type { DocumentStatusResponse } from '@/lib/document-types';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
-export type UploadStatus = 'idle' | 'uploading' | 'validating' | 'valid' | 'invalid' | 'error';
+export type UploadStatus = 'idle' | 'uploading' | 'pending' | 'validating' | 'valid' | 'invalid' | 'error';
 
 interface DocumentUploadProps {
   docId: string;
@@ -30,6 +32,8 @@ interface DocumentUploadProps {
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'];
 const ACCEPTED_EXTENSIONS = '.jpg,.jpeg,.png,.pdf';
+const POLL_INTERVAL_MS = 2000;
+const MAX_POLL_ATTEMPTS = 90; // 90 × 2s = 3 minutes max polling
 
 // ─── Component ──────────────────────────────────────────────────────────────
 
@@ -37,16 +41,124 @@ export default function DocumentUpload({ docId, requirement, locked = false }: D
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
+  const pollTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const pollAttemptsRef = useRef(0);
 
   const { documentUploads, setDocumentUpload } = useApplicationStore();
 
-  const upload = documentUploads[docId] || { status: 'idle' as UploadStatus, feedback: null, fileName: null };
+  const upload = documentUploads[docId] || {
+    status: 'idle' as UploadStatus,
+    feedback: null,
+    fileName: null,
+    documentId: null,
+  };
   const status = upload.status;
   const feedback = upload.feedback;
   const fileName = upload.fileName;
 
-  // AbortController for cancellation (moved to ref level for better cleanup)
+  // AbortController for cancellation
   const abortRef = useRef<AbortController | null>(null);
+
+  // ─── Polling logic ──────────────────────────────────────────────────────
+
+  const stopPolling = useCallback(() => {
+    if (pollTimerRef.current) {
+      clearInterval(pollTimerRef.current);
+      pollTimerRef.current = null;
+    }
+    pollAttemptsRef.current = 0;
+  }, []);
+
+  const pollStatus = useCallback(async (documentId: string) => {
+    try {
+      const response = await fetch(`/api/documents/${documentId}/status`);
+      if (!response.ok) {
+        console.warn(`[DocumentUpload] Poll returned ${response.status}`);
+        return;
+      }
+
+      const data: DocumentStatusResponse = await response.json();
+      console.log(`[DocumentUpload] Poll result for ${docId}: ${data.status}`);
+
+      switch (data.status) {
+        case 'valid':
+          stopPolling();
+          setDocumentUpload(docId, {
+            ...upload,
+            status: 'valid',
+            feedback: data.feedback,
+            documentId,
+          });
+          break;
+
+        case 'invalid':
+          stopPolling();
+          setDocumentUpload(docId, {
+            ...upload,
+            status: 'invalid',
+            feedback: data.feedback,
+            documentId,
+          });
+          break;
+
+        case 'error':
+          stopPolling();
+          setDocumentUpload(docId, {
+            ...upload,
+            status: 'error',
+            feedback: data.feedback || 'Validation failed. Your document has been saved.',
+            documentId,
+          });
+          break;
+
+        // 'pending' or 'processing' — keep polling
+        default:
+          break;
+      }
+    } catch (err) {
+      console.warn(`[DocumentUpload] Poll error for ${docId}:`, err);
+      // Don't stop polling on network hiccup — it will retry
+    }
+  }, [docId, upload, setDocumentUpload, stopPolling]);
+
+  const startPolling = useCallback((documentId: string) => {
+    stopPolling();
+    pollAttemptsRef.current = 0;
+
+    pollTimerRef.current = setInterval(() => {
+      pollAttemptsRef.current += 1;
+
+      if (pollAttemptsRef.current > MAX_POLL_ATTEMPTS) {
+        stopPolling();
+        setDocumentUpload(docId, {
+          ...upload,
+          status: 'valid',
+          feedback: 'Document saved! AI validation is taking longer than expected — check back for detailed feedback.',
+          documentId,
+        });
+        return;
+      }
+
+      pollStatus(documentId);
+    }, POLL_INTERVAL_MS);
+
+    // Also poll immediately (don't wait 2s for first check)
+    pollStatus(documentId);
+  }, [docId, upload, setDocumentUpload, stopPolling, pollStatus]);
+
+  // Resume polling on mount if status is 'pending' with a documentId
+  useEffect(() => {
+    if ((status === 'pending' || status === 'validating') && upload.documentId) {
+      console.log(`[DocumentUpload] Resuming poll for ${docId} (documentId=${upload.documentId})`);
+      startPolling(upload.documentId);
+    }
+
+    return () => {
+      stopPolling();
+    };
+    // Only run on mount and when status/documentId changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status, upload.documentId]);
 
   // Trigger confetti on valid status
   useEffect(() => {
@@ -57,15 +169,15 @@ export default function DocumentUpload({ docId, requirement, locked = false }: D
     }
   }, [status]);
 
-  // Fix #3: Explicit cleanup on unmount
-  // Cancel any in-flight upload if component unmounts
+  // Cleanup on unmount
   useEffect(() => {
     return () => {
-      if (abortRef.current) {
-        abortRef.current.abort();
-      }
+      abortRef.current?.abort();
+      stopPolling();
     };
-  }, []);
+  }, [stopPolling]);
+
+  // ─── File validation ──────────────────────────────────────────────────
 
   const validateFile = (file: File): string | null => {
     if (!ACCEPTED_TYPES.includes(file.type)) return 'Please upload a JPG, PNG, or PDF file.';
@@ -86,11 +198,12 @@ export default function DocumentUpload({ docId, requirement, locked = false }: D
     });
   };
 
+  // ─── Upload handler (async — returns immediately) ─────────────────────
+
   const handleFile = useCallback(async (file: File) => {
-    console.log(`[DocumentUpload] Starting upload for ${docId}`, file.name);
+    console.log(`[DocumentUpload] Starting upload for ${docId}:`, file.name);
     const error = validateFile(file);
     if (error) {
-      console.log(`[DocumentUpload] Validation error: ${error}`);
       setDocumentUpload(docId, { status: 'error', feedback: error, fileName: file.name });
       return;
     }
@@ -100,123 +213,66 @@ export default function DocumentUpload({ docId, requirement, locked = false }: D
     abortRef.current = new AbortController();
     const signal = abortRef.current.signal;
 
-    console.log(`[DocumentUpload] Setting status to uploading`);
     setDocumentUpload(docId, { status: 'uploading', feedback: null, fileName: file.name });
 
     try {
-      console.log(`[DocumentUpload] Converting to base64...`);
+      // Convert to base64 for local download capability
       const base64 = await fileToBase64(file);
-      console.log(`[DocumentUpload] Base64 ready, length: ${base64.length}`);
 
-      if (signal.aborted) {
-        console.log(`[DocumentUpload] Aborted before validating`);
-        return;
-      }
-      console.log(`[DocumentUpload] Setting status to validating`);
-      setDocumentUpload(docId, { status: 'validating', feedback: null, fileName: file.name });
+      if (signal.aborted) return;
 
-      let validationResult: { valid: boolean; feedback: string } | null = null;
+      // Build FormData for server upload
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('docId', docId);
+      formData.append('requirement', requirement);
 
-      try {
-        // 60-second timeout to prevent infinite spinner (Claude can be slow on first request)
-        // Also force-complete at 40 seconds with fallback status
-        console.log(`[DocumentUpload] Fetching /api/validate-document...`);
-        
-        const abortTimeoutId = setTimeout(() => {
-          console.log(`[DocumentUpload] TIMEOUT: 60 seconds exceeded, aborting`);
-          abortRef.current?.abort();
-        }, 60000);
-        
-        const forceCompleteId = setTimeout(() => {
-          console.log(`[DocumentUpload] FORCE COMPLETE: 40 seconds, marking as valid even if validation pending`);
-          if (abortRef.current && !signal.aborted) {
-            setDocumentUpload(docId, { ...{ fileName: file.name, fileData: base64, mimeType: file.type }, status: 'valid', feedback: 'Document uploaded. Validation in progress — check back soon for detailed feedback.' });
-          }
-        }, 40000);
+      console.log(`[DocumentUpload] Uploading to /api/documents...`);
 
-        const response = await fetch('/api/validate-document', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ image: base64, requirement, mimeType: file.type }),
-          signal,
-        });
+      const response = await fetch('/api/documents', {
+        method: 'POST',
+        body: formData,
+        signal,
+      });
 
-        clearTimeout(abortTimeoutId);
-        clearTimeout(forceCompleteId);
-        console.log(`[DocumentUpload] Response received: ${response.status} ${response.statusText}`);
+      if (signal.aborted) return;
 
-        // Always try to parse response, even if not ok
-        try {
-          const text = await response.text();
-          console.log(`[DocumentUpload] Raw response text:`, text.slice(0, 500));
-          validationResult = JSON.parse(text);
-          console.log(`[DocumentUpload] Parsed JSON response:`, validationResult);
-        } catch (parseErr) {
-          // Response wasn't JSON — network error or server issue
-          console.error(`[DocumentUpload] Failed to parse JSON:`, parseErr);
-          if (response.ok) {
-            validationResult = { valid: true, feedback: 'Document uploaded successfully.' };
-            console.log(`[DocumentUpload] Response OK but not JSON, treating as success`);
-          } else {
-            throw new Error(`Validation failed: ${response.status} ${response.statusText}`);
-          }
-        }
-
-        // If response wasn't ok but we got JSON with error feedback, treat it as validation feedback
-        if (!response.ok && validationResult?.feedback) {
-          // Server returned error with guidance — show it to user
-          console.log(`[DocumentUpload] Server returned error but with feedback`);
-          validationResult.valid = false;
-        }
-      } catch (fetchErr: any) {
-        console.error(`[DocumentUpload] Fetch error:`, fetchErr);
-        if (fetchErr?.name === 'AbortError') {
-          // Check if user cancelled or timeout
-          if (signal.aborted) {
-            console.log(`[DocumentUpload] Request aborted, setting timeout error state`);
-            setDocumentUpload(docId, { status: 'error', feedback: 'Validation timed out after 60 seconds. Your document was saved — try again or upload a clearer copy.', fileName: file.name, fileData: base64, mimeType: file.type });
-            return;
-          }
-        }
-        // Network error or API unavailable — accept document anyway but note it
-        console.error('[DocumentUpload] Validation fetch error:', fetchErr);
+      if (!response.ok) {
+        const errorBody = await response.json().catch(() => ({ error: 'Upload failed' }));
+        throw new Error(
+          (errorBody as { error?: string }).error || `Upload failed: ${response.status}`
+        );
       }
 
-      if (signal.aborted) {
-        console.log(`[DocumentUpload] Aborted after fetch`);
-        return;
-      }
+      const result = await response.json() as { documentId: string; status: string; message: string };
+      console.log(`[DocumentUpload] Upload complete, documentId=${result.documentId}`);
 
-      // Store file data for download regardless of validation result
-      const baseUpload = { fileName: file.name, fileData: base64, mimeType: file.type };
+      // Move to pending state with download capability
+      setDocumentUpload(docId, {
+        status: 'pending',
+        feedback: null,
+        fileName: file.name,
+        fileData: base64,
+        mimeType: file.type,
+        documentId: result.documentId,
+      });
 
-      if (validationResult) {
-        if (validationResult.valid) {
-          console.log(`[DocumentUpload] Setting status to VALID`);
-          setDocumentUpload(docId, { ...baseUpload, status: 'valid', feedback: validationResult.feedback });
-        } else {
-          console.log(`[DocumentUpload] Setting status to INVALID`);
-          setDocumentUpload(docId, { ...baseUpload, status: 'invalid', feedback: validationResult.feedback });
-        }
-      } else {
-        // No AI available or network error — mark as uploaded/valid with note
-        console.log(`[DocumentUpload] No validation result, setting to VALID with fallback message`);
-        setDocumentUpload(docId, { ...baseUpload, status: 'valid', feedback: 'Document uploaded. AI validation unavailable — you can still use this document for your application.' });
-      }
+      // Start polling for validation result
+      startPolling(result.documentId);
     } catch (err) {
-      console.error(`[DocumentUpload] Outer catch error:`, err);
-      if (signal.aborted) {
-        console.log(`[DocumentUpload] Signal aborted in outer catch`);
-        return;
-      }
+      if (signal.aborted) return;
+
       const message = err instanceof Error ? err.message : 'Upload failed. Please try again.';
-      console.log(`[DocumentUpload] Setting status to ERROR: ${message}`);
+      console.error(`[DocumentUpload] Upload error:`, err);
       setDocumentUpload(docId, { status: 'error', feedback: message, fileName: file.name });
     }
-  }, [docId, requirement, setDocumentUpload]);
+  }, [docId, requirement, setDocumentUpload, startPolling]);
+
+  // ─── Action handlers ──────────────────────────────────────────────────
 
   const handleCancel = () => {
     abortRef.current?.abort();
+    stopPolling();
     setDocumentUpload(docId, { status: 'idle', feedback: null, fileName: null });
   };
 
@@ -240,12 +296,14 @@ export default function DocumentUpload({ docId, requirement, locked = false }: D
   };
 
   const handleRetry = () => {
+    stopPolling();
     setDocumentUpload(docId, { status: 'idle', feedback: null, fileName: null });
     fileInputRef.current?.click();
   };
 
   const handleReset = () => {
-    setDocumentUpload(docId, { status: 'idle', feedback: null, fileName: null, fileData: null, mimeType: null });
+    stopPolling();
+    setDocumentUpload(docId, { status: 'idle', feedback: null, fileName: null, fileData: null, mimeType: null, documentId: null });
   };
 
   const handleDownload = () => {
@@ -265,6 +323,8 @@ export default function DocumentUpload({ docId, requirement, locked = false }: D
     URL.revokeObjectURL(url);
   };
 
+  // ─── Locked state ─────────────────────────────────────────────────────
+
   if (locked) {
     return (
       <div className="mt-2 flex items-center gap-2 text-xs text-gray-400">
@@ -273,6 +333,8 @@ export default function DocumentUpload({ docId, requirement, locked = false }: D
       </div>
     );
   }
+
+  // ─── Render ───────────────────────────────────────────────────────────
 
   return (
     <div className="mt-3">
@@ -315,7 +377,7 @@ export default function DocumentUpload({ docId, requirement, locked = false }: D
           </motion.div>
         )}
 
-        {/* UPLOADING */}
+        {/* UPLOADING — fast, just saving to Supabase */}
         {status === 'uploading' && (
           <motion.div
             key="uploading"
@@ -330,7 +392,7 @@ export default function DocumentUpload({ docId, requirement, locked = false }: D
                 <Loader2 className="w-4 h-4 text-blue-600 animate-spin" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-blue-700">Uploading...</p>
+                <p className="text-sm font-medium text-blue-700">Saving document...</p>
                 {fileName && <p className="text-xs text-blue-500 truncate">{fileName}</p>}
               </div>
               <button
@@ -345,17 +407,17 @@ export default function DocumentUpload({ docId, requirement, locked = false }: D
               <motion.div
                 className="h-full bg-blue-500 rounded-full"
                 initial={{ width: '0%' }}
-                animate={{ width: '60%' }}
-                transition={{ duration: 1.5, ease: 'easeOut' }}
+                animate={{ width: '90%' }}
+                transition={{ duration: 2, ease: 'easeOut' }}
               />
             </div>
           </motion.div>
         )}
 
-        {/* VALIDATING */}
-        {status === 'validating' && (
+        {/* PENDING — Document saved, AI checking in background */}
+        {(status === 'pending' || status === 'validating') && (
           <motion.div
-            key="validating"
+            key="pending"
             initial={{ opacity: 0, y: 4 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
@@ -367,8 +429,14 @@ export default function DocumentUpload({ docId, requirement, locked = false }: D
                 <Loader2 className="w-4 h-4 text-violet-600 animate-spin" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-violet-700">AI is checking your document...</p>
-                {fileName && <p className="text-xs text-violet-500 truncate">{fileName}</p>}
+                <p className="text-sm font-medium text-violet-700">
+                  Saved! AI is checking your document...
+                </p>
+                {fileName && (
+                  <p className="text-xs text-violet-500 truncate flex items-center gap-1">
+                    <FileText className="w-3 h-3" />{fileName}
+                  </p>
+                )}
               </div>
               <div className="flex items-center gap-1 flex-shrink-0">
                 {upload.fileData && (
@@ -377,7 +445,7 @@ export default function DocumentUpload({ docId, requirement, locked = false }: D
                     className="p-1.5 rounded-lg hover:bg-violet-100 transition-colors"
                     title="Download uploaded file"
                   >
-                    <Upload className="w-3.5 h-3.5 text-violet-600 rotate-180" />
+                    <Download className="w-3.5 h-3.5 text-violet-600" />
                   </button>
                 )}
                 <button
@@ -433,7 +501,7 @@ export default function DocumentUpload({ docId, requirement, locked = false }: D
                     className="p-1.5 rounded-lg hover:bg-emerald-100 transition-colors"
                     title="Download"
                   >
-                    <Upload className="w-3.5 h-3.5 text-emerald-600 rotate-180" />
+                    <Download className="w-3.5 h-3.5 text-emerald-600" />
                   </button>
                 )}
                 <button

@@ -11,6 +11,7 @@ export interface DocumentUploadState {
   fileName: string | null;
   fileData?: string | null;    // base64 data for download
   mimeType?: string | null;    // file MIME type
+  documentId?: string | null;  // server-side validation ID for polling
 }
 
 export type PurchasedTier = 'none' | 'standard' | 'premium';
@@ -294,18 +295,23 @@ export const useApplicationStore = create<AppState>()(
         unlocked: state.unlocked,
         purchasedTier: state.purchasedTier,
         // Strip fileData from persisted uploads to avoid localStorage bloat
-        // Also reset transitional states (uploading/validating) to idle — these
-        // should never persist because there's no active request on rehydration
+        // Reset uploading/validating to idle (no active request on rehydration)
+        // Keep 'pending' — it has a server-side documentId we can resume polling
         documentUploads: Object.fromEntries(
-          Object.entries(state.documentUploads).map(([k, v]) => [
-            k,
-            {
-              status: (v.status === 'uploading' || v.status === 'validating') ? 'idle' : v.status,
-              feedback: (v.status === 'uploading' || v.status === 'validating') ? null : v.feedback,
-              fileName: (v.status === 'uploading' || v.status === 'validating') ? null : v.fileName,
-              mimeType: v.mimeType || null,
-            },
-          ])
+          Object.entries(state.documentUploads).map(([k, v]) => {
+            const isTransient = v.status === 'uploading' || v.status === 'validating';
+            return [
+              k,
+              {
+                status: isTransient ? 'idle' : v.status,
+                feedback: isTransient ? null : v.feedback,
+                fileName: isTransient ? null : v.fileName,
+                mimeType: v.mimeType || null,
+                // Persist documentId so polling can resume after page reload
+                documentId: v.documentId || null,
+              },
+            ];
+          })
         ),
         premiumReview: state.premiumReview,
         documentReports: state.documentReports,
