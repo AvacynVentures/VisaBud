@@ -8,7 +8,7 @@ import AuthGate from '@/components/AuthGate';
 import { useAuth } from '@/lib/auth-context';
 import { supabase } from '@/lib/supabase';
 import { useApplicationStore } from '@/lib/store';
-import { Plus, FileText, Sparkles, ArrowRight, Loader2 } from 'lucide-react';
+import { Plus, FileText, Sparkles, ArrowRight, Loader2, Pencil, Trash2, Check, X } from 'lucide-react';
 import { PageFadeIn } from '@/lib/animations';
 import type { ApplicationSummary } from '@/lib/application-types';
 import { VISA_TYPE_CONFIG, TIER_CONFIG } from '@/lib/application-types';
@@ -19,6 +19,63 @@ function ApplicationsContent() {
   const [applications, setApplications] = useState<ApplicationSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const resetStore = useApplicationStore((s) => s.reset);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editName, setEditName] = useState('');
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const getToken = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    return session?.access_token || null;
+  };
+
+  const handleRename = async (appId: string) => {
+    if (!editName.trim()) return;
+    const token = await getToken();
+    if (!token) return;
+
+    try {
+      const response = await fetch(`/api/applications/${appId}`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name: editName.trim() }),
+      });
+
+      if (response.ok) {
+        setApplications((prev) =>
+          prev.map((a) => (a.id === appId ? { ...a, name: editName.trim() } : a))
+        );
+      }
+    } catch (err) {
+      console.error('[Rename] Error:', err);
+    }
+    setEditingId(null);
+  };
+
+  const handleDelete = async (appId: string) => {
+    const token = await getToken();
+    if (!token) return;
+
+    try {
+      const response = await fetch(`/api/applications/${appId}`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: 'archived' }),
+      });
+
+      if (response.ok) {
+        setApplications((prev) => prev.filter((a) => a.id !== appId));
+      }
+    } catch (err) {
+      console.error('[Delete] Error:', err);
+    }
+    setDeletingId(null);
+  };
 
   useEffect(() => {
     async function loadApplications() {
@@ -100,28 +157,49 @@ function ApplicationsContent() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.08 }}
                 >
-                  <button
-                    onClick={() => router.push(`/dashboard?app=${app.id}`)}
-                    className="w-full text-left bg-white rounded-2xl border border-gray-200 p-5 hover:border-blue-300 hover:shadow-md transition-all group"
-                  >
-                    {/* Visa type + tier badge */}
+                  <div className="w-full text-left bg-white rounded-2xl border border-gray-200 p-5 hover:border-blue-300 hover:shadow-md transition-all group">
+                    {/* Header: Visa type + tier + actions */}
                     <div className="flex items-start justify-between mb-3">
-                      <div className="flex items-center gap-2">
-                        <span className="text-2xl">{config.icon}</span>
-                        <div>
-                          <p className="font-semibold text-gray-900 text-sm">{app.name}</p>
+                      <div className="flex items-center gap-2 flex-1 min-w-0">
+                        <span className="text-2xl flex-shrink-0">{config.icon}</span>
+                        <div className="flex-1 min-w-0">
+                          {editingId === app.id ? (
+                            <div className="flex items-center gap-1">
+                              <input
+                                type="text"
+                                value={editName}
+                                onChange={(e) => setEditName(e.target.value)}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') handleRename(app.id);
+                                  if (e.key === 'Escape') setEditingId(null);
+                                }}
+                                className="w-full px-2 py-1 text-sm font-semibold border border-blue-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-200"
+                                autoFocus
+                              />
+                              <button onClick={() => handleRename(app.id)} className="p-1 hover:bg-emerald-100 rounded-lg">
+                                <Check className="w-4 h-4 text-emerald-600" />
+                              </button>
+                              <button onClick={() => setEditingId(null)} className="p-1 hover:bg-gray-100 rounded-lg">
+                                <X className="w-4 h-4 text-gray-400" />
+                              </button>
+                            </div>
+                          ) : (
+                            <p className="font-semibold text-gray-900 text-sm truncate">{app.name}</p>
+                          )}
                           <p className="text-xs text-gray-500">{config.label}</p>
                         </div>
                       </div>
-                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
-                        app.purchasedTier === 'premium'
-                          ? 'bg-emerald-100 text-emerald-700'
-                          : app.purchasedTier === 'standard'
-                          ? 'bg-blue-100 text-blue-700'
-                          : 'bg-gray-100 text-gray-600'
-                      }`}>
-                        {tier.badge}
-                      </span>
+                      <div className="flex items-center gap-1 flex-shrink-0 ml-2">
+                        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                          app.purchasedTier === 'premium'
+                            ? 'bg-emerald-100 text-emerald-700'
+                            : app.purchasedTier === 'standard'
+                            ? 'bg-blue-100 text-blue-700'
+                            : 'bg-gray-100 text-gray-600'
+                        }`}>
+                          {tier.badge}
+                        </span>
+                      </div>
                     </div>
 
                     {/* Progress bar */}
@@ -152,14 +230,54 @@ function ApplicationsContent() {
                       )}
                     </div>
 
-                    {/* CTA */}
+                    {/* Action row */}
                     <div className="mt-4 flex items-center justify-between">
-                      <span className="text-sm font-semibold text-blue-700 group-hover:text-blue-900 transition">
-                        Continue
-                      </span>
-                      <ArrowRight className="w-4 h-4 text-blue-400 group-hover:text-blue-700 group-hover:translate-x-1 transition-all" />
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEditingId(app.id);
+                            setEditName(app.name);
+                          }}
+                          className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
+                          title="Rename"
+                        >
+                          <Pencil className="w-3.5 h-3.5 text-gray-400" />
+                        </button>
+                        {deletingId === app.id ? (
+                          <div className="flex items-center gap-1 text-xs">
+                            <span className="text-red-600 font-medium">Delete?</span>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); handleDelete(app.id); }}
+                              className="px-2 py-0.5 bg-red-100 text-red-700 rounded-md hover:bg-red-200 font-medium"
+                            >
+                              Yes
+                            </button>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); setDeletingId(null); }}
+                              className="px-2 py-0.5 bg-gray-100 text-gray-600 rounded-md hover:bg-gray-200 font-medium"
+                            >
+                              No
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setDeletingId(app.id); }}
+                            className="p-1.5 rounded-lg hover:bg-red-50 transition-colors"
+                            title="Delete"
+                          >
+                            <Trash2 className="w-3.5 h-3.5 text-gray-400 hover:text-red-500" />
+                          </button>
+                        )}
+                      </div>
+                      <button
+                        onClick={() => router.push(`/dashboard?app=${app.id}`)}
+                        className="flex items-center gap-1.5 text-sm font-semibold text-blue-700 hover:text-blue-900 transition"
+                      >
+                        Continue <ArrowRight className="w-4 h-4" />
+                      </button>
                     </div>
-                  </button>
+                  </div>
                 </motion.div>
               );
             })}
