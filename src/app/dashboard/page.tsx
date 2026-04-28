@@ -155,6 +155,65 @@ function DashboardContent() {
   const searchParams = useSearchParams();
   const isPaymentReturn = searchParams.get('payment') === 'success';
   const tierParam = searchParams.get('tier');
+  const applicationId = searchParams.get('app');
+
+  // ── Server-side application state ───────────────────────────────────────
+  const [appData, setAppData] = useState<Record<string, any> | null>(null);
+  const [appLoading, setAppLoading] = useState(!!applicationId);
+
+  useEffect(() => {
+    if (!applicationId) {
+      setAppLoading(false);
+      return;
+    }
+
+    async function loadApplication() {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.access_token) {
+          setAppLoading(false);
+          return;
+        }
+
+        const response = await fetch(`/api/applications/${applicationId}`, {
+          headers: { 'Authorization': `Bearer ${session.access_token}` },
+        });
+
+        if (response.ok) {
+          const { application } = await response.json();
+          setAppData(application);
+
+          // Override Zustand store with server data
+          if (application.visa_type) store.setVisaType(application.visa_type);
+          if (application.nationality) store.setNationality(application.nationality);
+          if (application.urgency) store.setUrgency(application.urgency);
+          if (application.annual_income_range) store.setAnnualIncomeRange(application.annual_income_range);
+          if (application.employment_status) store.setEmploymentStatus(application.employment_status);
+          if (application.currently_in_uk !== null) store.setCurrentlyInUk(application.currently_in_uk);
+          if (application.relationship_duration_months !== null) store.setRelationshipDurationMonths(application.relationship_duration_months);
+          if (application.relationship_status) store.setRelationshipStatus(application.relationship_status);
+          if (application.has_previous_refusal !== null) store.setHasPreviousRefusal(application.has_previous_refusal);
+          if (application.has_previous_overstay !== null) store.setHasPreviousOverstay(application.has_previous_overstay);
+
+          // Override payment tier from application (not global user)
+          const appTier = application.purchased_tier || 'none';
+          if (appTier !== 'none') {
+            store.setUnlocked(true);
+            store.setPurchasedTier(appTier);
+          }
+
+          // Force wizard to "completed" state
+          store.setCurrentStep(5);
+        }
+      } catch (err) {
+        console.error('[Dashboard] Failed to load application:', err);
+      } finally {
+        setAppLoading(false);
+      }
+    }
+
+    loadApplication();
+  }, [applicationId]);
 
   useEffect(() => {
     if (user?.email) setUserEmail(user.email);
@@ -274,7 +333,7 @@ function DashboardContent() {
 
   const hasCompletedWizard = currentStep >= 5 && visaType && visaType !== 'unsure';
 
-  if (!hydrated) {
+  if (!hydrated || appLoading) {
     return (
       <div className="min-h-screen bg-[#F9FAFB] flex items-center justify-center">
         <div className="animate-pulse flex flex-col items-center gap-3">
@@ -308,6 +367,8 @@ function DashboardContent() {
         store={store}
         showPaywall={showPaywall}
         setShowPaywall={setShowPaywall}
+        applicationId={applicationId}
+        appData={appData}
       />
     </>
   );
@@ -637,10 +698,14 @@ function FullDashboard({
   store,
   showPaywall,
   setShowPaywall,
+  applicationId = null,
+  appData = null,
 }: {
   store: any;
   showPaywall: boolean;
   setShowPaywall: (v: boolean) => void;
+  applicationId?: string | null;
+  appData?: Record<string, any> | null;
 }) {
   const { visaType, urgency, annualIncomeRange, employmentStatus, currentlyInUk, relationshipDurationMonths, unlocked, purchasedTier, hasPreviousRefusal, hasPreviousOverstay } = store;
 
@@ -683,6 +748,11 @@ function FullDashboard({
   }, []);
 
   const [checkedDocs, setCheckedDocs] = useState<Record<string, boolean>>(() => {
+    // If we have server-side application data, use its checklist_progress
+    if (appData?.checklist_progress && typeof appData.checklist_progress === 'object') {
+      return appData.checklist_progress;
+    }
+    // Fallback to localStorage for backwards compat (no application ID)
     if (typeof window !== 'undefined') {
       try {
         const saved = localStorage.getItem('VisaBud_checked_docs');
@@ -722,8 +792,24 @@ function FullDashboard({
   const toggleDoc = (id: string) => {
     setCheckedDocs((prev) => {
       const updated = { ...prev, [id]: !prev[id] };
+      // Save to localStorage (backwards compat)
       if (typeof window !== 'undefined') {
         localStorage.setItem('VisaBud_checked_docs', JSON.stringify(updated));
+      }
+      // Save to server if we have an application ID
+      if (applicationId) {
+        supabase.auth.getSession().then(({ data: { session } }) => {
+          if (session?.access_token) {
+            fetch(`/api/applications/${applicationId}`, {
+              method: 'PATCH',
+              headers: {
+                'Authorization': `Bearer ${session.access_token}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ checklistProgress: updated }),
+            }).catch((err) => console.warn('[Dashboard] Failed to save checklist:', err));
+          }
+        });
       }
       return updated;
     });
@@ -770,6 +856,11 @@ function FullDashboard({
                   <Lock className="w-3.5 h-3.5" />
                   Unlock Full Pack
                 </button>
+              )}
+              {applicationId && (
+                <Link href="/applications" className="text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors">
+                  ← My Applications
+                </Link>
               )}
               <Link href="/app/start" className="text-sm text-gray-400 hover:text-gray-600 font-medium transition-colors">
                 Edit Answers
