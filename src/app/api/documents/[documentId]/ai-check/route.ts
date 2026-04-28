@@ -135,12 +135,17 @@ export async function POST(
       })
       .eq('id', documentId);
 
-    // 6. Fire async pipeline (non-blocking)
-    runAIPipeline(documentId).catch((err) => {
-      console.error(`[ai-check] Pipeline error for ${documentId}:`, err);
-    });
+    console.log(`[ai-check] Starting AI pipeline for ${documentId}`);
 
-    console.log(`[ai-check] Queued AI analysis for ${documentId}`);
+    // Run pipeline within request lifecycle (Vercel kills fire-and-forget)
+    // maxDuration=60 keeps function alive. Frontend polls /status for progress.
+    try {
+      await runAIPipeline(documentId);
+      console.log(`[ai-check] Pipeline complete for ${documentId}`);
+    } catch (pipelineErr) {
+      console.error(`[ai-check] Pipeline error for ${documentId}:`, pipelineErr);
+      // Pipeline already marks document as 'failed' in DB, so polling will pick it up
+    }
 
     return NextResponse.json({
       success: true,
