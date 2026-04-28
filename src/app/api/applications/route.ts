@@ -97,7 +97,7 @@ export async function GET(req: NextRequest) {
 
       return {
         id: app.id,
-        name: VISA_LABELS[app.visa_type] || app.visa_type,
+        name: app.name || VISA_LABELS[app.visa_type] || app.visa_type,
         visaType: app.visa_type,
         purchasedTier: app.purchased_tier,
         status: app.status,
@@ -144,10 +144,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
+    // Auto-generate name if not provided
+    const VISA_NAMES: Record<string, string> = {
+      spouse: 'Spouse / Partner Visa',
+      skilled_worker: 'Skilled Worker Visa',
+      citizenship: 'British Citizenship',
+    };
+    const autoName = body.name || VISA_NAMES[body.visaType] || body.visaType;
+
     const { data: app, error } = await supabaseAdmin
       .from('applications')
       .insert({
         user_id: userData.id,
+        name: autoName,
         visa_type: body.visaType,
         nationality: body.nationality || null,
         relationship_status: body.relationshipStatus || null,

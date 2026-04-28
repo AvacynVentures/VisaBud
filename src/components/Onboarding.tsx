@@ -155,8 +155,14 @@ export default function Onboarding() {
             annualIncomeRange,
             employmentStatus,
             urgency,
-            hasPreviousRefusal,
-            hasPreviousOverstay,
+            // Auto-generate name from user email + visa type
+            name: user?.email
+              ? `${user.email.split('@')[0]} — ${
+                  visaType === 'spouse' ? 'Spouse Visa' :
+                  visaType === 'skilled_worker' ? 'Skilled Worker Visa' :
+                  visaType === 'citizenship' ? 'British Citizenship' : 'Visa Application'
+                }`
+              : undefined,
           }),
         });
 
