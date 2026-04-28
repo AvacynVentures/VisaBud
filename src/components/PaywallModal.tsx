@@ -17,6 +17,7 @@ interface PaywallModalProps {
   onClose: () => void;
   visaType: string;
   applicationId?: string | null;
+  currentTier?: 'none' | 'standard' | 'premium';
 }
 
 const TIERS = [
@@ -60,7 +61,7 @@ const TIERS = [
   },
 ] as const;
 
-export default function PaywallModal({ isOpen, onClose, visaType, applicationId }: PaywallModalProps) {
+export default function PaywallModal({ isOpen, onClose, visaType, applicationId, currentTier = 'none' }: PaywallModalProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -250,6 +251,16 @@ export default function PaywallModal({ isOpen, onClose, visaType, applicationId 
                   </p>
 
                   {/* CTA Button */}
+                  {currentTier === tier.id ? (
+                    <div className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-lg font-semibold text-sm bg-gray-100 text-gray-500 border border-gray-200">
+                      <CheckCircle className="w-4 h-4 text-emerald-500" />
+                      Current plan
+                    </div>
+                  ) : currentTier === 'premium' && tier.id === 'standard' ? (
+                    <div className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-lg font-semibold text-sm bg-gray-50 text-gray-400">
+                      Included in your Premium plan
+                    </div>
+                  ) : (
                   <button
                     onClick={() => handleCheckout(tier.id)}
                     disabled={!!isLoading}
@@ -262,11 +273,12 @@ export default function PaywallModal({ isOpen, onClose, visaType, applicationId 
                       </>
                     ) : (
                       <>
-                        {tier.buttonLabel} — £{tier.price}
+                        {tier.id === 'premium' && currentTier === 'standard' ? 'Upgrade to Premium' : tier.buttonLabel} — £{tier.price}
                         <ArrowRight className="w-4 h-4" />
                       </>
                     )}
                   </button>
+                  )}
                 </motion.div>
               );
             })}
