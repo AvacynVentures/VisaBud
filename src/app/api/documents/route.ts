@@ -3,7 +3,10 @@ import { supabaseServer } from '@/lib/supabase';
 import { runDocumentValidation } from '@/lib/document-validator';
 import type { DocumentUploadResponse, DocumentErrorResponse } from '@/lib/document-types';
 
-export const maxDuration = 10; // Fast response — validation happens async
+// Allow enough time for the background validation to complete.
+// The HTTP response returns in <2s, but the serverless function stays alive
+// for pending promises until maxDuration is hit.
+export const maxDuration = 60;
 
 /**
  * POST /api/documents
