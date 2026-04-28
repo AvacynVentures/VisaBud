@@ -9,9 +9,11 @@ import { LogOut, User, ChevronDown } from 'lucide-react';
 
 interface TopNavProps {
   showBackToApps?: boolean;
+  applicationName?: string | null;
+  currentTier?: 'none' | 'standard' | 'premium' | null;
 }
 
-export default function TopNav({ showBackToApps = false }: TopNavProps) {
+export default function TopNav({ showBackToApps = false, applicationName, currentTier }: TopNavProps) {
   const { user, loading } = useAuth();
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -43,6 +45,23 @@ export default function TopNav({ showBackToApps = false }: TopNavProps) {
             <Link href="/applications" className="text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors hidden sm:inline">
               ← My Applications
             </Link>
+          )}
+
+          {/* Application name + tier badge */}
+          {applicationName && (
+            <div className="hidden sm:flex items-center gap-2 ml-2">
+              <span className="text-sm text-gray-400">|</span>
+              <span className="text-sm font-medium text-gray-700 max-w-[200px] truncate">{applicationName}</span>
+            </div>
+          )}
+          {currentTier && currentTier !== 'none' && (
+            <span className={`hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold ${
+              currentTier === 'premium'
+                ? 'bg-emerald-100 text-emerald-700'
+                : 'bg-blue-100 text-blue-700'
+            }`}>
+              {currentTier === 'premium' ? '✨ Premium' : '✓ Standard'}
+            </span>
           )}
         </div>
 

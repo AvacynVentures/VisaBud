@@ -255,18 +255,52 @@ function DashboardContent() {
   }, [hydrated]);
 
   // Set tier from application data when it arrives
+  // If returning from payment, poll until tier updates (webhook may be slow)
   useEffect(() => {
-    if (applicationId && appData) {
-      const appTier = appData.purchased_tier || 'none';
-      if (appTier !== 'none') {
-        setUnlocked(true);
-        setPurchasedTier(appTier);
-      } else {
-        setUnlocked(false);
-        setPurchasedTier('none');
-      }
+    if (!applicationId || !appData) return;
+
+    const appTier = appData.purchased_tier || 'none';
+    if (appTier !== 'none') {
+      setUnlocked(true);
+      setPurchasedTier(appTier);
+      return;
     }
-  }, [applicationId, appData, setUnlocked, setPurchasedTier]);
+
+    // If returning from payment but tier is still 'none', poll for webhook
+    if (isPaymentReturn && tierParam) {
+      let pollCount = 0;
+      const pollTimer = setInterval(async () => {
+        pollCount++;
+        try {
+          const { data: { session } } = await supabase.auth.getSession();
+          if (!session?.access_token) return;
+
+          const res = await fetch(`/api/applications/${applicationId}`, {
+            headers: { 'Authorization': `Bearer ${session.access_token}` },
+          });
+          if (!res.ok) return;
+
+          const { application } = await res.json();
+          const updatedTier = application?.purchased_tier || 'none';
+
+          if (updatedTier !== 'none') {
+            setAppData(application);
+            setUnlocked(true);
+            setPurchasedTier(updatedTier);
+            clearInterval(pollTimer);
+          }
+        } catch {}
+
+        if (pollCount >= 15) clearInterval(pollTimer); // Stop after 30s
+      }, 2000);
+
+      return () => clearInterval(pollTimer);
+    }
+
+    // Not returning from payment — just set to none
+    setUnlocked(false);
+    setPurchasedTier('none');
+  }, [applicationId, appData, isPaymentReturn, tierParam, setUnlocked, setPurchasedTier]);
 
   // Check unlock status from global payments — ONLY when no applicationId
   // (backwards compat for old /dashboard URLs without ?app=)
@@ -860,7 +894,11 @@ function FullDashboard({
   return (
     <PageFadeIn>
       <div className="min-h-screen bg-[#F9FAFB]">
-        <TopNav showBackToApps={!!applicationId} />
+        <TopNav
+          showBackToApps={!!applicationId}
+          applicationName={appData?.name || null}
+          currentTier={purchasedTier || 'none'}
+        />
 
         <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8 pb-24 sm:pb-8">
           {/* ── Header Card ──────────────────────────────────────────── */}
