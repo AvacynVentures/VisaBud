@@ -16,6 +16,7 @@ interface PaywallModalProps {
   isOpen: boolean;
   onClose: () => void;
   visaType: string;
+  applicationId?: string | null;
 }
 
 const TIERS = [
@@ -59,7 +60,7 @@ const TIERS = [
   },
 ] as const;
 
-export default function PaywallModal({ isOpen, onClose, visaType }: PaywallModalProps) {
+export default function PaywallModal({ isOpen, onClose, visaType, applicationId }: PaywallModalProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -96,7 +97,7 @@ export default function PaywallModal({ isOpen, onClose, visaType }: PaywallModal
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify({ tier: tierId }),
+        body: JSON.stringify({ tier: tierId, applicationId: applicationId || undefined }),
       });
 
       const data = await res.json();

@@ -266,6 +266,22 @@ async function handlePremiumReviewPurchase(
       timestamp: new Date().toISOString(),
     });
 
+  // Update application tier if applicationId present in metadata
+  const applicationId = session.metadata?.applicationId;
+  if (applicationId) {
+    const { error: appError } = await supabaseServer
+      .from('applications')
+      .update({ purchased_tier: tier === 'premium' ? 'premium' : 'standard' })
+      .eq('id', applicationId)
+      .eq('user_id', userId);
+
+    if (appError) {
+      console.error('Failed to update application tier:', appError);
+    } else {
+      console.log(`Application ${applicationId} upgraded to ${tier}`);
+    }
+  }
+
   console.log(`Premium review (${tier}) purchased by user ${userId}`);
 
   // Send post-purchase email via Resend
@@ -330,6 +346,22 @@ async function handleFullPackPurchase(session: any, userId: string, _email: stri
     })
     .then(() => {})
     .catch(() => {}); // audit_log may not exist
+
+  // Update application tier if applicationId present in metadata
+  const applicationId = session.metadata?.applicationId;
+  if (applicationId) {
+    const { error: appError } = await supabaseServer
+      .from('applications')
+      .update({ purchased_tier: tier === 'premium' ? 'premium' : 'standard' })
+      .eq('id', applicationId)
+      .eq('user_id', userId);
+
+    if (appError) {
+      console.error('Failed to update application tier:', appError);
+    } else {
+      console.log(`Application ${applicationId} upgraded to ${tier}`);
+    }
+  }
 
   console.log(`Payment completed for user ${userId} (${tier})`);
 

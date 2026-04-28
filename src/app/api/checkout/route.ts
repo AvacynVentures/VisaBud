@@ -48,12 +48,16 @@ export async function POST(req: NextRequest) {
 
     const email = user.email || 'unknown@example.com';
 
-    // Parse tier from request body
+    // Parse tier and applicationId from request body
     let tier: TierKey = 'standard';
+    let applicationId: string | undefined;
     try {
       const body = await req.json();
       if (body.tier && body.tier in STRIPE_PRICE_IDS) {
         tier = body.tier as TierKey;
+      }
+      if (body.applicationId) {
+        applicationId = body.applicationId;
       }
     } catch {
       // No body or invalid JSON — default to standard
@@ -79,12 +83,17 @@ export async function POST(req: NextRequest) {
         },
       ],
       mode: 'payment',
-      success_url: `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard?payment=success&tier=${tier}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard`,
+      success_url: applicationId
+        ? `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard?payment=success&tier=${tier}&app=${applicationId}`
+        : `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard?payment=success&tier=${tier}`,
+      cancel_url: applicationId
+        ? `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard?app=${applicationId}`
+        : `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard`,
       metadata: {
         userId: user.id,
         email: email,
         tier: tier,
+        ...(applicationId && { applicationId }),
         ...(tier !== 'standard' && { productType: 'premium_review' }),
       },
     });

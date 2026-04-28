@@ -1056,7 +1056,7 @@ function FullDashboard({
           </div>
         )}
 
-        <PaywallModal isOpen={showPaywall} onClose={() => setShowPaywall(false)} visaType={visaLabel} />
+        <PaywallModal isOpen={showPaywall} onClose={() => setShowPaywall(false)} visaType={visaLabel} applicationId={applicationId} />
       </div>
     </PageFadeIn>
   );
