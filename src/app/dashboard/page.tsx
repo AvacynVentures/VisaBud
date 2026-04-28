@@ -245,7 +245,21 @@ function DashboardContent() {
   }, [hydrated]);
 
   // Check unlock status — runs on mount AND polls when returning from payment
+  // SKIP if we have an applicationId — use application's purchased_tier instead
   useEffect(() => {
+    if (applicationId && appData) {
+      // Application-scoped: use the application's tier, not the global user tier
+      const appTier = appData.purchased_tier || 'none';
+      if (appTier !== 'none') {
+        setUnlocked(true);
+        setPurchasedTier(appTier);
+      } else {
+        setUnlocked(false);
+        setPurchasedTier('none');
+      }
+      return;
+    }
+
     let pollCount = 0;
     let pollTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -327,7 +341,7 @@ function DashboardContent() {
     return () => {
       if (pollTimer) clearTimeout(pollTimer);
     };
-  }, [setUnlocked, setPurchasedTier, isPaymentReturn, tierParam]);
+  }, [setUnlocked, setPurchasedTier, isPaymentReturn, tierParam, applicationId, appData]);
 
   const [showPaywall, setShowPaywall] = useState(false);
 
