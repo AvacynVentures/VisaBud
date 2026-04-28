@@ -57,7 +57,7 @@ export async function GET(
 
     // Download from Storage
     const { data: fileData, error: downloadError } = await supabaseAdmin.storage
-      .from('documents')
+      .from('Documents')
       .download(doc.file_path);
 
     if (downloadError || !fileData) {

@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
 
     // Fetch documents
     const { data: documents, error: docsError } = await supabaseServer
-      .from('documents')
+      .from('Documents')
       .select('*')
       .eq('application_id', applicationId)
       .order('display_order') as { data: Document[]; error: any };

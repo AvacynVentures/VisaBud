@@ -182,7 +182,7 @@ export async function runAIPipeline(documentId: string): Promise<void> {
 
     // Download file from storage
     const { data: fileData, error: dlError } = await supabaseAdmin.storage
-      .from('documents')
+      .from('Documents')
       .download(doc.file_path);
 
     if (dlError || !fileData) {

@@ -58,7 +58,7 @@ export async function POST(req: NextRequest): Promise<NextResponse<DocumentUploa
 
     const { error: uploadError } = await supabaseServer
       .storage
-      .from('documents')
+      .from('Documents')
       .upload(storagePath, fileBuffer, {
         contentType: file.type,
         upsert: false,
@@ -91,7 +91,7 @@ export async function POST(req: NextRequest): Promise<NextResponse<DocumentUploa
     if (insertError || !validationRow) {
       console.error('[api/documents] DB insert failed:', insertError);
       // Clean up the uploaded file
-      await supabaseServer.storage.from('documents').remove([storagePath]);
+      await supabaseServer.storage.from('Documents').remove([storagePath]);
       return NextResponse.json(
         { error: 'Failed to queue document for validation.' },
         { status: 500 }

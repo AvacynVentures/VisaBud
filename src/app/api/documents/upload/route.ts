@@ -98,7 +98,7 @@ export async function POST(req: NextRequest): Promise<NextResponse<UploadRespons
     const buffer = Buffer.from(await file.arrayBuffer());
 
     const { error: storageError } = await supabaseAdmin.storage
-      .from('documents')
+      .from('Documents')
       .upload(storagePath, buffer, {
         contentType: file.type,
         upsert: false,
@@ -130,7 +130,7 @@ export async function POST(req: NextRequest): Promise<NextResponse<UploadRespons
     if (insertError) {
       console.error('[upload] DB insert error:', insertError);
       // Rollback: delete uploaded file
-      await supabaseAdmin.storage.from('documents').remove([storagePath]).catch(() => {});
+      await supabaseAdmin.storage.from('Documents').remove([storagePath]).catch(() => {});
       return NextResponse.json(
         { success: false, id: '', fileName: file.name, downloadUrl: '', error: 'Failed to create record' },
         { status: 500 }
@@ -148,7 +148,7 @@ export async function POST(req: NextRequest): Promise<NextResponse<UploadRespons
       // Clean up old file from storage (best effort)
       if (existing.file_path) {
         await supabaseAdmin.storage
-          .from('documents')
+          .from('Documents')
           .remove([existing.file_path])
           .catch((_err: unknown) => {});
       }

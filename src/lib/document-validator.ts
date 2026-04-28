@@ -32,7 +32,7 @@ export async function runDocumentValidation(params: ValidateDocumentJobParams): 
     // 1. Download file from Supabase Storage
     const { data: fileData, error: downloadError } = await supabaseServer
       .storage
-      .from('documents')
+      .from('Documents')
       .download(storagePath);
 
     if (downloadError || !fileData) {
