@@ -33,8 +33,10 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid session' }, { status: 401 });
     }
 
-    // Get all non-replaced documents for this user
-    const { data: docs, error } = await supabaseAdmin
+    // Get all non-replaced documents for this user, optionally filtered by application
+    const applicationId = req.nextUrl.searchParams.get('applicationId');
+
+    let query = supabaseAdmin
       .from('document_uploads')
       .select(`
         id, checklist_item_id, file_name, mime_type, file_size_bytes,
@@ -44,8 +46,13 @@ export async function GET(req: NextRequest) {
         ai_requested_at, ai_completed_at, created_at
       `)
       .eq('user_id', user.id)
-      .is('replaced_by', null)
-      .order('created_at', { ascending: false });
+      .is('replaced_by', null);
+
+    if (applicationId) {
+      query = query.eq('application_id', applicationId);
+    }
+
+    const { data: docs, error } = await query.order('created_at', { ascending: false });
 
     if (error) {
       console.error('[my] Query error:', error);

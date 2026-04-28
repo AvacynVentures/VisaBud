@@ -60,6 +60,7 @@ export async function POST(req: NextRequest): Promise<NextResponse<UploadRespons
     const formData = await req.formData();
     const file = formData.get('file') as File | null;
     const checklistItemId = formData.get('checklistItemId') as string | null;
+    const applicationId = formData.get('applicationId') as string | null;
 
     if (!file || !checklistItemId) {
       return NextResponse.json(
@@ -123,6 +124,7 @@ export async function POST(req: NextRequest): Promise<NextResponse<UploadRespons
         mime_type: file.type,
         file_size_bytes: file.size,
         ai_status: 'none',
+        ...(applicationId && { application_id: applicationId }),
       })
       .select('id')
       .single();

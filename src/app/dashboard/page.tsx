@@ -747,7 +747,10 @@ function FullDashboard({
         const { data: { session } } = await supabase.auth.getSession();
         if (!session?.access_token) return;
 
-        const response = await fetch('/api/documents/my', {
+        const docUrl = applicationId
+          ? `/api/documents/my?applicationId=${applicationId}`
+          : '/api/documents/my';
+        const response = await fetch(docUrl, {
           headers: { 'Authorization': `Bearer ${session.access_token}` },
         });
 
@@ -1009,6 +1012,7 @@ function FullDashboard({
                   unlocked={unlocked}
                   onUnlock={() => setShowPaywall(true)}
                   serverDocs={serverDocs}
+                  applicationId={applicationId}
                 />
               )}
               {activeTab === 'timeline' && (
@@ -1100,6 +1104,7 @@ function ChecklistTab({
   unlocked,
   onUnlock,
   serverDocs = {},
+  applicationId = null,
 }: {
   grouped: Record<Priority, ChecklistItem[]>;
   byCategory: Record<DocumentCategory, ChecklistItem[]>;
@@ -1111,6 +1116,7 @@ function ChecklistTab({
   unlocked: boolean;
   onUnlock: () => void;
   serverDocs?: Record<string, any>;
+  applicationId?: string | null;
 }) {
   const { documentUploads, documentReports, visaType: storeVisaType, annualIncomeRange: storeIncome, employmentStatus: storeEmployment } = useApplicationStore();
   const verifiedCount = Object.values(documentUploads).filter((u) => u.status === 'valid').length;
@@ -1213,7 +1219,7 @@ function ChecklistTab({
               </div>
               <div className="divide-y divide-gray-50">
                 {items.map((item) => (
-                  <ChecklistItemRow key={item.id} item={item} checked={!!checkedDocs[item.id]} onToggle={() => toggleDoc(item.id)} unlocked={unlocked} notApplicableReason={getItemNotApplicableReason(item.id, storeVisaType, storeIncome, storeEmployment)} serverDoc={serverDocs[item.id] || null} onShowPaywall={onUnlock} />
+                  <ChecklistItemRow key={item.id} item={item} checked={!!checkedDocs[item.id]} onToggle={() => toggleDoc(item.id)} unlocked={unlocked} notApplicableReason={getItemNotApplicableReason(item.id, storeVisaType, storeIncome, storeEmployment)} serverDoc={serverDocs[item.id] || null} onShowPaywall={onUnlock} applicationId={applicationId} />
                 ))}
               </div>
             </motion.div>
@@ -1246,7 +1252,7 @@ function ChecklistTab({
         </div>
         <div className="divide-y divide-gray-50">
           {personalTeaser.map((item) => (
-            <ChecklistItemRow key={item.id} item={item} checked={!!checkedDocs[item.id]} onToggle={() => toggleDoc(item.id)} unlocked={unlocked} notApplicableReason={getItemNotApplicableReason(item.id, storeVisaType, storeIncome, storeEmployment)} serverDoc={serverDocs[item.id] || null} onShowPaywall={onUnlock} />
+            <ChecklistItemRow key={item.id} item={item} checked={!!checkedDocs[item.id]} onToggle={() => toggleDoc(item.id)} unlocked={unlocked} notApplicableReason={getItemNotApplicableReason(item.id, storeVisaType, storeIncome, storeEmployment)} serverDoc={serverDocs[item.id] || null} onShowPaywall={onUnlock} applicationId={applicationId} />
           ))}
           {personalLockedCount > 0 && (
             <div className="px-5 sm:px-6 py-3 bg-amber-50/50 text-sm text-amber-700 flex items-center gap-2">
@@ -1359,7 +1365,7 @@ function ProgressCard({ checkedCount, total, progressPct, verifiedCount }: { che
   );
 }
 
-function ChecklistItemRow({ item, checked, onToggle, unlocked = false, notApplicableReason = null, serverDoc = null, onShowPaywall }: { item: ChecklistItem; checked: boolean; onToggle: () => void; unlocked?: boolean; notApplicableReason?: string | null; serverDoc?: any; onShowPaywall?: () => void }) {
+function ChecklistItemRow({ item, checked, onToggle, unlocked = false, notApplicableReason = null, serverDoc = null, onShowPaywall, applicationId = null }: { item: ChecklistItem; checked: boolean; onToggle: () => void; unlocked?: boolean; notApplicableReason?: string | null; serverDoc?: any; onShowPaywall?: () => void; applicationId?: string | null }) {
   const [justChecked, setJustChecked] = useState(false);
   const [showAIModal, setShowAIModal] = useState(false);
   const [_isAILoading, _setIsAILoading] = useState(false);
@@ -1477,6 +1483,7 @@ function ChecklistItemRow({ item, checked, onToggle, unlocked = false, notApplic
             requirement={`${item.title}: ${item.description}`}
             locked={!unlocked}
             isPremium={purchasedTier === 'premium'}
+            applicationId={applicationId}
             onUpgradeClick={onShowPaywall}
             serverDoc={serverDoc ? {
               id: serverDoc.id,

@@ -45,6 +45,7 @@ interface DocumentUploadV3Props {
   onAIComplete?: (result: DocumentStatusResponse) => void;
   onViewReport?: () => void;
   onDownloadReport?: () => void;
+  applicationId?: string | null;
 }
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
@@ -64,6 +65,7 @@ export default function DocumentUploadV3({
   onAIComplete,
   onViewReport,
   onDownloadReport,
+  applicationId,
 }: DocumentUploadV3Props) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const pollRef = useRef<NodeJS.Timeout | null>(null);
@@ -213,6 +215,7 @@ export default function DocumentUploadV3({
       const formData = new FormData();
       formData.append('file', file);
       formData.append('checklistItemId', checklistItemId);
+      if (applicationId) formData.append('applicationId', applicationId);
 
       const response = await fetch('/api/documents/upload', {
         method: 'POST',
