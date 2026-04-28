@@ -50,6 +50,7 @@ import {
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import PaywallModal from '@/components/PaywallModal';
+import TopNav from '@/components/TopNav';
 import PaymentSuccessBanner from '@/components/PaymentSuccessBanner';
 import DocumentUploadV3 from '@/components/DocumentUploadV3';
 import TierFeatureButtons from '@/components/TierFeatureButtons';
@@ -856,44 +857,7 @@ function FullDashboard({
   return (
     <PageFadeIn>
       <div className="min-h-screen bg-[#F9FAFB]">
-        {/* ── Nav ──────────────────────────────────────────────────────── */}
-        <nav className="bg-white border-b border-gray-100 sticky top-0 z-30">
-          <div className="max-w-5xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-700 to-blue-900 flex items-center justify-center shadow-sm">
-                <span className="text-white text-sm font-bold">V</span>
-              </div>
-              <span className="font-bold text-blue-900 tracking-tight text-lg hidden sm:inline">VisaBud</span>
-            </Link>
-            <div className="flex items-center gap-3">
-              {unlocked ? (
-                <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${
-                  purchasedTier === 'premium' ? 'bg-emerald-50 text-emerald-700' :
-                  'bg-blue-50 text-blue-700'
-                }`}>
-                  <CheckCircle className="w-3.5 h-3.5" />
-                  {purchasedTier === 'premium' ? 'Premium' : 'Standard'}
-                </span>
-              ) : (
-                <button
-                  onClick={() => setShowPaywall(true)}
-                  className="hidden sm:inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-xl shadow-sm hover:shadow-md transition-all btn-hover animate-emeraldGlow"
-                >
-                  <Lock className="w-3.5 h-3.5" />
-                  Unlock Full Pack
-                </button>
-              )}
-              {applicationId && (
-                <Link href="/applications" className="text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors">
-                  ← My Applications
-                </Link>
-              )}
-              <Link href="/app/start" className="text-sm text-gray-400 hover:text-gray-600 font-medium transition-colors">
-                Edit Answers
-              </Link>
-            </div>
-          </div>
-        </nav>
+        <TopNav showBackToApps={!!applicationId} />
 
         <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8 pb-24 sm:pb-8">
           {/* ── Header Card ──────────────────────────────────────────── */}
