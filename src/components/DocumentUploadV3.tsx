@@ -113,11 +113,56 @@ export default function DocumentUploadV3({
     };
   }, []);
 
-  // Resume polling if AI is running on mount (e.g. page refresh during analysis)
+  // Resume polling if AI was running before page refresh
+  // But first check if the result already arrived (pipeline may have completed)
   useEffect(() => {
-    if (isAIRunning && uploadId) {
-      startPolling(uploadId);
-    }
+    if (!isAIRunning || !uploadId) return;
+
+    // Check status once immediately — if already complete, don't poll
+    const checkOnce = async () => {
+      try {
+        const response = await fetch(`/api/documents/${uploadId}/status`, { cache: 'no-store' });
+        if (!response.ok) return;
+
+        const data: DocumentStatusResponse = await response.json();
+
+        if (data.aiStatus === 'complete' || data.aiStatus === 'failed') {
+          // Already done — just update state, no polling needed
+          setAiStatus(data.aiStatus);
+          setConfidenceScore(data.confidenceScore);
+          setAiFeedback(data.scoringFeedback || data.classificationFeedback);
+          setIsDocument(data.isDocument);
+          onAIComplete?.(data);
+          return;
+        }
+
+        if (data.aiStatus === 'none') {
+          // Was reset or never started — don't poll
+          setAiStatus('none');
+          return;
+        }
+
+        // Check if stale (queued/classifying/analyzing for >5 minutes = abandoned)
+        const requestedAt = data.aiRequestedAt ? new Date(data.aiRequestedAt).getTime() : 0;
+        const elapsed = Date.now() - requestedAt;
+        if (elapsed > 5 * 60 * 1000) {
+          // Stale — reset to none, user can re-trigger
+          console.log('[DocumentUpload] Stale AI status detected, resetting');
+          setAiStatus('none');
+          setAiFeedback(null);
+          return;
+        }
+
+        // Genuinely in progress — resume polling
+        startPolling(uploadId);
+      } catch (err) {
+        console.warn('[DocumentUpload] Resume check failed:', err);
+        // On error, just reset to saved state
+        setAiStatus('none');
+      }
+    };
+
+    checkOnce();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
