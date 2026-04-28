@@ -254,11 +254,9 @@ function DashboardContent() {
     return unsub;
   }, [hydrated]);
 
-  // Check unlock status — runs on mount AND polls when returning from payment
-  // SKIP if we have an applicationId — use application's purchased_tier instead
+  // Set tier from application data when it arrives
   useEffect(() => {
     if (applicationId && appData) {
-      // Application-scoped: use the application's tier, not the global user tier
       const appTier = appData.purchased_tier || 'none';
       if (appTier !== 'none') {
         setUnlocked(true);
@@ -267,8 +265,13 @@ function DashboardContent() {
         setUnlocked(false);
         setPurchasedTier('none');
       }
-      return;
     }
+  }, [applicationId, appData, setUnlocked, setPurchasedTier]);
+
+  // Check unlock status from global payments — ONLY when no applicationId
+  // (backwards compat for old /dashboard URLs without ?app=)
+  useEffect(() => {
+    if (applicationId) return; // Skip entirely for app-scoped dashboards
 
     let pollCount = 0;
     let pollTimer: ReturnType<typeof setTimeout> | null = null;
