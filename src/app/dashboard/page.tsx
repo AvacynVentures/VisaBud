@@ -161,6 +161,15 @@ function DashboardContent() {
   const [appData, setAppData] = useState<Record<string, any> | null>(null);
   const [appLoading, setAppLoading] = useState(!!applicationId);
 
+  // Immediately reset unlock state when loading a specific application
+  // This prevents Zustand's cached global Premium from showing before server data loads
+  useEffect(() => {
+    if (applicationId) {
+      store.setUnlocked(false);
+      store.setPurchasedTier('none');
+    }
+  }, [applicationId]);
+
   useEffect(() => {
     if (!applicationId) {
       setAppLoading(false);
