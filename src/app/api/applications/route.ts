@@ -97,7 +97,7 @@ export async function GET(req: NextRequest) {
 
       return {
         id: app.id,
-        name: app.name || VISA_LABELS[app.visa_type] || app.visa_type,
+        name: VISA_LABELS[app.visa_type] || app.visa_type,
         visaType: app.visa_type,
         purchasedTier: app.purchased_tier,
         status: app.status,
@@ -148,7 +148,6 @@ export async function POST(req: NextRequest) {
       .from('applications')
       .insert({
         user_id: userData.id,
-        name: body.name || null,
         visa_type: body.visaType,
         nationality: body.nationality || null,
         relationship_status: body.relationshipStatus || null,
@@ -158,8 +157,6 @@ export async function POST(req: NextRequest) {
         employment_status: body.employmentStatus || null,
         urgency: body.urgency || null,
         target_application_date: body.targetApplicationDate || null,
-        has_previous_refusal: body.hasPreviousRefusal ?? null,
-        has_previous_overstay: body.hasPreviousOverstay ?? null,
         onboarding_completed: true,
         checklist_progress: {},
         purchased_tier: 'none',
