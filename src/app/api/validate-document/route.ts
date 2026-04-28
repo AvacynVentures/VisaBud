@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getVisionProvider } from '@/lib/get-vision-provider';
 
 export const maxDuration = 30;
+export const revalidate = 0; // No caching for validation requests
 
 export async function POST(req: NextRequest) {
   const startTime = Date.now();
@@ -18,21 +19,36 @@ export async function POST(req: NextRequest) {
 
     // Check if vision provider API keys are configured
     const hasAnthropicKey = !!process.env.ANTHROPIC_API_KEY;
-    const hasOpenAIKey = !!process.env.OPENAI_API_KEY;
+    const hasOpenAIKey = !!process.env.OPENAI_API_KEY && 
+                         process.env.OPENAI_API_KEY !== 'your_openai_api_key_here';
     
     if (!hasAnthropicKey && !hasOpenAIKey) {
       // No AI keys configured — do NOT silently accept (Fix 2)
-      console.log('[validate-document] No vision API key configured');
+      console.error('[validate-document] CRITICAL: No vision API key configured. Add ANTHROPIC_API_KEY to .env.local');
       return NextResponse.json({
         valid: false,
         feedback: 'Document validation is temporarily unavailable. Your document has been saved and will be validated when service recovers. This is not a reflection of document quality.',
         provider: 'none',
         pendingValidation: true,
         latencyMs: Date.now() - startTime,
-      });
+        debug: process.env.NODE_ENV === 'development' ? 'Missing ANTHROPIC_API_KEY in .env.local' : undefined,
+      }, { status: 503 });
     }
 
-    const provider = getVisionProvider();
+    let provider;
+    try {
+      provider = getVisionProvider();
+    } catch (providerErr: any) {
+      console.error('[validate-document] Provider initialization failed:', providerErr.message);
+      return NextResponse.json({
+        valid: false,
+        feedback: 'Document validation is temporarily unavailable. Your document has been saved. This is not a reflection of document quality.',
+        provider: 'error',
+        pendingValidation: true,
+        latencyMs: Date.now() - startTime,
+        debug: process.env.NODE_ENV === 'development' ? providerErr.message : undefined,
+      }, { status: 503 });
+    }
 
     // ── Fix 1: Classification Gate ──────────────────────────────────────────
     // Classify the document BEFORE quality analysis.
