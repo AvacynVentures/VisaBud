@@ -1,38 +1,21 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
-import { useApplicationStore } from '@/lib/store';
 import { PageFadeIn, StaggerContainer, StaggerItem, FadeIn } from '@/lib/animations';
 import FooterEmailCapture from '@/components/FooterEmailCapture';
 import HomeNavigation from '@/components/HomeNavigation';
 import { Loader2 } from 'lucide-react';
 
 export default function Home() {
-  const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
-  const applicationState = useApplicationStore();
 
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        // Check if user is logged in
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        if (session?.user) {
-          // Check if wizard is complete (has visa type selected)
-          if (applicationState.visaType) {
-            // Redirect to dashboard
-            router.push('/dashboard');
-          } else {
-            // Redirect to continue wizard
-            router.push('/app/start');
-          }
-        } else {
-          setIsLoading(false);
-        }
+        await supabase.auth.getSession();
+        setIsLoading(false);
       } catch (error) {
         console.error('Auth check failed:', error);
         setIsLoading(false);
@@ -40,7 +23,7 @@ export default function Home() {
     };
 
     checkAuth();
-  }, [router, applicationState.visaType]);
+  }, []);
 
   // Show loading state while checking auth
   if (isLoading) {

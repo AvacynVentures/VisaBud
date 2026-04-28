@@ -3,7 +3,6 @@
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth-context';
 import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabase';
 
 interface HomeNavigationProps {
   variant?: 'nav' | 'hero';
@@ -18,38 +17,14 @@ interface HomeNavigationProps {
  * @param variant - 'nav' for navbar (small), 'hero' for hero section (large)
  */
 export default function HomeNavigation({ variant = 'hero' }: HomeNavigationProps) {
-  const { user, session, loading } = useAuth();
-  const [isComplete, setIsComplete] = useState(false);
+  const { user, loading } = useAuth();
   const [checkingCompletion, setCheckingCompletion] = useState(true);
 
   useEffect(() => {
-    if (loading) return;
-
-    if (!user || !session?.access_token) {
-      // Not logged in
-      setIsComplete(false);
+    if (!loading) {
       setCheckingCompletion(false);
-      return;
     }
-
-    // Check Supabase DB using singleton client (Fix #1: Consolidate Supabase initialization)
-    (async () => {
-      try {
-        const { data } = await supabase
-          .from('users')
-          .select('onboarding_completed')
-          .eq('auth_id', user.id)
-          .maybeSingle(); // Use maybeSingle to handle missing rows (new signups)
-
-        setIsComplete(data?.onboarding_completed || false);
-      } catch (err) {
-        console.warn('[HomeNavigation] Failed to check completion:', err);
-        setIsComplete(false);
-      } finally {
-        setCheckingCompletion(false);
-      }
-    })();
-  }, [user, session, loading]);
+  }, [loading]);
 
   if (loading || checkingCompletion) {
     return (
@@ -79,29 +54,17 @@ export default function HomeNavigation({ variant = 'hero' }: HomeNavigationProps
     );
   }
 
-  // Logged in + onboarding complete → Welcome back, go to Dashboard
-  if (isComplete) {
-    return (
-      <Link href="/dashboard" className={baseClasses}>
-        Welcome Back, Go to Dashboard
+  // Logged in → Show "My Applications" (hub) as primary CTA
+  return (
+    <div className="flex items-center gap-3">
+      <Link href="/applications" className={baseClasses}>
+        My Applications
         {showArrow && (
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
           </svg>
         )}
       </Link>
-    );
-  }
-
-  // Logged in + onboarding incomplete → Continue Wizard
-  return (
-    <Link href="/app/start" className={baseClasses}>
-      Continue Wizard
-      {showArrow && (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-        </svg>
-      )}
-    </Link>
+    </div>
   );
 }

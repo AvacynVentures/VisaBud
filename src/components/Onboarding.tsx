@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/lib/auth-context';
 import { useApplicationStore } from '@/lib/store';
-import { CheckCircle, ArrowRight, ArrowLeft } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
+import { CheckCircle, ArrowRight, ArrowLeft, Loader2 } from 'lucide-react';
 import { PageFadeIn } from '@/lib/animations';
 import { VisaType, RelationshipStatus, Urgency } from '@/lib/types';
 
@@ -74,6 +75,7 @@ export default function Onboarding() {
     currentlyInUk,
     relationshipDurationMonths,
     annualIncomeRange,
+    employmentStatus,
     urgency,
     hasPreviousRefusal,
     hasPreviousOverstay,
@@ -119,11 +121,53 @@ export default function Onboarding() {
 
   const progress = ((currentStep - 1) / 4) * 100;
 
-  const handleNext = () => {
+  const [isCreating, setIsCreating] = useState(false);
+
+  const handleNext = async () => {
     setDirection(1);
     if (currentStep === 5) {
-      // Skip email capture, user is logged in and email is already captured
-      router.push('/dashboard');
+      // Wizard complete — create application in DB
+      setIsCreating(true);
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.access_token) {
+          router.push('/dashboard');
+          return;
+        }
+
+        const response = await fetch('/api/applications', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            visaType: visaType === 'unsure' ? 'spouse' : visaType,
+            nationality,
+            relationshipStatus,
+            currentlyInUk,
+            relationshipDurationMonths,
+            annualIncomeRange,
+            employmentStatus,
+            urgency,
+            hasPreviousRefusal,
+            hasPreviousOverstay,
+          }),
+        });
+
+        if (response.ok) {
+          const { application } = await response.json();
+          // Redirect to dashboard with the new application ID
+          router.push(`/dashboard?app=${application.id}`);
+        } else {
+          // Fallback to old behavior if API fails
+          console.error('[Onboarding] Failed to create application, falling back');
+          router.push('/dashboard');
+        }
+      } catch (err) {
+        console.error('[Onboarding] Error creating application:', err);
+        router.push('/dashboard');
+      }
     } else {
       nextStep();
     }
@@ -533,10 +577,14 @@ export default function Onboarding() {
                     )}
                     <button
                       onClick={handleNext}
-                      disabled={!canContinue()}
+                      disabled={!canContinue() || isCreating}
                       className="flex items-center gap-2 px-6 py-3 rounded-xl bg-blue-700 hover:bg-blue-800 text-white font-semibold text-sm transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed shadow-sm btn-hover touch-target"
                     >
-                      {currentStep === 5 ? 'Generate My Plan' : 'Continue'} <ArrowRight className="w-4 h-4" />
+                      {isCreating ? (
+                        <><Loader2 className="w-4 h-4 animate-spin" /> Creating your plan...</>
+                      ) : (
+                        <>{currentStep === 5 ? 'Generate My Plan' : 'Continue'} <ArrowRight className="w-4 h-4" /></>
+                      )}
                     </button>
                   </div>
                 </div>
