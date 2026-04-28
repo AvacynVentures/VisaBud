@@ -84,9 +84,12 @@ export default function DocumentUploadV3({
   const isAIRunning = aiStatus === 'queued' || aiStatus === 'classifying' || aiStatus === 'analyzing';
   // const isAIDone = aiStatus === 'complete' || aiStatus === 'failed';
 
-  // Sync server doc changes
+  // Sync server doc on initial mount only (not on every re-render)
+  // Polling updates take priority over stale serverDoc
+  const serverDocSynced = useRef(false);
   useEffect(() => {
-    if (serverDoc) {
+    if (serverDoc && !serverDocSynced.current) {
+      serverDocSynced.current = true;
       setUploadId(serverDoc.id);
       setFileName(serverDoc.fileName);
       setDownloadUrl(serverDoc.downloadUrl);
@@ -95,8 +98,6 @@ export default function DocumentUploadV3({
       setAiFeedback(serverDoc.scoringFeedback || serverDoc.classificationFeedback);
 
       // Only trust terminal AI states from server
-      // In-progress states (queued/classifying/analyzing) might be stale
-      // from a killed Vercel function — treat them as 'none' on load
       if (serverDoc.aiStatus === 'complete' || serverDoc.aiStatus === 'failed') {
         setAiStatus(serverDoc.aiStatus);
       } else {
