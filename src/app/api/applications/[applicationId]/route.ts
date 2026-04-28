@@ -52,7 +52,14 @@ export async function GET(
       return NextResponse.json({ error: 'Application not found' }, { status: 404 });
     }
 
-    if (app.user_id !== user.id) {
+    // Check ownership via custom users table (user_id = users.id, not auth.users.id)
+    const { data: userData } = await supabaseAdmin
+      .from('users')
+      .select('id')
+      .eq('auth_id', user.id)
+      .maybeSingle();
+
+    if (!userData || app.user_id !== userData.id) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
 
@@ -77,14 +84,20 @@ export async function PATCH(
   const { applicationId } = params;
 
   try {
-    // Verify ownership
+    // Verify ownership via custom users table
+    const { data: userDataPatch } = await supabaseAdmin
+      .from('users')
+      .select('id')
+      .eq('auth_id', user.id)
+      .maybeSingle();
+
     const { data: existing } = await supabaseAdmin
       .from('applications')
       .select('user_id')
       .eq('id', applicationId)
       .single();
 
-    if (!existing || existing.user_id !== user.id) {
+    if (!existing || !userDataPatch || existing.user_id !== userDataPatch.id) {
       return NextResponse.json({ error: 'Application not found' }, { status: 404 });
     }
 

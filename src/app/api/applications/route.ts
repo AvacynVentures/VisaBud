@@ -38,10 +38,21 @@ export async function GET(req: NextRequest) {
   }
 
   try {
+    // Look up custom users table ID from auth_id
+    const { data: userData } = await supabaseAdmin
+      .from('users')
+      .select('id')
+      .eq('auth_id', user.id)
+      .maybeSingle();
+
+    if (!userData) {
+      return NextResponse.json({ applications: [] });
+    }
+
     const { data: apps, error } = await supabaseAdmin
       .from('applications')
       .select('*')
-      .eq('user_id', user.id)
+      .eq('user_id', userData.id)
       .in('status', ['active', 'submitted'])
       .order('updated_at', { ascending: false });
 
@@ -121,10 +132,22 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Valid visa_type required' }, { status: 400 });
     }
 
+    // Look up custom users table ID from auth_id
+    const { data: userData, error: userError } = await supabaseAdmin
+      .from('users')
+      .select('id')
+      .eq('auth_id', user.id)
+      .maybeSingle();
+
+    if (userError || !userData) {
+      console.error('[POST /applications] User lookup failed:', userError);
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
     const { data: app, error } = await supabaseAdmin
       .from('applications')
       .insert({
-        user_id: user.id,
+        user_id: userData.id,
         name: body.name || null,
         visa_type: body.visaType,
         nationality: body.nationality || null,
