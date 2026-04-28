@@ -247,22 +247,27 @@ export default function DocumentUploadV3({
       setConfidenceScore(null);
       setAiFeedback(null);
 
-      const response = await fetch(`/api/documents/${uploadId}/ai-check`, {
+      // Start polling IMMEDIATELY (don't wait for the endpoint)
+      startPolling(uploadId);
+
+      // Fire the AI check — endpoint awaits pipeline completion
+      // Meanwhile, polling picks up status changes from DB
+      fetch(`/api/documents/${uploadId}/ai-check`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
+      }).then(async (response) => {
+        const result = await response.json();
+        if (!result.success) {
+          console.error('[ai-check] Endpoint returned error:', result.error);
+          // Polling will pick up the 'failed' status from DB
+        }
+      }).catch((err) => {
+        console.error('[ai-check] Fetch error:', err);
+        // Polling will pick up the 'failed' status from DB
       });
-
-      const result = await response.json();
-
-      if (!result.success) {
-        throw new Error(result.error || 'AI check failed');
-      }
-
-      // Start polling for results
-      startPolling(uploadId);
     } catch (err: any) {
       console.error('[ai-check] Error:', err);
       setAiStatus('failed');
