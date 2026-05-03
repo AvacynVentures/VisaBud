@@ -120,13 +120,21 @@ export async function GET(req: NextRequest) {
 // ─── POST: Create Application ───────────────────────────────────────────────
 
 export async function POST(req: NextRequest) {
+  console.log('[POST /api/applications] Request received');
+  console.log('[POST /api/applications] URL:', req.url);
+  console.log('[POST /api/applications] Headers:', req.headers);
+  
   const user = await getUser(req);
+  console.log('[POST /api/applications] User:', user?.id);
+  
   if (!user) {
+    console.log('[POST /api/applications] No user - returning 401');
     return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
   }
 
   try {
     const body: CreateApplicationRequest = await req.json();
+    console.log('[POST /api/applications] Body:', body);
 
     if (!body.visaType || !['spouse', 'skilled_worker', 'citizenship'].includes(body.visaType)) {
       return NextResponse.json({ error: 'Valid visa_type required' }, { status: 400 });
