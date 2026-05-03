@@ -141,13 +141,28 @@ export async function POST(req: NextRequest) {
     }
 
     // Look up custom users table ID from auth_id
-    const { data: userData, error: userError } = await supabaseAdmin
+    let { data: userData, error: userError } = await supabaseAdmin
       .from('users')
       .select('id')
       .eq('auth_id', user.id)
       .maybeSingle();
 
-    if (userError || !userData) {
+    // If user doesn't exist yet, create them
+    if (!userData && !userError) {
+      console.log('[POST /applications] Creating new user record for:', user.id);
+      const { data: newUser, error: createError } = await supabaseAdmin
+        .from('users')
+        .insert({ auth_id: user.id, email: user.email })
+        .select('id')
+        .single();
+
+      if (createError || !newUser) {
+        console.error('[POST /applications] Failed to create user:', createError);
+        return NextResponse.json({ error: 'Failed to create user record' }, { status: 500 });
+      }
+
+      userData = newUser;
+    } else if (userError || !userData) {
       console.error('[POST /applications] User lookup failed:', userError);
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
