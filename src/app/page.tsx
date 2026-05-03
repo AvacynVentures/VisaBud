@@ -44,6 +44,18 @@ export default function Home() {
       <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
         <TopNav />
 
+        {/* Government Disclaimer Banner */}
+        <div className="w-full bg-amber-50 border-b border-amber-200">
+          <div className="container-max py-3 px-4">
+            <div className="flex items-start gap-3">
+              <span className="text-xl mt-0.5">⚠️</span>
+              <p className="text-sm text-amber-900">
+                <strong>VisaBud is not affiliated with UK Visas and Immigration (UKVI) or any government agency.</strong> We provide private document preparation checklists to help you organize materials for visa applications. For official information, visit <a href="https://www.gov.uk/visas-immigration" target="_blank" rel="noopener noreferrer" className="font-semibold underline">gov.uk/visas-immigration</a>.
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* Hero */}
         <section className="container-max py-16 md:py-24">
           <div className="max-w-3xl">
