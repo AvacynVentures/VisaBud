@@ -75,6 +75,23 @@ export default function RootLayout({
           />
         </noscript>
         {/* End Meta Pixel Code */}
+
+        {/* Google Tag Manager */}
+        <script
+          async
+          src="https://www.googletagmanager.com/gtag/js?id=AW-18134720485"
+        />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', 'AW-18134720485');
+            `,
+          }}
+        />
+        {/* End Google Tag Manager */}
       </head>
       <body className="bg-white text-slate-900 antialiased">
         <AuthProvider>
