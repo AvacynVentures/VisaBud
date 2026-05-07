@@ -279,7 +279,27 @@ export default function DocumentUploadV3({
   // ─── AI Check Handler ───────────────────────────────────────────────────
 
   const handleAICheck = useCallback(async () => {
-    if (!uploadId || !isPremium) return;
+    if (!uploadId) return;
+    
+    // Check premium status by calling API (not relying on prop which may be stale)
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      if (!token) return;
+
+      const tierRes = await fetch('/api/user/tier', {
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+      const tierData = await tierRes.json();
+
+      if (!tierData.isPremium) {
+        console.log('[ai-check] User not premium, cannot run AI check');
+        return;
+      }
+    } catch (err) {
+      console.error('[ai-check] Failed to check tier:', err);
+      return;
+    }
 
     try {
       const token = await getToken();

@@ -15,7 +15,7 @@ import { createClient } from '@supabase/supabase-js';
 import { runAIPipeline } from '@/lib/ai-pipeline';
 import type { AICheckResponse } from '@/lib/document-upload-types';
 
-export const maxDuration = 120; // Allow 120s for Vercel (full pipeline execution)
+// No maxDuration needed — we return immediately, don't await pipeline
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -144,17 +144,18 @@ export async function POST(
 
     console.log(`[ai-check] Starting AI pipeline for ${documentId}`);
 
-    // Run pipeline and wait for it to complete
-    // maxDuration=120 gives us time for the full pipeline (classify + analyze)
-    try {
-      await runAIPipeline(documentId);
-      console.log(`[ai-check] Pipeline complete for ${documentId}`);
-    } catch (pipelineErr) {
-      console.error(`[ai-check] Pipeline error for ${documentId}:`, pipelineErr);
-      // Pipeline already marks document as 'failed' in DB, so polling will pick it up
-    }
+    // CRITICAL: Fire-and-forget! Don't await the pipeline.
+    // Vercel will kill the function after we return, but that's OK.
+    // The pipeline runs as a background process and updates DB.
+    // Frontend polls /status to see progress.
+    
+    // Trigger pipeline without waiting
+    runAIPipeline(documentId).catch(err => {
+      console.error(`[ai-check] Background pipeline error for ${documentId}:`, err);
+    });
 
-    // Return immediately — frontend polls /status for live progress updates
+    // Return immediately — user sees instant response
+    // Frontend immediately starts polling /status for progress
     return NextResponse.json({
       success: true,
       statusUrl: `/api/documents/${documentId}/status`,
