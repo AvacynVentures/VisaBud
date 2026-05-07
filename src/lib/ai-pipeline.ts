@@ -205,12 +205,18 @@ export async function runAIPipeline(documentId: string): Promise<void> {
     // STAGE 1: CLASSIFY
     // ════════════════════════════════════════════════════════════════════════
 
-    await supabaseAdmin
+    console.log(`[ai-pipeline] Stage 1: Classifying ${documentId}`);
+
+    const classifyStatusResult = await supabaseAdmin
       .from('document_uploads')
       .update({ ai_status: 'classifying' })
       .eq('id', documentId);
 
-    console.log(`[ai-pipeline] Stage 1: Classifying ${documentId}`);
+    if (classifyStatusResult.error) {
+      console.error(`[ai-pipeline] Failed to update to "classifying": ${classifyStatusResult.error.message}`);
+    } else {
+      console.log(`[ai-pipeline] Updated status to "classifying" for ${documentId}`);
+    }
 
     const classifyResponse = await callClaude(
       'You are a document classifier. Respond with valid JSON only.',
@@ -279,12 +285,18 @@ Respond ONLY with JSON: {"isDocument": boolean, "documentType": "string", "isVis
     // STAGE 2: ANALYZE (Full Checklist Scoring)
     // ════════════════════════════════════════════════════════════════════════
 
-    await supabaseAdmin
+    console.log(`[ai-pipeline] Stage 2: Analyzing ${documentId} (type: ${classification.documentType})`);
+
+    const analyzeStatusResult = await supabaseAdmin
       .from('document_uploads')
       .update({ ai_status: 'analyzing' })
       .eq('id', documentId);
 
-    console.log(`[ai-pipeline] Stage 2: Analyzing ${documentId} (type: ${classification.documentType})`);
+    if (analyzeStatusResult.error) {
+      console.error(`[ai-pipeline] Failed to update to "analyzing": ${analyzeStatusResult.error.message}`);
+    } else {
+      console.log(`[ai-pipeline] Updated status to "analyzing" for ${documentId}`);
+    }
 
     // Build requirement-specific prompt
     const requirements = getRequirements(doc.checklist_item_id + ' ' + (classification.documentType || ''));
