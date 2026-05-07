@@ -280,26 +280,6 @@ export default function DocumentUploadV3({
 
   const handleAICheck = useCallback(async () => {
     if (!uploadId) return;
-    
-    // Check premium status by calling API (not relying on prop which may be stale)
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const token = session?.access_token;
-      if (!token) return;
-
-      const tierRes = await fetch(`/api/user/tier?app=${applicationId || ''}`, {
-        headers: { 'Authorization': `Bearer ${token}` },
-      });
-      const tierData = await tierRes.json();
-
-      if (!tierData.isPremium) {
-        console.log('[ai-check] User not premium, cannot run AI check');
-        return;
-      }
-    } catch (err) {
-      console.error('[ai-check] Failed to check tier:', err);
-      return;
-    }
 
     try {
       const token = await getToken();
@@ -322,6 +302,30 @@ export default function DocumentUploadV3({
           'Content-Type': 'application/json',
         },
       }).then(async (response) => {
+        // Handle premium-required error
+        if (response.status === 403) {
+          console.log('[ai-check] Premium required');
+          setAiStatus('none');
+          setUploadError('Premium tier required for AI Check');
+          if (pollRef.current) {
+            clearInterval(pollRef.current);
+            pollRef.current = null;
+          }
+          onUpgradeClick?.();
+          return;
+        }
+
+        if (!response.ok) {
+          console.error('[ai-check] Endpoint error:', response.status);
+          setAiStatus('failed');
+          setUploadError('AI analysis failed. Please try again.');
+          if (pollRef.current) {
+            clearInterval(pollRef.current);
+            pollRef.current = null;
+          }
+          return;
+        }
+
         const result = await response.json();
         console.log('[ai-check] Endpoint returned:', result);
         
