@@ -34,11 +34,14 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
 
     const { data: { user }, error: authError } = await supabaseAuth.auth.getUser(token);
     if (authError || !user) {
+      console.log(`[user/tier] Auth error or no user`);
       return NextResponse.json(
         { tier: 'none', isPremium: false },
         { status: 200 }
       );
     }
+
+    console.log(`[user/tier] Auth user: ${user.id}`);
 
     // 2. Get user record
     const { data: userData } = await supabaseAdmin
@@ -47,7 +50,10 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       .eq('auth_id', user.id)
       .maybeSingle();
 
+    console.log(`[user/tier] User lookup result: ${userData?.id || 'NOT FOUND'}`);
+
     if (!userData) {
+      console.log(`[user/tier] No user record found for auth_id ${user.id}`);
       return NextResponse.json(
         { tier: 'none', isPremium: false },
         { status: 200 }
@@ -56,17 +62,19 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
 
     // 3. Check tier from applications table (same source as dashboard)
     // If user has ANY application with purchased_tier = 'premium', they're premium
-    const { data: applications } = await supabaseAdmin
+    const { data: applications, error: appError } = await supabaseAdmin
       .from('applications')
       .select('purchased_tier')
       .eq('user_id', userData.id)
       .order('created_at', { ascending: false })
       .limit(1);
 
+    console.log(`[user/tier] App query error: ${appError}, found ${applications?.length || 0} apps`);
+    
     const app = applications?.[0];
     const appTier = app?.purchased_tier || 'none';
     
-    console.log(`[user/tier] User ${user.id}: application tier = ${appTier}`);
+    console.log(`[user/tier] Final tier: ${appTier}`);
 
     return NextResponse.json({
       tier: appTier,
