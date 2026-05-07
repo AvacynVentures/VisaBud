@@ -68,11 +68,11 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     // Determine tier from payment (same logic as webhook)
     let tier = 'none';
     if (payment) {
-      // Premium: product_type = 'premium_review' OR amount >= £149
-      if (payment.product_type === 'premium_review' || payment.amount_pence >= 14900) {
+      // Premium: product_type = 'premium_review' OR amount >= £79.99 (7999 pence)
+      if (payment.product_type === 'premium_review' || payment.amount_pence >= 7999) {
         tier = 'premium';
       }
-      // Standard: anything else with a payment
+      // Standard: £9.99 (999 pence) to £79.98
       else if (payment.amount_pence > 0) {
         tier = 'standard';
       }
