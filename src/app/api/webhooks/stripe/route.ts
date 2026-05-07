@@ -159,8 +159,14 @@ async function handleCheckoutSessionCompleted(session: any) {
     const authUserId = session.metadata?.userId; // This is the Supabase auth user ID
     const email = session.customer_email;
     const productType = session.metadata?.productType;
-    const tier = session.metadata?.tier;
+    let tier = session.metadata?.tier;
     const applicationId = session.metadata?.applicationId;
+
+    // SAFETY: Ensure tier is always 'standard' or 'premium', never undefined
+    if (!tier || (tier !== 'standard' && tier !== 'premium')) {
+      tier = 'standard'; // Default to standard if missing
+      console.warn(`[webhook] Tier was missing or invalid (${session.metadata?.tier}), defaulting to 'standard'`);
+    }
 
     console.log(`[webhook] checkout.session.completed — userId=${authUserId}, tier=${tier}, productType=${productType}, applicationId=${applicationId || 'NONE'}, amount=${session.amount_total}`);
 
@@ -272,16 +278,19 @@ async function handlePremiumReviewPurchase(
   // Update application tier if applicationId present in metadata
   const applicationId = session.metadata?.applicationId;
   if (applicationId) {
+    // Explicit: Only set to premium if tier is EXACTLY 'premium', otherwise standard
+    const tierToSet = tier === 'premium' ? 'premium' : 'standard';
+    
     const { error: appError } = await supabaseServer
       .from('applications')
-      .update({ purchased_tier: tier === 'premium' ? 'premium' : 'standard' })
+      .update({ purchased_tier: tierToSet })
       .eq('id', applicationId)
       .eq('user_id', userId);
 
     if (appError) {
-      console.error('Failed to update application tier:', appError);
+      console.error(`Failed to update application ${applicationId} tier to ${tierToSet}:`, appError);
     } else {
-      console.log(`Application ${applicationId} upgraded to ${tier}`);
+      console.log(`✓ Application ${applicationId} tier set to: ${tierToSet} (user purchased: ${tier})`);
     }
   }
 
@@ -353,16 +362,19 @@ async function handleFullPackPurchase(session: any, userId: string, _email: stri
   // Update application tier if applicationId present in metadata
   const applicationId = session.metadata?.applicationId;
   if (applicationId) {
+    // Explicit: Only set to premium if tier is EXACTLY 'premium', otherwise standard
+    const tierToSet = tier === 'premium' ? 'premium' : 'standard';
+    
     const { error: appError } = await supabaseServer
       .from('applications')
-      .update({ purchased_tier: tier === 'premium' ? 'premium' : 'standard' })
+      .update({ purchased_tier: tierToSet })
       .eq('id', applicationId)
       .eq('user_id', userId);
 
     if (appError) {
-      console.error('Failed to update application tier:', appError);
+      console.error(`Failed to update application ${applicationId} tier to ${tierToSet}:`, appError);
     } else {
-      console.log(`Application ${applicationId} upgraded to ${tier}`);
+      console.log(`✓ Application ${applicationId} tier set to: ${tierToSet} (user purchased: ${tier})`);
     }
   }
 

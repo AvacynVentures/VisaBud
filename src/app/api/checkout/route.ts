@@ -92,7 +92,7 @@ export async function POST(req: NextRequest) {
       metadata: {
         userId: user.id,
         email: email,
-        tier: tier,
+        tier: tier,  // ← CRITICAL: Must be 'standard' or 'premium'
         ...(applicationId && { applicationId }),
         ...(tier !== 'standard' && { productType: 'premium_review' }),
       },
