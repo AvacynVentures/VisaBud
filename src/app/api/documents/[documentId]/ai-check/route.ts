@@ -117,14 +117,20 @@ export async function POST(
       .eq('id', documentId);
 
     console.log(`[ai-check] Starting AI pipeline for ${documentId}`);
+    console.log(`[ai-check] Document: id=${documentId}, user_id=${doc.user_id}, file=${doc.file_name}`);
 
     // Run pipeline and wait for it to complete
     // maxDuration=120 keeps the function alive long enough for the pipeline
     try {
+      console.log(`[ai-check] About to call runAIPipeline...`);
       await runAIPipeline(documentId);
       console.log(`[ai-check] Pipeline complete for ${documentId}`);
     } catch (pipelineErr) {
       console.error(`[ai-check] Pipeline error for ${documentId}:`, pipelineErr);
+      console.error(`[ai-check] Error details:`, {
+        message: pipelineErr instanceof Error ? pipelineErr.message : String(pipelineErr),
+        stack: pipelineErr instanceof Error ? pipelineErr.stack : undefined,
+      });
       // Pipeline already marks document as 'failed' in DB
     }
 
