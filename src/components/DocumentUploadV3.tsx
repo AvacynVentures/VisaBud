@@ -50,7 +50,7 @@ interface DocumentUploadV3Props {
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'];
-const POLL_INTERVAL_MS = 1500; // ← FASTER POLLING (was 2s)
+const POLL_INTERVAL_MS = 500; // ← VERY FAST POLLING for instant UI updates
 const MAX_POLL_ATTEMPTS = 180; // ← 9 minutes (was 4 min, pipeline can be slow)
 
 // ─── Component ──────────────────────────────────────────────────────────────
@@ -390,9 +390,9 @@ export default function DocumentUploadV3({
 
   const getAIStatusLabel = (): string => {
     switch (aiStatus) {
-      case 'queued': return 'Queued...';
-      case 'classifying': return 'Classifying document...';
-      case 'analyzing': return 'Checking requirements...';
+      case 'queued': return '⏳ Queued, waiting for analysis...';
+      case 'classifying': return '🔍 Classifying document (step 1/2)...';
+      case 'analyzing': return '✓ Analyzing requirements (step 2/2)...';
       case 'complete': return confidenceScore !== null ? `${confidenceScore}%` : 'Complete';
       case 'failed': return 'Analysis failed';
       default: return '';
@@ -546,9 +546,13 @@ export default function DocumentUploadV3({
                 )}
 
                 {isAIRunning && (
-                  <div className="flex items-center gap-2 mt-1">
-                    <Loader2 className="w-3 h-3 text-violet-600 animate-spin" />
-                    <span className="text-xs text-violet-700 font-medium">{getAIStatusLabel()}</span>
+                  <div className="flex items-center gap-2 mt-2 px-2 py-1.5 rounded-lg bg-violet-100 border border-violet-300">
+                    <Loader2 className="w-4 h-4 text-violet-700 animate-spin flex-shrink-0" />
+                    <span className={`text-sm font-semibold ${
+                      aiStatus === 'analyzing' ? 'text-violet-900' : 'text-violet-800'
+                    }`}>
+                      {getAIStatusLabel()}
+                    </span>
                   </div>
                 )}
 
