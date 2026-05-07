@@ -55,19 +55,23 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     }
 
     // 3. Check latest payment
-    const { data: payments } = await supabaseAdmin
+    const { data: payments, error: paymentsError } = await supabaseAdmin
       .from('payments')
-      .select('amount_pence, product_type, payment_status')
+      .select('*')
       .eq('user_id', userData.id)
       .eq('payment_status', 'completed')
       .order('created_at', { ascending: false })
       .limit(1);
 
+    console.log(`[user/tier] Query error: ${paymentsError}, found ${payments?.length || 0} payments`);
+    
     const payment = payments?.[0];
+    console.log(`[user/tier] Payment: ${JSON.stringify(payment)}`);
     
     // Determine tier from payment (same logic as webhook)
     let tier = 'none';
     if (payment) {
+      console.log(`[user/tier] Checking: product_type='${payment.product_type}', amount=${payment.amount_pence}`);
       // Premium: product_type = 'premium_review' OR amount >= £79.99 (7999 pence)
       if (payment.product_type === 'premium_review' || payment.amount_pence >= 7999) {
         tier = 'premium';
@@ -78,7 +82,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       }
     }
 
-    console.log(`[user/tier] User ${user.id}: payment=${JSON.stringify(payment)}, tier = ${tier}`);
+    console.log(`[user/tier] Result: ${tier}`);
 
     return NextResponse.json({
       tier,
