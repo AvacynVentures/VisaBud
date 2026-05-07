@@ -114,29 +114,38 @@ async function callClaude(
     });
   }
 
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'x-api-key': ANTHROPIC_API_KEY,
-      'anthropic-version': '2023-06-01',
-      'content-type': 'application/json',
-    },
-    body: JSON.stringify({
-      model: CLAUDE_MODEL,
-      max_tokens: maxTokens,
-      temperature: 0.2,
-      system: systemPrompt,
-      messages: [{ role: 'user', content: contentBlocks }],
-    }),
-  });
+  // Add timeout using AbortController (45 second timeout)
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 45000);
 
-  if (!response.ok) {
-    const errBody = await response.text();
-    throw new Error(`Claude API error: ${response.status} — ${errBody.slice(0, 200)}`);
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: CLAUDE_MODEL,
+        max_tokens: maxTokens,
+        temperature: 0.2,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: contentBlocks }],
+      }),
+      signal: controller.signal, // ← TIMEOUT SIGNAL
+    });
+
+    if (!response.ok) {
+      const errBody = await response.text();
+      throw new Error(`Claude API error: ${response.status} — ${errBody.slice(0, 200)}`);
+    }
+
+    const data = await response.json();
+    return data.content?.[0]?.text || '';
+  } finally {
+    clearTimeout(timeoutId);
   }
-
-  const data = await response.json();
-  return data.content?.[0]?.text || '';
 }
 
 // ─── Score Calculation ──────────────────────────────────────────────────────
@@ -210,16 +219,10 @@ export async function runAIPipeline(documentId: string): Promise<void> {
 2. If yes, what type? (passport, bank statement, payslip, letter, certificate, photo, other, NOT_A_DOCUMENT)
 3. Is this relevant to UK visa applications? YES/NO
 
-Respond ONLY with JSON:
-{
-  "isDocument": boolean,
-  "documentType": "string",
-  "isVisaRelevant": boolean,
-  "explanation": "brief reason"
-}`,
+Respond ONLY with JSON: {"isDocument": boolean, "documentType": "string", "isVisaRelevant": boolean, "explanation": "brief"}`,
       imageBase64,
       doc.mime_type,
-      300,
+      200, // ← REDUCED from 300
     );
 
     let classification = {
@@ -288,31 +291,14 @@ Respond ONLY with JSON:
     const reqList = requirements.map((r, i) => `${i + 1}. ${r.requirement}`).join('\n');
 
     const analyzeResponse = await callClaude(
-      `You are a senior UK immigration document analyst with 15+ years of UKVI experience. You check documents against specific requirement checklists. Be precise, evidence-based, and never guess. Respond with valid JSON only.`,
-      `This is a "${classification.documentType}" for a UK visa application.
-
-Required checklist:
+      `You are a UK immigration document analyst. Check each requirement: met (true/false), evidence (brief), suggestedFix (null or text). Identify critical missing items. Respond with valid JSON only.`,
+      `Analyze this "${classification.documentType}" against requirements:
 ${reqList}
 
-For each requirement:
-- Is it present and visible? (met: true/false)
-- What evidence do you see? (evidence: string)
-- If not met, how should the applicant fix it? (suggestedFix: string or null)
-
-Also identify CRITICAL items — things whose absence would likely cause UKVI to reject the application.
-
-Respond ONLY with JSON:
-{
-  "items": [
-    { "requirement": "name", "met": true, "evidence": "what you see", "suggestedFix": null }
-  ],
-  "criticalMissing": ["items that would cause rejection"],
-  "recommendations": ["specific actionable steps"],
-  "overallFeedback": "one paragraph summary of document quality"
-}`,
+Respond ONLY with JSON: {"items": [{"requirement": "name", "met": true, "evidence": "brief", "suggestedFix": null}], "criticalMissing": [], "recommendations": [], "overallFeedback": "summary"}`,
       imageBase64,
       doc.mime_type,
-      2000,
+      1200, // ← REDUCED from 2000
     );
 
     // Parse analysis result
@@ -379,17 +365,28 @@ Respond ONLY with JSON:
 
     console.log(`[ai-pipeline] Complete for ${documentId}: score=${confidenceScore}%`);
   } catch (error) {
-    console.error(`[ai-pipeline] Fatal error for ${documentId}:`, error);
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    console.error(`[ai-pipeline] Fatal error for ${documentId}:`, errorMsg);
+
+    // Determine if timeout or other error
+    const isTimeout = errorMsg.includes('AbortError') || errorMsg.includes('timeout');
+    const userFeedback = isTimeout
+      ? 'Analysis timed out. The document was complex or took too long. Please try again — sometimes a retry succeeds.'
+      : 'AI analysis encountered an error. Your document is safely saved. Please try again in a few moments.';
 
     // Mark as failed but don't lose the document
-    await supabaseAdmin
-      .from('document_uploads')
-      .update({
-        ai_status: 'failed',
-        scoring_feedback: 'AI analysis failed. Your document is safely saved — you can retry.',
-        ai_completed_at: new Date().toISOString(),
-      })
-      .eq('id', documentId)
-      .catch(() => {});
+    try {
+      await supabaseAdmin
+        .from('document_uploads')
+        .update({
+          ai_status: 'failed',
+          scoring_feedback: userFeedback,
+          flags: [{ text: 'Analysis failed - please retry', severity: 'high' }],
+          ai_completed_at: new Date().toISOString(),
+        })
+        .eq('id', documentId);
+    } catch (dbError) {
+      console.error(`[ai-pipeline] Failed to update document status for ${documentId}:`, dbError);
+    }
   }
 }
