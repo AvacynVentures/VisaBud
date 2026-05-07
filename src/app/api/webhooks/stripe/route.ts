@@ -308,7 +308,7 @@ async function handleFullPackPurchase(session: any, userId: string, _email: stri
   const amountPence = session.amount_total || 1;
 
   // Record payment in payments table (source of truth for unlock status)
-  // Include tier column so we always know what was purchased (not just inferred from amount)
+  // Note: tier info is encoded in product_type ('full_pack' = standard, 'premium_review' = premium)
   const { error: paymentError } = await supabaseServer
     .from('payments')
     .insert({
@@ -318,7 +318,6 @@ async function handleFullPackPurchase(session: any, userId: string, _email: stri
       currency: 'GBP',
       payment_status: 'completed',
       product_type: tier === 'standard' ? 'full_pack' : 'premium_review',
-      tier: tier, // Store tier directly so dashboard always knows what was purchased
       created_at: new Date().toISOString(),
       completed_at: new Date().toISOString(),
     });
