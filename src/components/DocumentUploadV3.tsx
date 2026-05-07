@@ -389,7 +389,7 @@ export default function DocumentUploadV3({
           return;
         }
         
-        const response = await fetch(`/api/documents/${uploadId}`, {
+        const response = await fetch(`/api/documents/${uploadId}/delete`, {
           method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',
