@@ -50,8 +50,8 @@ interface DocumentUploadV3Props {
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'];
-const POLL_INTERVAL_MS = 2000;
-const MAX_POLL_ATTEMPTS = 120; // 4 minutes
+const POLL_INTERVAL_MS = 1500; // ← FASTER POLLING (was 2s)
+const MAX_POLL_ATTEMPTS = 180; // ← 9 minutes (was 4 min, pipeline can be slow)
 
 // ─── Component ──────────────────────────────────────────────────────────────
 
@@ -179,12 +179,35 @@ export default function DocumentUploadV3({
         console.warn('[poll] Error:', err);
       }
 
-      // Max attempts
+      // Max attempts - but still keep checking once per minute for up to 15 minutes total
+      // This prevents "false timeouts" where backend is still processing
       if (count >= MAX_POLL_ATTEMPTS) {
         if (pollRef.current) clearInterval(pollRef.current);
-        pollRef.current = null;
-        setAiStatus('failed');
-        setAiFeedback('Analysis timed out. Your document is saved — please try again.');
+        
+        // Switch to slow polling (every 30s) instead of giving up
+        console.log('[poll] Max fast attempts reached, switching to slow polling...');
+        pollRef.current = setInterval(async () => {
+          try {
+            const slowResponse = await fetch(`/api/documents/${docId}/status`, { cache: 'no-store' });
+            if (!slowResponse.ok) return;
+            const slowData: DocumentStatusResponse = await slowResponse.json();
+            
+            if (slowData.aiStatus === 'complete' || slowData.aiStatus === 'failed') {
+              if (pollRef.current) clearInterval(pollRef.current);
+              pollRef.current = null;
+              setAiStatus(slowData.aiStatus);
+              setConfidenceScore(slowData.confidenceScore);
+              setAiFeedback(slowData.scoringFeedback || slowData.classificationFeedback);
+              onAIComplete?.(slowData);
+              console.log('[poll] Slow polling detected completion!');
+            }
+          } catch (e) {
+            console.warn('[slow-poll] Error:', e);
+          }
+        }, 30000); // Check every 30 seconds
+        
+        setAiStatus('queued'); // Still processing
+        setAiFeedback('Still analyzing your document... This may take a few more minutes. We\'ll update automatically when ready.');
       }
     }, POLL_INTERVAL_MS);
   }, [onAIComplete]);
