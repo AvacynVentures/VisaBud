@@ -92,6 +92,11 @@ export default function DocumentUploadV3({
   const isAIRunning = aiStatus === 'queued' || aiStatus === 'classifying' || aiStatus === 'analyzing';
   // const isAIDone = aiStatus === 'complete' || aiStatus === 'failed';
 
+  // DEBUG: Log whenever aiStatus changes
+  useEffect(() => {
+    console.log(`[DocumentUpload] aiStatus changed to "${aiStatus}"`);
+  }, [aiStatus]);
+
   // Sync server doc on initial mount only (not on every re-render)
   // Polling updates take priority over stale serverDoc
   const serverDocSynced = useRef(false);
@@ -153,21 +158,26 @@ export default function DocumentUploadV3({
       console.log(`[poll] Attempt ${count}: Fetching status for ${docId}`);
 
       try {
+        console.log(`[poll] Attempt ${count}: Fetching status...`);
         const response = await fetch(`/api/documents/${docId}/status`, {
           cache: 'no-store',
           headers: { 'Authorization': `Bearer ${token}` },
         });
+        
         if (!response.ok) {
-          console.warn(`[poll] Status ${response.status}, retrying...`);
+          console.warn(`[poll] Attempt ${count}: Status ${response.status}, retrying...`);
           return;
         }
 
         const data: DocumentStatusResponse = await response.json();
-        console.log(`[poll] Attempt ${count}: Got status="${data.aiStatus}", confidence=${data.confidenceScore}`);
+        console.log(`[poll] Attempt ${count}: Received ai_status="${data.aiStatus}", confidence=${data.confidenceScore}`);
+        console.log(`[poll] Attempt ${count}: Setting React state to "${data.aiStatus}"`);
 
         // Update AI status progressively
+        console.log(`[poll] Attempting setAiStatus("${data.aiStatus}")`);
         setAiStatus(data.aiStatus);
         setIsDocument(data.isDocument);
+        console.log(`[poll] After setAiStatus, aiStatus is still "${data.aiStatus}" (state update queued)`);
 
         if (data.classificationFeedback) {
           setAiFeedback(data.classificationFeedback);
