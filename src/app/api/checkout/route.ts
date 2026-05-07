@@ -90,11 +90,11 @@ export async function POST(req: NextRequest) {
         ? `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard?app=${applicationId}`
         : `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard`,
       metadata: {
-        userId: user.id,
-        email: email,
-        tier: tier,  // ← CRITICAL: Must be 'standard' or 'premium'
-        ...(applicationId && { applicationId }),
-        ...(tier !== 'standard' && { productType: 'premium_review' }),
+        userId: String(user.id),  // ← Convert to string (Stripe requirement)
+        email: String(email),     // ← Convert to string
+        tier: String(tier),       // ← Convert to string (CRITICAL: Must be 'standard' or 'premium')
+        ...(applicationId && { applicationId: String(applicationId) }),  // ← Convert to string
+        ...(tier !== 'standard' && { productType: 'premium_review' }),   // ← Already string
       },
     });
 
