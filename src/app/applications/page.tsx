@@ -28,6 +28,25 @@ function ApplicationsContent() {
     return session?.access_token || null;
   };
 
+  // Reload applications list
+  const loadApplications = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) return;
+
+      const response = await fetch('/api/applications', {
+        headers: { 'Authorization': `Bearer ${session.access_token}` },
+      });
+
+      if (!response.ok) return;
+
+      const data = await response.json();
+      setApplications(data.applications || []);
+    } catch (err) {
+      console.error('[Applications] Failed to reload:', err);
+    }
+  };
+
   const handleRename = async (appId: string) => {
     if (!editName.trim()) return;
     const token = await getToken();
@@ -77,28 +96,31 @@ function ApplicationsContent() {
     setDeletingId(null);
   };
 
+  // Load applications on mount
   useEffect(() => {
-    async function loadApplications() {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session?.access_token) return;
+    (async () => {
+      await loadApplications();
+      setLoading(false);
+    })();
+  }, []);
 
-        const response = await fetch('/api/applications', {
-          headers: { 'Authorization': `Bearer ${session.access_token}` },
-        });
-
-        if (!response.ok) return;
-
-        const data = await response.json();
-        setApplications(data.applications || []);
-      } catch (err) {
-        console.error('[Applications] Failed to load:', err);
-      } finally {
-        setLoading(false);
-      }
+  // Refetch when user returns from payment or when tab gains focus
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('refresh') === '1') {
+      // User just completed payment, refetch to show updated tier
+      loadApplications();
+      // Clean up URL
+      window.history.replaceState({}, '', '/applications');
     }
 
-    loadApplications();
+    // Also refetch when user switches back to this tab (focus event)
+    // This catches payment completions and other updates
+    const handleFocus = () => {
+      loadApplications();
+    };
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
   }, []);
 
   const firstName = user?.user_metadata?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || 'there';
