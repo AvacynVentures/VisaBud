@@ -37,19 +37,20 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
 
     // 2. Get application ID from query params
     const appId = req.nextUrl.searchParams.get('app');
+    console.log(`[user/tier] appId param: ${appId}`);
 
     let appTier = 'none';
     
     if (appId) {
       // If specific app ID provided, fetch that application
-      const { data: app } = await supabaseAdmin
+      const { data: app, error: appErr } = await supabaseAdmin
         .from('applications')
         .select('purchased_tier')
         .eq('id', appId)
         .maybeSingle();
 
+      console.log(`[user/tier] Query app ${appId}: error=${appErr}, tier=${app?.purchased_tier || 'NOT FOUND'}`);
       appTier = app?.purchased_tier || 'none';
-      console.log(`[user/tier] App ${appId}: tier = ${appTier}`);
     } else {
       // Otherwise get user's latest application
       // First, find user record
