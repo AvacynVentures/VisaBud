@@ -142,7 +142,7 @@ export default function DocumentUploadV3({
 
   // ─── Polling ────────────────────────────────────────────────────────────
 
-  const startPolling = useCallback((docId: string) => {
+  const startPolling = useCallback((docId: string, token: string) => {
     if (pollRef.current) clearInterval(pollRef.current);
     setPollCount(0);
 
@@ -153,7 +153,10 @@ export default function DocumentUploadV3({
       console.log(`[poll] Attempt ${count}: Fetching status for ${docId}`);
 
       try {
-        const response = await fetch(`/api/documents/${docId}/status`, { cache: 'no-store' });
+        const response = await fetch(`/api/documents/${docId}/status`, {
+          cache: 'no-store',
+          headers: { 'Authorization': `Bearer ${token}` },
+        });
         if (!response.ok) {
           console.warn(`[poll] Status ${response.status}, retrying...`);
           return;
@@ -290,7 +293,7 @@ export default function DocumentUploadV3({
       setAiFeedback(null);
 
       // Start polling IMMEDIATELY (don't wait for the endpoint)
-      startPolling(uploadId);
+      startPolling(uploadId, token);
 
       // Fire the AI check — endpoint awaits pipeline completion
       // Meanwhile, polling picks up status changes from DB
