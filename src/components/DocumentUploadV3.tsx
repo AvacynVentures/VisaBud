@@ -150,12 +150,17 @@ export default function DocumentUploadV3({
     pollRef.current = setInterval(async () => {
       count++;
       setPollCount(count);
+      console.log(`[poll] Attempt ${count}: Fetching status for ${docId}`);
 
       try {
         const response = await fetch(`/api/documents/${docId}/status`, { cache: 'no-store' });
-        if (!response.ok) return;
+        if (!response.ok) {
+          console.warn(`[poll] Status ${response.status}, retrying...`);
+          return;
+        }
 
         const data: DocumentStatusResponse = await response.json();
+        console.log(`[poll] Attempt ${count}: Got status="${data.aiStatus}", confidence=${data.confidenceScore}`);
 
         // Update AI status progressively
         setAiStatus(data.aiStatus);
@@ -167,6 +172,7 @@ export default function DocumentUploadV3({
 
         // Terminal state — stop polling
         if (data.aiStatus === 'complete' || data.aiStatus === 'failed') {
+          console.log(`[poll] ✅ COMPLETE: status=${data.aiStatus}, stopping polling`);
           if (pollRef.current) clearInterval(pollRef.current);
           pollRef.current = null;
 
@@ -175,17 +181,20 @@ export default function DocumentUploadV3({
           onAIComplete?.(data);
           return;
         }
+        
+        console.log(`[poll] Status still "${data.aiStatus}", will check again...`);
       } catch (err) {
-        console.warn('[poll] Error:', err);
+        console.warn(`[poll] Attempt ${count} ERROR:`, err);
       }
 
       // Max attempts - but still keep checking once per minute for up to 15 minutes total
       // This prevents "false timeouts" where backend is still processing
       if (count >= MAX_POLL_ATTEMPTS) {
+        console.log(`[poll] ⚠️ MAX ATTEMPTS REACHED (${count}/${MAX_POLL_ATTEMPTS}), switching to slow polling...`);
         if (pollRef.current) clearInterval(pollRef.current);
         
         // Switch to slow polling (every 30s) instead of giving up
-        console.log('[poll] Max fast attempts reached, switching to slow polling...');
+        console.log('[poll] Slow polling started (every 30s)...');
         pollRef.current = setInterval(async () => {
           try {
             const slowResponse = await fetch(`/api/documents/${docId}/status`, { cache: 'no-store' });
@@ -553,6 +562,7 @@ export default function DocumentUploadV3({
                     }`}>
                       {getAIStatusLabel()}
                     </span>
+                    <span className="text-xs text-violet-600 ml-auto">(polling...)</span>
                   </div>
                 )}
 
