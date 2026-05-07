@@ -55,6 +55,7 @@ import PaymentSuccessBanner from '@/components/PaymentSuccessBanner';
 import DocumentUploadV3 from '@/components/DocumentUploadV3';
 import TierFeatureButtons from '@/components/TierFeatureButtons';
 import PremiumUpgradeBanner from '@/components/PremiumUpgradeBanner';
+import ApplicationReadinessCard from '@/components/ApplicationReadinessCard';
 import AIReportModal from '@/components/AIReportModal';
 import TemplatesGallery from '@/components/TemplatesGallery';
 import GetTemplateButton from '@/components/GetTemplateButton';
@@ -1792,6 +1793,9 @@ function RisksTab({ risks, unlocked, onUnlock }: { risks: RiskRule[]; unlocked: 
           onUnlock={onUnlock}
         />
       )}
+
+      {/* Application Readiness Check — Premium Feature Showcase */}
+      <ApplicationReadinessCard isPremium={unlocked} onUpgrade={onUnlock} />
     </div>
   );
 }

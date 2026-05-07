@@ -423,11 +423,19 @@ export default function DocumentUploadV3({
             className={`border-2 border-dashed rounded-xl p-4 transition-all cursor-pointer
               ${isDragging ? 'border-blue-400 bg-blue-50' : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'}`}
           >
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 flex-1">
               <Upload className="w-5 h-5 text-gray-400 flex-shrink-0" />
-              <div>
-                <p className="text-sm font-semibold text-gray-900">Upload Document</p>
-                <p className="text-xs text-gray-500">JPG, PNG or PDF • Max 5MB</p>
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-semibold text-gray-900">Upload Document</p>
+                  {isPremium && (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[11px] font-semibold">
+                      <Sparkles className="w-3 h-3" />
+                      AI Verified
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-gray-500 mt-0.5">JPG, PNG or PDF • Max 5MB</p>
               </div>
             </div>
           </motion.div>
