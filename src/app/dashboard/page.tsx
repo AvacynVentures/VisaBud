@@ -262,6 +262,8 @@ function DashboardContent() {
     if (!applicationId || !appData) return;
 
     const appTier = appData.purchased_tier || 'none';
+    console.log(`[Dashboard] App loaded: tier = ${appTier}`, appData);
+    
     if (appTier !== 'none') {
       setUnlocked(true);
       setPurchasedTier(appTier);
@@ -270,6 +272,7 @@ function DashboardContent() {
 
     // If returning from payment but tier is still 'none', poll for webhook
     if (isPaymentReturn && tierParam) {
+      console.log(`[Dashboard] Payment return detected, tier still 'none', polling...`);
       let pollCount = 0;
       const pollTimer = setInterval(async () => {
         pollCount++;
@@ -284,22 +287,30 @@ function DashboardContent() {
 
           const { application } = await res.json();
           const updatedTier = application?.purchased_tier || 'none';
+          console.log(`[Dashboard] Poll ${pollCount}: tier = ${updatedTier}`, application);
 
           if (updatedTier !== 'none') {
             setAppData(application);
             setUnlocked(true);
             setPurchasedTier(updatedTier);
+            console.log(`[Dashboard] Tier updated to ${updatedTier}, stopping poll`);
             clearInterval(pollTimer);
           }
-        } catch {}
+        } catch (err) {
+          console.error(`[Dashboard] Poll error:`, err);
+        }
 
-        if (pollCount >= 15) clearInterval(pollTimer); // Stop after 30s
+        if (pollCount >= 15) {
+          console.warn(`[Dashboard] Poll timeout after 15 attempts, tier still 'none'`);
+          clearInterval(pollTimer);
+        }
       }, 2000);
 
       return () => clearInterval(pollTimer);
     }
 
     // Not returning from payment — just set to none
+    console.log(`[Dashboard] Not a payment return, setting tier to 'none'`);
     setUnlocked(false);
     setPurchasedTier('none');
   }, [applicationId, appData, isPaymentReturn, tierParam, setUnlocked, setPurchasedTier]);
