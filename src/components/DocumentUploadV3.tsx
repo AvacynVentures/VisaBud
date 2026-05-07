@@ -374,8 +374,29 @@ export default function DocumentUploadV3({
 
   // ─── Remove Handler ─────────────────────────────────────────────────────
 
-  const handleRemove = useCallback(() => {
+  const handleRemove = useCallback(async () => {
     if (pollRef.current) clearInterval(pollRef.current);
+    
+    // Delete from database (not just local state!)
+    if (uploadId) {
+      try {
+        const response = await fetch(`/api/documents/${uploadId}`, {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+        });
+        
+        if (!response.ok) {
+          console.error('[remove] Failed to delete document:', response.status);
+          // Still clear local state even if DB delete fails
+        } else {
+          console.log(`[remove] Document ${uploadId} deleted from database`);
+        }
+      } catch (err) {
+        console.error('[remove] Error deleting document:', err);
+      }
+    }
+    
+    // Clear local state
     setUploadId(null);
     setFileName(null);
     setDownloadUrl(null);
@@ -385,7 +406,7 @@ export default function DocumentUploadV3({
     setConfidenceScore(null);
     setAiFeedback(null);
     setIsDocument(null);
-  }, []);
+  }, [uploadId]);
 
   // ─── Confidence Display ─────────────────────────────────────────────────
 
