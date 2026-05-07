@@ -380,9 +380,21 @@ export default function DocumentUploadV3({
     // Delete from database (not just local state!)
     if (uploadId) {
       try {
+        // Get auth token
+        const { data: { session } } = await supabase.auth.getSession();
+        const token = session?.access_token;
+        
+        if (!token) {
+          console.error('[remove] No auth token available');
+          return;
+        }
+        
         const response = await fetch(`/api/documents/${uploadId}`, {
           method: 'DELETE',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
         });
         
         if (!response.ok) {
