@@ -287,7 +287,7 @@ export default function DocumentUploadV3({
       const token = session?.access_token;
       if (!token) return;
 
-      const tierRes = await fetch('/api/user/tier', {
+      const tierRes = await fetch(`/api/user/tier?app=${applicationId || ''}`, {
         headers: { 'Authorization': `Bearer ${token}` },
       });
       const tierData = await tierRes.json();

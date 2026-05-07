@@ -1,8 +1,9 @@
 /**
- * GET /api/user/tier
+ * GET /api/user/tier?app={applicationId}
  * 
- * Returns the user's actual premium tier status.
- * Single source of truth for tier checks.
+ * Returns the user's tier for a specific application.
+ * If ?app={id} is provided, checks that application's tier.
+ * Otherwise checks the latest application.
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -20,10 +21,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     const token = authHeader?.replace('Bearer ', '');
 
     if (!token) {
-      return NextResponse.json(
-        { tier: 'none', isPremium: false },
-        { status: 200 }
-      );
+      return NextResponse.json({ tier: 'none', isPremium: false }, { status: 200 });
     }
 
     const supabaseAuth = createClient(
@@ -34,47 +32,48 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
 
     const { data: { user }, error: authError } = await supabaseAuth.auth.getUser(token);
     if (authError || !user) {
-      console.log(`[user/tier] Auth error or no user`);
-      return NextResponse.json(
-        { tier: 'none', isPremium: false },
-        { status: 200 }
-      );
+      return NextResponse.json({ tier: 'none', isPremium: false }, { status: 200 });
     }
 
-    console.log(`[user/tier] Auth user: ${user.id}`);
+    // 2. Get application ID from query params
+    const appId = req.nextUrl.searchParams.get('app');
 
-    // 2. Get user record
-    const { data: userData } = await supabaseAdmin
-      .from('users')
-      .select('id')
-      .eq('auth_id', user.id)
-      .maybeSingle();
+    let appTier = 'none';
+    
+    if (appId) {
+      // If specific app ID provided, fetch that application
+      const { data: app } = await supabaseAdmin
+        .from('applications')
+        .select('purchased_tier')
+        .eq('id', appId)
+        .maybeSingle();
 
-    console.log(`[user/tier] User lookup result: ${userData?.id || 'NOT FOUND'}`);
+      appTier = app?.purchased_tier || 'none';
+      console.log(`[user/tier] App ${appId}: tier = ${appTier}`);
+    } else {
+      // Otherwise get user's latest application
+      // First, find user record
+      const { data: userRecord } = await supabaseAdmin
+        .from('users')
+        .select('id')
+        .eq('auth_id', user.id)
+        .maybeSingle();
 
-    if (!userData) {
-      console.log(`[user/tier] No user record found for auth_id ${user.id}`);
-      return NextResponse.json(
-        { tier: 'none', isPremium: false },
-        { status: 200 }
-      );
+      if (userRecord) {
+        // Then get their latest app
+        const { data: apps } = await supabaseAdmin
+          .from('applications')
+          .select('purchased_tier')
+          .eq('user_id', userRecord.id)
+          .order('created_at', { ascending: false })
+          .limit(1);
+
+        appTier = apps?.[0]?.purchased_tier || 'none';
+        console.log(`[user/tier] User ${user.id}: tier = ${appTier}`);
+      } else {
+        console.log(`[user/tier] User record not found for auth_id ${user.id}`);
+      }
     }
-
-    // 3. Check tier from applications table (same source as dashboard)
-    // If user has ANY application with purchased_tier = 'premium', they're premium
-    const { data: applications, error: appError } = await supabaseAdmin
-      .from('applications')
-      .select('purchased_tier')
-      .eq('user_id', userData.id)
-      .order('created_at', { ascending: false })
-      .limit(1);
-
-    console.log(`[user/tier] App query error: ${appError}, found ${applications?.length || 0} apps`);
-    
-    const app = applications?.[0];
-    const appTier = app?.purchased_tier || 'none';
-    
-    console.log(`[user/tier] Final tier: ${appTier}`);
 
     return NextResponse.json({
       tier: appTier,
@@ -83,9 +82,6 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     });
   } catch (error) {
     console.error('[user/tier] Error:', error);
-    return NextResponse.json(
-      { tier: 'none', isPremium: false },
-      { status: 200 }
-    );
+    return NextResponse.json({ tier: 'none', isPremium: false }, { status: 200 });
   }
 }
