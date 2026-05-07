@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { AuthProvider } from '@/lib/auth-context';
 import CookieConsent from '@/components/CookieConsent';
+import { Analytics } from '@vercel/analytics/react';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://visabud.co.uk'),
@@ -98,6 +99,7 @@ export default function RootLayout({
           {children}
           <CookieConsent />
         </AuthProvider>
+        <Analytics />
         
         {/* Schema.org markup for search engines */}
         <script
