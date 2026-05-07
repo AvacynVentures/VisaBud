@@ -65,17 +65,20 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
 
     const payment = payments?.[0];
     
-    // Determine tier from payment
+    // Determine tier from payment (same logic as webhook)
     let tier = 'none';
     if (payment) {
-      if (payment.product_type === 'premium_review' || payment.amount_pence >= 7999) {
+      // Premium: product_type = 'premium_review' OR amount >= £149
+      if (payment.product_type === 'premium_review' || payment.amount_pence >= 14900) {
         tier = 'premium';
-      } else if (payment.amount_pence >= 4999) {
+      }
+      // Standard: anything else with a payment
+      else if (payment.amount_pence > 0) {
         tier = 'standard';
       }
     }
 
-    console.log(`[user/tier] User ${user.id}: tier = ${tier}`);
+    console.log(`[user/tier] User ${user.id}: payment=${JSON.stringify(payment)}, tier = ${tier}`);
 
     return NextResponse.json({
       tier,
