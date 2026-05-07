@@ -54,6 +54,7 @@ import TopNav from '@/components/TopNav';
 import PaymentSuccessBanner from '@/components/PaymentSuccessBanner';
 import DocumentUploadV3 from '@/components/DocumentUploadV3';
 import TierFeatureButtons from '@/components/TierFeatureButtons';
+import PremiumUpgradeBanner from '@/components/PremiumUpgradeBanner';
 import AIReportModal from '@/components/AIReportModal';
 import TemplatesGallery from '@/components/TemplatesGallery';
 import GetTemplateButton from '@/components/GetTemplateButton';
@@ -931,17 +932,24 @@ function FullDashboard({
             </div>
           </FadeIn>
 
+          {/* Premium Upgrade Banner — shown to all users except Premium tier */}
+          {purchasedTier !== 'premium' && (
+            <FadeIn delay={0.04}>
+              <PremiumUpgradeBanner currentTier={purchasedTier || 'none'} onUpgrade={() => setShowPaywall(true)} />
+            </FadeIn>
+          )}
+
           {/* Tier Feature Buttons — visible to all tiers */}
           {unlocked && (
-            <FadeIn delay={0.04}>
+            <FadeIn delay={0.05}>
               <div className="mb-6">
                 <TierFeatureButtons purchasedTier={purchasedTier} onUpgrade={() => setShowPaywall(true)} />
               </div>
             </FadeIn>
           )}
 
-          {/* Premium Upgrade Banner — shown to Standard/Free users */}
-          {!unlocked && (
+          {/* Old Premium Upgrade Banner — can be removed once new banner is tested */}
+          {false && !unlocked && (
             <FadeIn delay={0.05}>
               <div className="bg-gradient-to-r from-emerald-50 to-emerald-100 border border-emerald-300 rounded-2xl p-5 sm:p-6 mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div className="flex-1">
@@ -1436,9 +1444,17 @@ function ChecklistItemRow({ item, checked, onToggle, unlocked = false, notApplic
             )}
           </div>
           <div className="flex-1 min-w-0">
-            <p className={`font-medium text-sm ${checked ? 'text-gray-400 line-through' : 'text-gray-900'}`}>
-              {item.title}
-            </p>
+            <div className="flex items-center gap-2 flex-wrap">
+              <p className={`font-medium text-sm ${checked ? 'text-gray-400 line-through' : 'text-gray-900'}`}>
+                {item.title}
+              </p>
+              {purchasedTier !== 'premium' && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 text-xs font-semibold">
+                  <Sparkles className="w-3 h-3" />
+                  AI Scoring
+                </span>
+              )}
+            </div>
             <p className={`text-sm mt-0.5 ${checked ? 'text-gray-300' : 'text-gray-500'}`}>
               {item.description}
             </p>
