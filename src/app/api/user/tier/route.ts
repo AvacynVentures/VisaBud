@@ -54,40 +54,24 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       );
     }
 
-    // 3. Check latest payment
-    const { data: payments, error: paymentsError } = await supabaseAdmin
-      .from('payments')
-      .select('*')
+    // 3. Check tier from applications table (same source as dashboard)
+    // If user has ANY application with purchased_tier = 'premium', they're premium
+    const { data: applications } = await supabaseAdmin
+      .from('applications')
+      .select('purchased_tier')
       .eq('user_id', userData.id)
-      .eq('payment_status', 'completed')
       .order('created_at', { ascending: false })
       .limit(1);
 
-    console.log(`[user/tier] Query error: ${paymentsError}, found ${payments?.length || 0} payments`);
+    const app = applications?.[0];
+    const appTier = app?.purchased_tier || 'none';
     
-    const payment = payments?.[0];
-    console.log(`[user/tier] Payment: ${JSON.stringify(payment)}`);
-    
-    // Determine tier from payment (same logic as webhook)
-    let tier = 'none';
-    if (payment) {
-      console.log(`[user/tier] Checking: product_type='${payment.product_type}', amount=${payment.amount_pence}`);
-      // Premium: product_type = 'premium_review' OR amount >= £79.99 (7999 pence)
-      if (payment.product_type === 'premium_review' || payment.amount_pence >= 7999) {
-        tier = 'premium';
-      }
-      // Standard: £9.99 (999 pence) to £79.98
-      else if (payment.amount_pence > 0) {
-        tier = 'standard';
-      }
-    }
-
-    console.log(`[user/tier] Result: ${tier}`);
+    console.log(`[user/tier] User ${user.id}: application tier = ${appTier}`);
 
     return NextResponse.json({
-      tier,
-      isPremium: tier === 'premium',
-      isStandard: tier === 'standard',
+      tier: appTier,
+      isPremium: appTier === 'premium',
+      isStandard: appTier === 'standard',
     });
   } catch (error) {
     console.error('[user/tier] Error:', error);
