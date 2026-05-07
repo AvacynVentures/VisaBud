@@ -45,6 +45,7 @@ export async function GET(
       return NextResponse.json({ error: 'Document not found' }, { status: 404 });
     }
 
+    console.log(`[status] ${timestamp} RAW DB RESPONSE: ai_status=${doc.ai_status}, confidence=${doc.confidence_score}, is_document=${doc.is_document}, ai_completed_at=${doc.ai_completed_at}`);
     console.log(`[status] ${timestamp} Got ai_status="${doc.ai_status}" for ${documentId}`);
     console.log(`[status] ${timestamp} Confidence: ${doc.confidence_score}, IsDocument: ${doc.is_document}`);
 

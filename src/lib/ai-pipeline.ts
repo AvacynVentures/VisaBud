@@ -216,6 +216,14 @@ export async function runAIPipeline(documentId: string): Promise<void> {
       console.error(`[ai-pipeline] Failed to update to "classifying": ${classifyStatusResult.error.message}`);
     } else {
       console.log(`[ai-pipeline] Updated status to "classifying" for ${documentId}`);
+      // Verify write persisted
+      await new Promise(resolve => setTimeout(resolve, 100));
+      const verifyClassify = await supabaseAdmin
+        .from('document_uploads')
+        .select('ai_status')
+        .eq('id', documentId)
+        .single();
+      console.log(`[ai-pipeline] VERIFY CLASSIFYING: got ai_status="${verifyClassify.data?.ai_status}"`);
     }
 
     const classifyResponse = await callClaude(
@@ -296,6 +304,14 @@ Respond ONLY with JSON: {"isDocument": boolean, "documentType": "string", "isVis
       console.error(`[ai-pipeline] Failed to update to "analyzing": ${analyzeStatusResult.error.message}`);
     } else {
       console.log(`[ai-pipeline] Updated status to "analyzing" for ${documentId}`);
+      // Verify write persisted
+      await new Promise(resolve => setTimeout(resolve, 100));
+      const verifyAnalyze = await supabaseAdmin
+        .from('document_uploads')
+        .select('ai_status')
+        .eq('id', documentId)
+        .single();
+      console.log(`[ai-pipeline] VERIFY ANALYZING: got ai_status="${verifyAnalyze.data?.ai_status}"`);
     }
 
     // Build requirement-specific prompt
