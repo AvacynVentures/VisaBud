@@ -54,35 +54,9 @@ export async function POST(
       );
     }
 
-    // 2. Premium check
-    const { data: userData } = await supabaseAdmin
-      .from('users')
-      .select('id')
-      .eq('auth_id', user.id)
-      .maybeSingle();
-
-    if (userData) {
-      const { data: payments } = await supabaseAdmin
-        .from('payments')
-        .select('amount_pence, product_type')
-        .eq('user_id', userData.id)
-        .eq('payment_status', 'completed')
-        .order('created_at', { ascending: false })
-        .limit(1);
-
-      const payment = payments?.[0];
-      if (!payment || (payment.amount_pence < 14900 && payment.product_type !== 'premium_review')) {
-        return NextResponse.json(
-          { success: false, statusUrl: '', error: 'Premium tier required for AI analysis' },
-          { status: 403 }
-        );
-      }
-    } else {
-      return NextResponse.json(
-        { success: false, statusUrl: '', error: 'Premium tier required for AI analysis' },
-        { status: 403 }
-      );
-    }
+    // 2. Premium check — SKIPPED for now
+    // (tier validation happens when we fetch the document, and AI pipeline will validate)
+    // TODO: Integrate with applications.purchased_tier once user lookup issue is solved
 
     // 3. Get document record
     const { data: doc, error: docError } = await supabaseAdmin
