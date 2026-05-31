@@ -229,13 +229,13 @@ export default function Home() {
                     🔥 Early access pricing — locked in
                   </span>
                 </div>
-                <div className="text-5xl font-bold text-blue-600 mb-1">From £50</div>
+                <div className="text-5xl font-bold text-blue-600 mb-1">From £9.99</div>
                 <p className="text-slate-500 text-sm mb-2">One-time payment · Instant access · 7-day money-back guarantee</p>
-                <p className="text-slate-400 text-xs mb-4">Standard £50 · Premium £149 · Expert £299 (all incl. VAT)</p>
+                <p className="text-slate-400 text-xs mb-4">Standard £9.99 · Premium £79.99 (all incl. VAT)</p>
                 <Link href="/auth/signup" className="btn-primary w-full block mb-3 py-3.5 text-base shadow-lg shadow-blue-200/50">
                   Start Free
                 </Link>
-                <p className="text-xs text-slate-500">Preview your checklist free. Unlock everything from £50.</p>
+                <p className="text-xs text-slate-500">Preview your checklist free. Unlock everything from £9.99.</p>
                 <p className="text-xs text-slate-400 mt-2">💬 1,000+ applicants have already unlocked their plans</p>
                 <p className="text-xs text-slate-400 mt-1">🛡️ 7-day money-back guarantee · Recommended by immigration consultants</p>
               </div>
