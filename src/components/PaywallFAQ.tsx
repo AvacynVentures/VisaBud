@@ -11,7 +11,7 @@ const FAQ_ITEMS = [
   },
   {
     q: 'What if I\'m not happy with my purchase?',
-    a: 'We offer a 7-day money-back guarantee, no questions asked. If you\'re not satisfied for any reason, email support@visabud.co.uk within 7 days and we\'ll refund you in full.',
+    a: 'We offer a 7-day money-back guarantee, no questions asked. If you\'re not satisfied for any reason, email tim.bot@silvergriffindsc.com within 7 days and we\'ll refund you in full.',
   },
   {
     q: 'Can I upgrade later?',
@@ -19,7 +19,7 @@ const FAQ_ITEMS = [
   },
   {
     q: 'Do I get support?',
-    a: 'Premium tier includes email support with a 24-hour response time. Standard tier users can reach us at support@visabud.co.uk for general enquiries.',
+    a: 'Premium tier includes email support with a 24-hour response time. Standard tier users can reach us at tim.bot@silvergriffindsc.com for general enquiries.',
   },
   {
     q: 'Is this legal advice?',

@@ -323,7 +323,7 @@ function SuccessContent() {
               Back to Dashboard
             </Link>
             <a
-              href="mailto:support@visabud.co.uk"
+              href="mailto:tim.bot@silvergriffindsc.com"
               className="block text-sm text-blue-600 hover:text-blue-800 mt-4"
             >
               Contact Support →
@@ -494,7 +494,7 @@ function SuccessContent() {
           </Link>
 
           <a
-            href="mailto:support@visabud.co.uk"
+            href="mailto:tim.bot@silvergriffindsc.com"
             className="block w-full py-3 px-6 border border-slate-300 text-slate-700 text-center rounded-xl font-medium hover:bg-slate-50 transition-colors"
           >
             Contact Support

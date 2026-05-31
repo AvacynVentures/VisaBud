@@ -153,13 +153,13 @@ export default function PaymentSuccessBanner({ onDismiss }: { onDismiss?: () => 
             <p className="text-center text-xs text-slate-400 mt-4">
               📧 Email confirmation sent ·{' '}
               <a
-                href="mailto:support@visabud.co.uk"
+                href="mailto:tim.bot@silvergriffindsc.com"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-blue-500 hover:underline cursor-pointer"
                 onClick={(e) => {
                   e.stopPropagation();
-                  window.location.href = 'mailto:support@visabud.co.uk';
+                  window.location.href = 'mailto:tim.bot@silvergriffindsc.com';
                 }}
               >
                 Need help?

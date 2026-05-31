@@ -183,10 +183,10 @@ export default function AboutPage() {
               Have a question? Spotted an error? Want to collaborate?
             </p>
             <a
-              href="mailto:hello@visabud.co.uk"
+              href="mailto:tim.bot@silvergriffindsc.com"
               className="inline-block px-6 py-3 bg-blue-700 text-white font-semibold rounded-xl hover:bg-blue-800 transition"
             >
-              Email Us: hello@visabud.co.uk
+              Email Us: tim.bot@silvergriffindsc.com
             </a>
           </section>
         </div>

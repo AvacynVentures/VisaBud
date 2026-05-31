@@ -52,7 +52,7 @@ export default function TermsPage() {
                 <li><strong>Payment Method:</strong> Stripe secure payment processing (card, Apple Pay, Google Pay, etc.)</li>
                 <li><strong>No Subscription:</strong> This is a one-time purchase, not a recurring subscription</li>
                 <li><strong>Refunds:</strong> Refunds are available within 14 days of purchase if you have not downloaded the full pack. After download, refunds are not available unless the service is materially broken</li>
-                <li><strong>Cancellation:</strong> You can request a cancellation/refund by emailing <strong>hello@visabud.co.uk</strong></li>
+                <li><strong>Cancellation:</strong> You can request a cancellation/refund by emailing <strong>tim.bot@silvergriffindsc.com</strong></li>
               </ul>
             </div>
           </section>
@@ -135,7 +135,7 @@ export default function TermsPage() {
             <h2 className="text-xl font-bold text-blue-900 mb-4">Termination of Account</h2>
             <div className="space-y-4 text-gray-700">
               <ul className="list-disc pl-5 space-y-2">
-                <li>You can request account deletion at any time by emailing <strong>hello@visabud.co.uk</strong></li>
+                <li>You can request account deletion at any time by emailing <strong>tim.bot@silvergriffindsc.com</strong></li>
                 <li>We reserve the right to suspend or terminate your account if you violate these terms</li>
                 <li>Upon termination, your access to VisaBud is revoked, but you may request a copy of your data</li>
               </ul>
@@ -160,7 +160,7 @@ export default function TermsPage() {
                 If you have questions about these terms, or need to report an issue:
               </p>
               <p>
-                Email: <strong>hello@visabud.co.uk</strong>
+                Email: <strong>tim.bot@silvergriffindsc.com</strong>
               </p>
             </div>
           </section>
@@ -168,7 +168,7 @@ export default function TermsPage() {
           {/* Summary */}
           <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
             <p className="text-sm text-blue-800">
-              <strong>Summary:</strong> VisaBud is educational guidance, not legal advice. We're not liable for visa outcomes. Always verify with Gov.uk. Contact us at <strong>hello@visabud.co.uk</strong> with any questions.
+              <strong>Summary:</strong> VisaBud is educational guidance, not legal advice. We're not liable for visa outcomes. Always verify with Gov.uk. Contact us at <strong>tim.bot@silvergriffindsc.com</strong> with any questions.
             </p>
           </div>
         </div>

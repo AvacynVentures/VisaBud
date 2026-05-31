@@ -85,7 +85,7 @@ body { font-family: Arial, sans-serif; color: #333; margin: 0; padding: 0; }
     <a href="https://visabud.co.uk/dashboard" class="cta">Go to Your Dashboard →</a>
 
     <p style="font-size:13px; color:#6b7280; text-align:center;">
-      Questions? Reply to this email or contact <a href="mailto:support@visabud.co.uk">support@visabud.co.uk</a>
+      Questions? Reply to this email or contact <a href="mailto:tim.bot@silvergriffindsc.com">tim.bot@silvergriffindsc.com</a>
     </p>
   </div>
   <div class="footer">

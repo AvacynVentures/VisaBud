@@ -92,7 +92,7 @@ export default function PrivacyPage() {
                 <li><strong>Object</strong> — object to certain types of processing</li>
               </ul>
               <p>
-                To exercise any of these rights, email <strong>hello@visabud.co.uk</strong> with your request. We'll respond within 30 days.
+                To exercise any of these rights, email <strong>tim.bot@silvergriffindsc.com</strong> with your request. We'll respond within 30 days.
               </p>
             </div>
           </section>
@@ -158,7 +158,7 @@ export default function PrivacyPage() {
                 If you have questions about this privacy policy or our data practices:
               </p>
               <p>
-                Email: <strong>hello@visabud.co.uk</strong>
+                Email: <strong>tim.bot@silvergriffindsc.com</strong>
               </p>
               <p>
                 We'll respond within 7 business days.
