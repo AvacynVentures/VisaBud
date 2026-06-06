@@ -83,7 +83,7 @@ export async function GET(req: NextRequest) {
 
     // Transform to summaries
     const applications: ApplicationSummary[] = (apps || []).map((app: Record<string, any>) => {
-      const visaType = app.visa_type as 'spouse' | 'skilled_worker' | 'citizenship';
+      const visaType = app.visa_type as 'spouse' | 'skilled_worker' | 'citizenship' | 'student';
       const checklist = CHECKLISTS[visaType] || [];
       const checklistProgress = app.checklist_progress || {};
       const checklistCompleted = Object.values(checklistProgress).filter(Boolean).length;
@@ -93,6 +93,7 @@ export async function GET(req: NextRequest) {
         spouse: 'Spouse / Partner Visa',
         skilled_worker: 'Skilled Worker Visa',
         citizenship: 'British Citizenship',
+        student: 'Student Visa',
       };
 
       return {
@@ -136,7 +137,7 @@ export async function POST(req: NextRequest) {
     const body: CreateApplicationRequest = await req.json();
     console.log('[POST /api/applications] Body:', body);
 
-    if (!body.visaType || !['spouse', 'skilled_worker', 'citizenship'].includes(body.visaType)) {
+    if (!body.visaType || !['spouse', 'skilled_worker', 'citizenship', 'student'].includes(body.visaType)) {
       return NextResponse.json({ error: 'Valid visa_type required' }, { status: 400 });
     }
 

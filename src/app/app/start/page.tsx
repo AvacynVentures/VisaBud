@@ -8,7 +8,7 @@ import { Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 type VisaOption = {
-  id: 'spouse' | 'skilled_worker' | 'citizenship';
+  id: 'spouse' | 'skilled_worker' | 'citizenship' | 'student';
   icon: string;
   title: string;
   description: string;
@@ -35,6 +35,13 @@ const VISA_OPTIONS: VisaOption[] = [
     title: 'British Citizenship',
     description:
       'You have lived in the UK on a valid visa for 5+ years and are ready to apply for naturalisation.',
+  },
+  {
+    id: 'student',
+    icon: '🎓',
+    title: 'Student Visa',
+    description:
+      'For international students with a UK university or college offer. Requires CAS reference + proof of funds covering tuition fees and living costs.',
   },
 ];
 

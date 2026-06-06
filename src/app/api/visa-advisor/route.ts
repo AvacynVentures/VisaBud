@@ -235,7 +235,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Validate visa type
-    const validVisaTypes = ['spouse', 'skilled_worker', 'citizenship'];
+    const validVisaTypes = ['spouse', 'skilled_worker', 'citizenship', 'student'];
     if (!validVisaTypes.includes(userContext.visaType)) {
       return NextResponse.json(
         { error: 'Invalid visa type' },

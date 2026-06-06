@@ -24,6 +24,7 @@ import { VISA_TYPES, VisaTypeKey } from '@/lib/visa-data';
 type FilterType = 'all' | VisaTypeKey;
 
 const VISA_ICONS: Record<VisaTypeKey, string> = {
+  student: '🎓',
   spouse: '💑',
   skilled_worker: '💼',
   citizenship: '🏛️',

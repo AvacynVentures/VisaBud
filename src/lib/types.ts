@@ -1,5 +1,5 @@
 // Application types
-export type VisaType = 'spouse' | 'skilled_worker' | 'citizenship' | 'unsure';
+export type VisaType = 'spouse' | 'skilled_worker' | 'citizenship' | 'student' | 'unsure';
 export type RelationshipStatus = 'married' | 'civil_partnership' | 'engaged';
 export type IncomeRange = string; // Values vary by visa type (e.g. 'under29k', 'over29k', 'under30k', '38700plus')
 export type Urgency = 'urgent' | 'normal' | 'ahead';

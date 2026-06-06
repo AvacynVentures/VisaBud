@@ -2,7 +2,7 @@
  * Application Types — Multi-application support
  */
 
-export type VisaTypeValue = 'spouse' | 'skilled_worker' | 'citizenship';
+export type VisaTypeValue = 'spouse' | 'skilled_worker' | 'citizenship' | 'student';
 export type UrgencyValue = 'urgent' | 'normal' | 'ahead';
 export type ApplicationStatus = 'active' | 'submitted' | 'archived';
 export type PurchasedTier = 'none' | 'unlocked' | 'standard' | 'premium';
@@ -82,6 +82,7 @@ export const VISA_TYPE_CONFIG: Record<VisaTypeValue, { label: string; icon: stri
   spouse: { label: 'Spouse / Partner Visa', icon: '👰', color: 'blue' },
   skilled_worker: { label: 'Skilled Worker Visa', icon: '💼', color: 'emerald' },
   citizenship: { label: 'British Citizenship', icon: '🏛️', color: 'violet' },
+  student: { label: 'Student Visa', icon: '🎓', color: 'violet' },
 };
 
 export const TIER_CONFIG: Record<PurchasedTier, { label: string; badge: string; color: string }> = {

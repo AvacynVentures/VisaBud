@@ -8,7 +8,7 @@
  * Missing ANY of these = application refusal
  */
 
-export type VisaType = 'spouse' | 'skilled_worker' | 'citizenship';
+export type VisaType = 'spouse' | 'skilled_worker' | 'citizenship' | 'student';
 export type DocumentCriticality = 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'SUPPORTING';
 
 export interface GovernmentRequirement {

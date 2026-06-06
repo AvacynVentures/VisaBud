@@ -66,6 +66,36 @@ const REQUIREMENTS: Record<string, RequirementDef[]> = {
     { requirement: 'Date of marriage visible', govLink: 'https://www.gov.uk/uk-family-visa/documents-youll-need-to-apply' },
     { requirement: 'Certified English translation (if applicable)', govLink: 'https://www.gov.uk/uk-family-visa/documents-youll-need-to-apply' },
   ],
+  'cas': [
+    { requirement: 'CAS reference number visible and complete', govLink: 'https://www.gov.uk/student-visa/documents-you-must-provide' },
+    { requirement: 'Institution name matches offer letter', govLink: 'https://www.gov.uk/student-visa/documents-you-must-provide' },
+    { requirement: 'Course title and level visible', govLink: 'https://www.gov.uk/student-visa/documents-you-must-provide' },
+    { requirement: 'Course start date and duration visible', govLink: 'https://www.gov.uk/student-visa/documents-you-must-provide' },
+    { requirement: 'Tuition fee amount stated', govLink: 'https://www.gov.uk/student-visa/money' },
+    { requirement: 'CAS expiry date is in the future', govLink: 'https://www.gov.uk/student-visa/documents-you-must-provide' },
+  ],
+  'ielts': [
+    { requirement: 'Test Report Form (TRF) number visible', govLink: 'https://www.gov.uk/student-visa/knowledge-of-english' },
+    { requirement: 'Overall band score clearly shown', govLink: 'https://www.gov.uk/student-visa/knowledge-of-english' },
+    { requirement: 'Individual component scores shown (Listening, Reading, Writing, Speaking)', govLink: 'https://www.gov.uk/student-visa/knowledge-of-english' },
+    { requirement: 'Test date within 2 years of application', govLink: 'https://www.gov.uk/student-visa/knowledge-of-english' },
+    { requirement: 'Candidate name matches passport', govLink: 'https://www.gov.uk/student-visa/knowledge-of-english' },
+    { requirement: 'IELTS Academic (not General Training) for degree-level courses', govLink: 'https://www.gov.uk/student-visa/knowledge-of-english' },
+  ],
+  'tb test': [
+    { requirement: 'Certificate from UKVI-approved clinic', govLink: 'https://www.gov.uk/tb-test-visa' },
+    { requirement: 'Applicant name and date of birth visible', govLink: 'https://www.gov.uk/tb-test-visa' },
+    { requirement: 'Test result clearly stated (satisfactory/clear)', govLink: 'https://www.gov.uk/tb-test-visa' },
+    { requirement: 'Certificate within validity period', govLink: 'https://www.gov.uk/tb-test-visa' },
+    { requirement: 'Clinic stamp and authorised signature present', govLink: 'https://www.gov.uk/tb-test-visa' },
+  ],
+  'atas': [
+    { requirement: 'ATAS certificate number visible', govLink: 'https://www.gov.uk/guidance/academic-technology-approval-scheme' },
+    { requirement: 'Course/subject matches CAS details', govLink: 'https://www.gov.uk/guidance/academic-technology-approval-scheme' },
+    { requirement: 'Institution name matches CAS', govLink: 'https://www.gov.uk/guidance/academic-technology-approval-scheme' },
+    { requirement: 'Certificate within validity period', govLink: 'https://www.gov.uk/guidance/academic-technology-approval-scheme' },
+    { requirement: 'Applicant name matches passport', govLink: 'https://www.gov.uk/guidance/academic-technology-approval-scheme' },
+  ],
   default: [
     { requirement: 'Document is complete and uncut', govLink: 'https://www.gov.uk/apply-to-come-to-the-uk' },
     { requirement: 'All text is readable', govLink: 'https://www.gov.uk/apply-to-come-to-the-uk' },
@@ -109,11 +139,31 @@ const MULTI_DOC_REQUIREMENTS: Record<string, { documents: string[]; crossChecks:
       'Postcode is consistent across all documents',
     ],
   },
+  'student-financial': {
+    documents: ['bank_statement'],
+    crossChecks: [
+      'Balance meets London threshold: £1,529/month × months of course (up to 9) + course fees',
+      'Balance meets outside-London threshold: £1,171/month × months of course (up to 9) + course fees',
+      'Balance held continuously for at least 28 consecutive days',
+      'End date of 28-day period is within 31 days of today',
+      'No large unexplained withdrawals during the 28-day period',
+      'Account holder name matches passport',
+      'Statement is official (not a screenshot or online printout)',
+    ],
+  },
 };
 
 // Get enhanced requirements for free AI preview items based on item ID
 function getFreeItemRequirements(itemId: string): RequirementDef[] {
   if (itemId.includes('free-financial-validation')) {
+    // Student visa: use student-financial cross-checks
+    if (itemId.startsWith('st-')) {
+      const crossChecks = MULTI_DOC_REQUIREMENTS['student-financial'].crossChecks;
+      return crossChecks.map((check) => ({
+        requirement: check,
+        govLink: 'https://www.gov.uk/student-visa/money',
+      }));
+    }
     const crossChecks = MULTI_DOC_REQUIREMENTS['financial-validation'].crossChecks;
     return crossChecks.map((check) => ({
       requirement: check,
@@ -121,6 +171,14 @@ function getFreeItemRequirements(itemId: string): RequirementDef[] {
     }));
   }
   if (itemId.includes('free-identity-verification')) {
+    // Student visa: add student-specific passport checks
+    if (itemId.startsWith('st-')) {
+      return [
+        ...REQUIREMENTS.passport,
+        { requirement: 'Name consistent with CAS and university offer letter', govLink: 'https://www.gov.uk/student-visa/documents-you-must-provide' },
+        { requirement: 'Passport not expiring within 6 months of course start', govLink: 'https://www.gov.uk/student-visa/documents-you-must-provide' },
+      ];
+    }
     return [
       ...REQUIREMENTS.passport,
       { requirement: 'Name consistent with other application documents', govLink: 'https://www.gov.uk/uk-family-visa/documents-youll-need-to-apply' },
