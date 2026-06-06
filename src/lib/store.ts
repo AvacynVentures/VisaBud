@@ -14,7 +14,7 @@ export interface DocumentUploadState {
   documentId?: string | null;  // server-side validation ID for polling
 }
 
-export type PurchasedTier = 'none' | 'standard' | 'premium';
+export type PurchasedTier = 'none' | 'unlocked' | 'standard' | 'premium';
 
 // AI Report types
 export interface AIReportData {

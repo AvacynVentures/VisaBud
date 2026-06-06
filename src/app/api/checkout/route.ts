@@ -9,9 +9,9 @@ import { NextRequest, NextResponse } from 'next/server';
  * Uses Stripe Price IDs (from env) — Stripe is the source of truth for amounts.
  * No hardcoded prices in this file.
  *
- * Body: { tier?: "standard" | "premium" }
+ * Body: { tier?: "unlocked" }
  * Headers: Authorization: Bearer <supabase_access_token>
- * Defaults to "standard" if no tier provided (backwards compat)
+ * Defaults to "unlocked" if no tier provided
  */
 export async function POST(req: NextRequest) {
   try {
@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
     const email = user.email || 'unknown@example.com';
 
     // Parse tier and applicationId from request body
-    let tier: TierKey = 'standard';
+    let tier: TierKey = 'unlocked';
     let applicationId: string | undefined;
     try {
       const body = await req.json();
@@ -92,9 +92,8 @@ export async function POST(req: NextRequest) {
       metadata: {
         userId: String(user.id),  // ← Convert to string (Stripe requirement)
         email: String(email),     // ← Convert to string
-        tier: String(tier),       // ← Convert to string (CRITICAL: Must be 'standard' or 'premium')
+        tier: String(tier),       // ← always 'unlocked'
         ...(applicationId && { applicationId: String(applicationId) }),  // ← Convert to string
-        ...(tier !== 'standard' && { productType: 'premium_review' }),   // ← Already string
       },
     });
 
@@ -147,8 +146,7 @@ export async function GET() {
       keyPrefix,
       siteUrl: siteUrl !== 'NOT_SET' ? 'set' : 'NOT_SET',
       priceIds: {
-        standard: STRIPE_PRICE_IDS.standard ? 'set' : 'NOT_SET',
-        premium: STRIPE_PRICE_IDS.premium ? 'set' : 'NOT_SET',
+        unlocked: STRIPE_PRICE_IDS.unlocked ? 'set' : 'NOT_SET',
       },
     });
   } catch (err: any) {

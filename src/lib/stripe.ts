@@ -7,8 +7,7 @@ export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 // ─── Stripe Price IDs (from env — source of truth is Stripe dashboard) ──────
 
 export const STRIPE_PRICE_IDS = {
-  standard: process.env.STRIPE_PRICE_STANDARD!,
-  premium: process.env.STRIPE_PRICE_PREMIUM!,
+  unlocked: process.env.STRIPE_PRICE_STANDARD!, // reuse existing standard price ID env var
 } as const;
 
 export type TierKey = keyof typeof STRIPE_PRICE_IDS;
@@ -23,43 +22,22 @@ export const TIER_METADATA: Record<TierKey, {
   includes: string[];
   excludes: string[];
 }> = {
-  standard: {
-    name: 'VisaBud Full Pack',
-    shortName: 'Standard Checklist',
-    description: 'Personalised document checklist, timeline, risk assessment & PDF export',
+  unlocked: {
+    name: 'VisaBud Full Access',
+    shortName: 'Full Access',
+    description: 'Complete checklist + AI verification on all documents + 37 preparation templates',
     deliveryTime: 'Instant',
     includes: [
-      'Personalised document checklist',
-      'Step-by-step timeline',
-      'Risk assessment & alerts',
+      'All checklist items unlocked (30+)',
+      'AI document verification on every item',
+      'Risk scoring & confidence scores',
+      'Cross-document consistency checks',
+      '37 downloadable document preparation templates',
       'PDF export',
+      'Timeline & milestone tracking',
     ],
-    excludes: [
-      'AI document verification',
-      'Human expert review',
-    ],
+    excludes: [],
   },
-  premium: {
-    name: 'VisaBud Premium Pack',
-    shortName: 'AI Premium Review',
-    description: 'Everything in Standard + AI document verification, templates & email support',
-    deliveryTime: 'Results within minutes',
-    includes: [
-      'AI risk scoring (high/medium/low) per document',
-      'Specific actionable feedback for each document',
-      'Cross-document consistency check',
-      'Confidence score per document',
-      'Overall application risk assessment',
-      'Priority areas to fix before submission',
-      '37 downloadable document preparation templates (PDF)',
-    ],
-    excludes: [
-      'Human expert review',
-      'Solicitor opinion',
-      'Direct consultation',
-    ],
-  },
-
 };
 
 // ─── Utility functions ──────────────────────────────────────────────────────

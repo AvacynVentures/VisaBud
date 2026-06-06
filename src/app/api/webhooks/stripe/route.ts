@@ -5,17 +5,18 @@ import { headers } from 'next/headers';
 // ─── Post-Purchase Email via Resend ─────────────────────────────────────────
 
 const TIER_LABELS: Record<string, { name: string; features: string[] }> = {
+  unlocked: {
+    name: 'Full Access',
+    features: ['All 30+ checklist items unlocked', 'AI document verification on every item', 'Risk scoring & confidence scores', '37 downloadable templates', 'PDF export', 'Timeline & milestone tracking'],
+  },
+  // backwards compat
   standard: {
-    name: 'Standard Pack',
-    features: ['Personalised document checklist', 'Step-by-step timeline', 'Risk assessment & alerts', 'PDF export'],
+    name: 'Full Access',
+    features: ['All checklist items unlocked', 'AI document verification', 'PDF export'],
   },
   premium: {
-    name: 'Premium Pack',
-    features: ['AI document verification', 'Preparation templates', 'Email support (24h)', 'Everything in Standard'],
-  },
-  expert: {
-    name: 'Expert Pack',
-    features: ['Expert immigration review', 'Priority support', '24-hour turnaround', 'Everything in Premium'],
+    name: 'Full Access',
+    features: ['All checklist items unlocked', 'AI document verification', 'PDF export', 'Templates'],
   },
 };
 
@@ -162,10 +163,11 @@ async function handleCheckoutSessionCompleted(session: any) {
     let tier = session.metadata?.tier;
     const applicationId = session.metadata?.applicationId;
 
-    // SAFETY: Ensure tier is always 'standard' or 'premium', never undefined
-    if (!tier || (tier !== 'standard' && tier !== 'premium')) {
-      tier = 'standard'; // Default to standard if missing
-      console.warn(`[webhook] Tier was missing or invalid (${session.metadata?.tier}), defaulting to 'standard'`);
+    // SAFETY: Ensure tier is always a valid value, never undefined
+    // Accept 'unlocked' (new), 'standard'/'premium' (backwards compat from old sessions)
+    if (!tier || !['unlocked', 'standard', 'premium'].includes(tier)) {
+      tier = 'unlocked'; // Default to unlocked if missing
+      console.warn(`[webhook] Tier was missing or invalid (${session.metadata?.tier}), defaulting to 'unlocked'`);
     }
 
     console.log(`[webhook] checkout.session.completed — userId=${authUserId}, tier=${tier}, productType=${productType}, applicationId=${applicationId || 'NONE'}, amount=${session.amount_total}`);
@@ -278,8 +280,8 @@ async function handlePremiumReviewPurchase(
   // Update application tier if applicationId present in metadata
   const applicationId = session.metadata?.applicationId;
   if (applicationId) {
-    // Explicit: Only set to premium if tier is EXACTLY 'premium', otherwise standard
-    const tierToSet = tier === 'premium' ? 'premium' : 'standard';
+    // All purchases now set to 'unlocked' — single tier
+    const tierToSet = 'unlocked';
     
     const { error: appError } = await supabaseServer
       .from('applications')
@@ -294,7 +296,7 @@ async function handlePremiumReviewPurchase(
     }
   }
 
-  console.log(`Premium review (${tier}) purchased by user ${userId}`);
+  console.log(`Purchase (${tier}) recorded for user ${userId}`);
 
   // Send post-purchase email via Resend
   await sendPostPurchaseEmail(_email, tier, (session.amount_total || 0) / 100);
@@ -304,11 +306,10 @@ async function handlePremiumReviewPurchase(
  * Handle standard full pack purchase (original flow)
  */
 async function handleFullPackPurchase(session: any, userId: string, _email: string) {
-  const tier = session.metadata?.tier || 'standard';
+  const tier = session.metadata?.tier || 'unlocked';
   const amountPence = session.amount_total || 1;
 
   // Record payment in payments table (source of truth for unlock status)
-  // Note: tier info is encoded in product_type ('full_pack' = standard, 'premium_review' = premium)
   const { error: paymentError } = await supabaseServer
     .from('payments')
     .insert({
@@ -317,7 +318,7 @@ async function handleFullPackPurchase(session: any, userId: string, _email: stri
       amount_pence: amountPence,
       currency: 'GBP',
       payment_status: 'completed',
-      product_type: tier === 'standard' ? 'full_pack' : 'premium_review',
+      product_type: 'full_pack',
       created_at: new Date().toISOString(),
       completed_at: new Date().toISOString(),
     });
@@ -332,7 +333,7 @@ async function handleFullPackPurchase(session: any, userId: string, _email: stri
         stripe_session_id: session.id,
         amount: amountPence / 100,
         status: 'completed',
-        product_type: tier === 'standard' ? 'full_pack' : 'premium_review',
+        product_type: 'full_pack',
         created_at: new Date().toISOString(),
       });
     if (fallbackError) {
@@ -361,23 +362,21 @@ async function handleFullPackPurchase(session: any, userId: string, _email: stri
   // Update application tier if applicationId present in metadata
   const applicationId = session.metadata?.applicationId;
   if (applicationId) {
-    // Explicit: Only set to premium if tier is EXACTLY 'premium', otherwise standard
-    const tierToSet = tier === 'premium' ? 'premium' : 'standard';
-    
+    // All purchases now set to 'unlocked' — single tier
     const { error: appError } = await supabaseServer
       .from('applications')
-      .update({ purchased_tier: tierToSet })
+      .update({ purchased_tier: 'unlocked' })
       .eq('id', applicationId)
       .eq('user_id', userId);
 
     if (appError) {
-      console.error(`Failed to update application ${applicationId} tier to ${tierToSet}:`, appError);
+      console.error(`Failed to update application ${applicationId} tier to 'unlocked':`, appError);
     } else {
-      console.log(`✓ Application ${applicationId} tier set to: ${tierToSet} (user purchased: ${tier})`);
+      console.log(`✓ Application ${applicationId} tier set to: unlocked`);
     }
   }
 
-  console.log(`Payment completed for user ${userId} (${tier})`);
+  console.log(`Payment completed for user ${userId} (unlocked)`);
 
   // Send post-purchase email
   await sendPostPurchaseEmail(_email, tier, amountPence / 100);

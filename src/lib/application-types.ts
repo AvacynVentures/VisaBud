@@ -5,7 +5,7 @@
 export type VisaTypeValue = 'spouse' | 'skilled_worker' | 'citizenship';
 export type UrgencyValue = 'urgent' | 'normal' | 'ahead';
 export type ApplicationStatus = 'active' | 'submitted' | 'archived';
-export type PurchasedTier = 'none' | 'standard' | 'premium';
+export type PurchasedTier = 'none' | 'unlocked' | 'standard' | 'premium';
 
 export interface ApplicationRow {
   id: string;
@@ -86,6 +86,7 @@ export const VISA_TYPE_CONFIG: Record<VisaTypeValue, { label: string; icon: stri
 
 export const TIER_CONFIG: Record<PurchasedTier, { label: string; badge: string; color: string }> = {
   none: { label: 'Free', badge: 'Free Plan', color: 'gray' },
+  unlocked: { label: 'Full Access', badge: 'Full Access', color: 'emerald' },
   standard: { label: 'Standard', badge: 'Standard Plan', color: 'blue' },
   premium: { label: 'Premium', badge: 'Premium Plan', color: 'emerald' },
 };

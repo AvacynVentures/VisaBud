@@ -60,6 +60,7 @@ const TIER_RANK: Record<PurchasedTier, number> = {
   none: 0,
   standard: 1,
   premium: 2,
+  unlocked: 2,
 };
 
 const TIER_LABELS: Record<string, string> = {

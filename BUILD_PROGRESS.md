@@ -1,85 +1,56 @@
 # BUILD_PROGRESS.md
 
-## Build: FEAT — Landing Page AI Hooks + Questionnaire Migration + Risk-Reactive CTA + Welcome Email Rewrite
-**Commit:** 31eb8a4  
+## Task: Remove Questionnaire — Replace with Simple Visa Type Selector
 **Date:** 2026-06-06  
-**Status:** ✅ COMPLETE
+**Status:** IN PROGRESS
 
 ---
 
-## TASK 1: Landing Page Copy (src/app/page.tsx) ✅
+## What Changed
 
-All 6 changes applied:
-1. Hero subheadline → "Get AI-powered document checks..."
-2. Free tier callout → "3 free AI document checks included · Full access from £9.99"
-3. CTA sub-copy → "Takes 3 minutes · 3 free AI checks included · No spam, ever"
-4. **New section inserted:** Free AI Checks Strip (emerald-50 bg) between Hero and Credibility Bar — 3 cards for Passport, Financial, Accommodation checks with "Free" badge
-5. How it works Step 1 → "Choose your visa type" with updated description
-6. Pricing callout → "3 AI checks free. Full checklist + 37 templates + risk management from £9.99."
+### `src/app/app/start/page.tsx`
+- **Before:** Rendered `<OnboardingGate><Onboarding /></OnboardingGate>` — a full 5-step wizard
+- **After:** Renders `<OnboardingGate><VisaTypeSelector /></OnboardingGate>` — simple 3-card picker
+- The new `VisaTypeSelector` is defined inline in this file (no new component file needed)
 
----
+### Behaviour
+1. User sees 3 cards: Spouse/Partner Visa, Skilled Worker Visa, British Citizenship
+2. Clicking a card immediately calls `POST /api/applications` with just `{ visaType }`
+3. Loading spinner shown on the selected card while creating
+4. On success (or failure) → redirect to `/applications`
+5. Auth guard still active via `OnboardingGate`
 
-## TASK 2: Questionnaire → Checklist Migration (src/lib/visa-data.ts) ✅
-
-Added 4 common items to ALL 3 visa types (displayOrder 200-203), plus 1 spouse-only item:
-
-**Spouse (sp- prefix): 5 new items**
-- sp-location-status (displayOrder 200)
-- sp-previous-refusal (displayOrder 201)
-- sp-previous-overstay (displayOrder 202)
-- sp-employment-status (displayOrder 203)
-- sp-relationship-duration (displayOrder 204) — SPOUSE ONLY
-
-**Skilled Worker (sw- prefix): 4 new items**
-- sw-location-status (displayOrder 200)
-- sw-previous-refusal (displayOrder 201)
-- sw-previous-overstay (displayOrder 202)
-- sw-employment-status (displayOrder 203)
-
-**Citizenship (cit- prefix): 4 new items**
-- cit-location-status (displayOrder 200)
-- cit-previous-refusal (displayOrder 201)
-- cit-previous-overstay (displayOrder 202)
-- cit-employment-status (displayOrder 203)
+### `src/components/Onboarding.tsx`
+- **NOT deleted** — left as-is for safety
+- No longer imported anywhere (only was imported in `start/page.tsx`)
 
 ---
 
-## TASK 3: Risk-Reactive Upgrade CTA (src/app/dashboard/page.tsx) ✅
+## ⚠️ Conditional Logic Note — IMPORTANT, DO NOT REMOVE
 
-Added risk state calculation variables in ChecklistTab (locked view):
-- Computes hasHighRisk, hasMediumRisk, totalFlags, anyChecksRun, lockedCount from freeUploads (serverDocs)
-- Dynamic ctaCopy string reacts to AI scan results
+The following questionnaire fields are used in conditional checklist/risk logic and **must remain in the codebase**:
 
-Replaced static emerald button with dynamic risk-reactive CTA block:
-- 🔴 Red (bg-red-50) if high risk detected
-- 🟡 Amber (bg-amber-50) if medium risk detected
-- 🔵 Blue (bg-blue-50) if clean/no checks run
-- One-time payment · 7-day money-back guarantee footer
+| Field | Used In | Effect |
+|-------|---------|--------|
+| `currentlyInUk` | `visa-data.ts` line 1793, `dashboard/page.tsx` lines 131, 252, 262 | Marks location-dependent checklist items as N/A; affects risk display |
+| `relationshipDurationMonths` | `visa-data.ts` lines 1738, 2106–2110 | Flags short-relationship risk for spouse visa |
+| `hasPreviousRefusal` | `visa-data.ts` lines 1767, 2122 | Shows refusal-specific checklist warnings |
+| `hasPreviousOverstay` | `visa-data.ts` lines 1780, 2127 | Shows overstay-specific checklist warnings |
 
----
+**These fields are now NULL on newly-created applications** (they were previously populated by the questionnaire). The conditional logic gracefully handles null values — it simply won't show those conditional items/risks if the data isn't present.
 
-## TASK 4: Welcome Email Rewrite ✅
-
-### email.ts — welcome template rewritten
-- New subject: "You've got 3 free AI document checks waiting 🎉"
-- Full HTML email with check-item cards (green bg), free badges, CTA → /applications
-- Proper HTML entities (&amp; &pound; &rarr; etc.)
-- Clean plain-text version
-
-### email-automation.ts — welcome case added
-- Added `case 'welcome':` BEFORE `default:` in getTemplateHtml switch
-- Renders 3 free check cards (Financial, Passport, Accommodation) via wrapEmail()
-- CTA → ${appUrl}/applications
+**Do NOT remove this logic.** It may be re-introduced later via an in-app settings/profile editor so users can still provide this context after initial application creation.
 
 ---
 
-## TypeScript Check ✅
-`npx tsc --noEmit` — 0 errors
+## API Used
+- `POST /api/applications` — requires `visaType` only, all other fields optional
+- Sets `onboarding_completed: true` on the application record
+- Returns `{ application: { id, ... } }`
 
-## Build Output ✅
-`npm run build` — ✓ Generating static pages (55/55)  
-All pre-existing warnings (DYNAMIC_SERVER_USAGE in API routes, Prisma instrumentation, Supabase fetch during build) unchanged — not caused by this build.
+---
 
-## Git ✅
-Committed: 31eb8a4  
-Pushed: main → origin/main
+## Build Steps
+- [ ] `npx tsc --noEmit` — type check
+- [ ] `npm run build` — full build
+- [ ] `git commit && git push`

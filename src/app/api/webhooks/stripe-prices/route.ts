@@ -151,9 +151,7 @@ async function resolveTier(stripePrice: any): Promise<string | null> {
 
   // 4. Reverse-lookup from env var Price IDs
   const envMapping: Record<string, string> = {
-    [process.env.STRIPE_PRICE_STANDARD || '']: 'standard',
-    [process.env.STRIPE_PRICE_PREMIUM || '']: 'premium',
-    [process.env.STRIPE_PRICE_EXPERT || '']: 'expert',
+    [process.env.STRIPE_PRICE_STANDARD || '']: 'unlocked', // standard price ID → unlocked tier
   };
 
   return envMapping[stripePrice.id] || null;

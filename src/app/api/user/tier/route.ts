@@ -76,10 +76,12 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       }
     }
 
+    // Backwards compat: treat old 'standard'/'premium' values as 'unlocked'
+    const normalizedTier = (appTier === 'standard' || appTier === 'premium') ? 'unlocked' : appTier;
     return NextResponse.json({
-      tier: appTier,
-      isPremium: appTier === 'premium',
-      isStandard: appTier === 'standard',
+      tier: normalizedTier,
+      isPremium: normalizedTier === 'unlocked',
+      isUnlocked: normalizedTier === 'unlocked',
     });
   } catch (error) {
     console.error('[user/tier] Error:', error);
