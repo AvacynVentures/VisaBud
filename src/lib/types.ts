@@ -29,6 +29,7 @@ export interface Application {
   target_application_date: string;
   onboarding_completed: boolean;
   payment_completed: boolean;
+  purchased_tier?: 'none' | 'standard' | 'premium';
   checklist_downloaded: boolean;
   created_at: string;
   updated_at: string;

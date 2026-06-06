@@ -46,6 +46,17 @@ export interface ChecklistItem {
   commonMistakes?: string[];
   /** Best practice tips from immigration advisors */
   bestPractices?: string[];
+  /** Tier gating: free = always accessible, standard/premium = paywalled. Defaults to 'standard'. */
+  tier?: 'free' | 'standard' | 'premium';
+  /** AI features enabled for this checklist item */
+  aiFeatures?: {
+    confidenceScoring: boolean;
+    riskFlagging: boolean;
+    multiDocValidation?: boolean;
+    addressExtraction?: boolean;
+  };
+  /** Convenience flag — true for the 3 free AI preview items per visa type */
+  isFreeItem?: boolean;
 }
 
 export interface TimelineWeek {
@@ -476,6 +487,73 @@ export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
       commonMistakes: ['Forgetting to include consent from the other parent', 'Not including birth certificate for each child', 'Underbudgeting - each child has separate fees + IHS'],
       bestPractices: ['Budget £2,064 + IHS per child before starting', 'Get written consent from the other parent early - this can take time', 'If separated/divorced, include custody court orders', 'Children 18+ have different rules - check gov.uk/uk-family-visa/child'],
     },
+
+    // ── FREE AI PREVIEW ITEMS (3 per visa type) ────────────────────────────
+    {
+      id: 'sp-free-financial-validation',
+      title: 'Financial Documents Cross-Check (Free AI Preview)',
+      description: 'Upload your sponsor\'s bank statements, payslips, and employer letter together. Our AI will cross-check that salary amounts match, credits align, and your financial evidence meets the £29,000 threshold — flagging any inconsistencies before they become refusal reasons.',
+      category: 'financial',
+      required: true,
+      priority: 'critical',
+      formatRequired: 'PDF or JPG — up to 3 documents at once (bank statements, payslips, employer letter)',
+      tips: 'The Home Office cross-references all financial documents. A £50 discrepancy between a payslip and bank credit is enough to trigger a refusal. This AI check catches those issues before you submit.',
+      displayOrder: 100,
+      tier: 'free',
+      isFreeItem: true,
+      govLink: 'https://www.gov.uk/uk-family-visa/proof-income',
+      officialRequirement: 'Financial evidence must be consistent across all documents. Bank statements must show salary credits matching payslips for the same 6-month period.',
+      commonMistakes: ['Salary amount differs by even small amounts between payslip and bank statement', 'Missing one month in the 6-month period', 'Using online screenshots instead of official bank statements'],
+      bestPractices: ['Cross-check every payslip against the corresponding bank credit', 'Ensure all documents cover the exact same date range', 'Get official stamped statements from the bank branch'],
+      aiFeatures: {
+        confidenceScoring: true,
+        riskFlagging: true,
+        multiDocValidation: true,
+      },
+    },
+    {
+      id: 'sp-free-identity-verification',
+      title: 'Passport Identity & Fraud Check (Free AI Preview)',
+      description: 'Upload your passport (all pages). Our AI checks validity, expiry date, MRZ integrity, and name consistency with your other application documents — catching the identity issues that cause instant refusals.',
+      category: 'personal',
+      required: true,
+      priority: 'critical',
+      formatRequired: 'PDF or JPG — all passport pages including blank pages',
+      tips: 'Passport issues are the #1 cause of preventable visa refusals. This free check takes 30 seconds and flags expiry dates, MRZ damage, and name inconsistencies before they become problems.',
+      displayOrder: 101,
+      tier: 'free',
+      isFreeItem: true,
+      govLink: 'https://www.gov.uk/uk-family-visa/documents-youll-need-to-apply',
+      officialRequirement: 'Valid passport with at least 6 months validity remaining. All pages must be provided including blank pages and previous passports.',
+      commonMistakes: ['Passport expires within 6 months of intended travel', 'Name on passport differs from marriage certificate', 'MRZ (machine-readable zone) is scratched or partially obscured'],
+      bestPractices: ['Renew passport if it expires within 6 months', 'Ensure name matches exactly across ALL documents', 'Scan at 300 DPI minimum — every single page'],
+      aiFeatures: {
+        confidenceScoring: true,
+        riskFlagging: true,
+      },
+    },
+    {
+      id: 'sp-free-accommodation-check',
+      title: 'Accommodation & Address Consistency Check (Free AI Preview)',
+      description: 'Upload your proof of accommodation (tenancy agreement, mortgage statement, or council tax bill). Our AI extracts the address and checks it matches your bank statements and other documents — because address mismatches are a common cause of application delays.',
+      category: 'supporting',
+      required: true,
+      priority: 'critical',
+      formatRequired: 'PDF or JPG — tenancy agreement, mortgage statement, or council tax bill',
+      tips: 'The Home Office checks that your accommodation address is consistent across all your documents. A different postcode on your bank statement vs tenancy agreement raises red flags.',
+      displayOrder: 102,
+      tier: 'free',
+      isFreeItem: true,
+      govLink: 'https://www.gov.uk/uk-family-visa/adequate-accommodation',
+      officialRequirement: 'Evidence of adequate accommodation that is not overcrowded and meets statutory standards.',
+      commonMistakes: ['Address on bank statements doesn\'t match accommodation proof', 'Tenancy agreement has expired', 'Not providing proof that the property meets occupancy standards'],
+      bestPractices: ['Ensure all your documents show the same current address', 'If you recently moved, provide both old and new proof of address with a cover letter explaining the change', 'Tenancy agreement should be current and cover the application period'],
+      aiFeatures: {
+        confidenceScoring: true,
+        riskFlagging: true,
+        addressExtraction: true,
+      },
+    },
   ],
 
   // =========================================================================
@@ -699,6 +777,73 @@ export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
       govLink: 'https://www.gov.uk/skilled-worker-visa/your-partner-and-children',
       commonMistakes: ['Not budgeting for dependant fees', 'Missing consent from other parent', 'Not checking if employer certifies maintenance for dependants'],
       bestPractices: ['Ask your employer if they certify maintenance for dependants (saves providing bank statements)', 'Get written consent from other parent early', 'Children 18+ have different eligibility - check before applying'],
+    },
+
+    // ── FREE AI PREVIEW ITEMS (3 per visa type) ────────────────────────────
+    {
+      id: 'sw-free-financial-validation',
+      title: 'Financial Documents Cross-Check (Free AI Preview)',
+      description: 'Upload your payslips, Certificate of Sponsorship details, and bank statements together. Our AI cross-checks that your salary meets the £38,700 threshold, verifies CoS salary consistency, and flags any discrepancies between your financial documents.',
+      category: 'financial',
+      required: true,
+      priority: 'critical',
+      formatRequired: 'PDF or JPG — up to 3 documents at once (payslips, bank statements, CoS reference confirmation)',
+      tips: 'The Home Office scrutinises salary evidence closely. If your payslip salary doesn\'t match the CoS, your application will be refused. This AI check catches those issues before you submit.',
+      displayOrder: 100,
+      tier: 'free',
+      isFreeItem: true,
+      govLink: 'https://www.gov.uk/skilled-worker-visa/your-job',
+      officialRequirement: 'Your salary must meet the minimum threshold (£38,700 general rate, or occupation going rate if lower). Financial evidence must be consistent across payslips, CoS, and bank statements.',
+      commonMistakes: ['Salary on payslip doesn\'t match CoS amount', 'Bank statement credits don\'t align with payslip dates', 'Allowances incorrectly counted toward threshold'],
+      bestPractices: ['Cross-check CoS salary, employment contract, and payslip — all three must match', 'Verify your specific occupation\'s going rate on gov.uk', 'Bonuses and most allowances cannot count toward the minimum threshold'],
+      aiFeatures: {
+        confidenceScoring: true,
+        riskFlagging: true,
+        multiDocValidation: true,
+      },
+    },
+    {
+      id: 'sw-free-identity-verification',
+      title: 'Passport Identity & Fraud Check (Free AI Preview)',
+      description: 'Upload your passport (all pages). Our AI checks validity, expiry date, MRZ integrity, and name consistency with your Certificate of Sponsorship and other application documents — catching the identity issues that cause instant refusals.',
+      category: 'personal',
+      required: true,
+      priority: 'critical',
+      formatRequired: 'PDF or JPG — all passport pages including blank pages',
+      tips: 'Your passport name must match the CoS exactly. Even a middle name difference can cause your application to be rejected. This free check catches those issues instantly.',
+      displayOrder: 101,
+      tier: 'free',
+      isFreeItem: true,
+      govLink: 'https://www.gov.uk/skilled-worker-visa/documents-youll-need-to-apply',
+      officialRequirement: 'Valid passport with at least 6 months validity remaining. Name must match exactly what your employer used on the Certificate of Sponsorship.',
+      commonMistakes: ['Passport name differs from CoS (even middle name)', 'Passport expires within 6 months', 'MRZ (machine-readable zone) damaged or obscured'],
+      bestPractices: ['Compare passport name character-by-character with CoS', 'Renew passport if expiring within 6 months', 'Scan at 300 DPI minimum — every single page'],
+      aiFeatures: {
+        confidenceScoring: true,
+        riskFlagging: true,
+      },
+    },
+    {
+      id: 'sw-free-accommodation-check',
+      title: 'Accommodation & Address Consistency Check (Free AI Preview)',
+      description: 'Upload your proof of accommodation (tenancy agreement, mortgage statement, or council tax bill). Our AI extracts the address and checks it matches your bank statements and other documents — because address mismatches flag inconsistencies in your application.',
+      category: 'supporting',
+      required: true,
+      priority: 'critical',
+      formatRequired: 'PDF or JPG — tenancy agreement, mortgage statement, or council tax bill',
+      tips: 'UK visa caseworkers check address consistency across all documents. A mismatch between your accommodation proof and bank statement address raises immediate questions.',
+      displayOrder: 102,
+      tier: 'free',
+      isFreeItem: true,
+      govLink: 'https://www.gov.uk/skilled-worker-visa/documents-youll-need-to-apply',
+      officialRequirement: 'Evidence of your intended UK address. Address must be consistent with other documents submitted.',
+      commonMistakes: ['Different addresses on accommodation proof vs bank statements', 'Tenancy agreement has expired', 'Address only mentioned in one document'],
+      bestPractices: ['Ensure all documents show the same current UK address', 'If recently moved, provide evidence of both addresses with a covering note', 'Tenancy agreement should be current and signed by both parties'],
+      aiFeatures: {
+        confidenceScoring: true,
+        riskFlagging: true,
+        addressExtraction: true,
+      },
     },
   ],
 
@@ -929,6 +1074,73 @@ export const CHECKLISTS: Record<VisaTypeKey, ChecklistItem[]> = {
       govLink: 'https://www.gov.uk/register-british-citizen/born-in-uk',
       commonMistakes: ['Assuming children automatically become British when you do', 'Not budgeting for separate registration fees per child', 'Waiting too long - some routes have age limits'],
       bestPractices: ['Apply for child registration after your own citizenship ceremony', 'Budget £1,214 per child', 'Check specific eligibility at gov.uk/register-british-citizen', 'For children born outside the UK, check gov.uk/register-british-citizen/born-outside-the-uk'],
+    },
+
+    // ── FREE AI PREVIEW ITEMS (3 per visa type) ────────────────────────────
+    {
+      id: 'cit-free-financial-validation',
+      title: 'Financial Stability Check (Free AI Preview)',
+      description: 'Upload 12 months of bank statements. Our AI analyses your financial pattern for stability, flags any irregular gaps, large unexplained withdrawals, or patterns that may raise good character concerns during your citizenship assessment.',
+      category: 'financial',
+      required: true,
+      priority: 'critical',
+      formatRequired: 'PDF or JPG — 12 months of bank statements (can be multiple files)',
+      tips: 'Citizenship applications include a thorough character assessment. Unusual financial patterns — including large cash withdrawals or unexplained transfers — can trigger additional scrutiny. This AI review flags anything worth addressing before you submit.',
+      displayOrder: 100,
+      tier: 'free',
+      isFreeItem: true,
+      govLink: 'https://www.gov.uk/apply-citizenship-indefinite-leave-to-remain',
+      officialRequirement: 'Good character requirement includes financial responsibility. You must disclose any bankruptcy, county court judgements (CCJs), or significant financial issues.',
+      commonMistakes: ['Not disclosing CCJs or bankruptcy', 'Large unexplained cash withdrawals with no documented purpose', 'Irregular patterns suggesting undisclosed income sources'],
+      bestPractices: ['Ensure 12 months of statements are complete with no gaps', 'Prepare explanations for any large unusual transactions', 'Resolve any outstanding CCJs or financial disputes before applying'],
+      aiFeatures: {
+        confidenceScoring: true,
+        riskFlagging: true,
+        multiDocValidation: true,
+      },
+    },
+    {
+      id: 'cit-free-identity-verification',
+      title: 'Passport Identity & Fraud Check (Free AI Preview)',
+      description: 'Upload your current passport (all pages). Our AI checks validity, expiry date, MRZ integrity, and name consistency with your ILR/settled status documents — because identity inconsistencies at citizenship stage can undo years of lawful residence.',
+      category: 'personal',
+      required: true,
+      priority: 'critical',
+      formatRequired: 'PDF or JPG — all passport pages including blank pages',
+      tips: 'Your passport name must match your ILR/settled status exactly. If you changed your name since getting ILR, you need to evidence that chain clearly. This free check catches those gaps instantly.',
+      displayOrder: 101,
+      tier: 'free',
+      isFreeItem: true,
+      govLink: 'https://www.gov.uk/apply-citizenship-indefinite-leave-to-remain',
+      officialRequirement: 'You must send your current valid passport. Name must match all previous immigration documents including your ILR grant.',
+      commonMistakes: ['Name change after ILR not documented', 'Passport expires before application is processed', 'MRZ zone damaged or unreadable'],
+      bestPractices: ['Compare passport name with ILR/settled status name exactly', 'Renew passport if expiring within 6 months', 'Include name change evidence (deed poll, marriage cert) if name differs from ILR'],
+      aiFeatures: {
+        confidenceScoring: true,
+        riskFlagging: true,
+      },
+    },
+    {
+      id: 'cit-free-accommodation-check',
+      title: 'Accommodation & Address Consistency Check (Free AI Preview)',
+      description: 'Upload your proof of current UK address (council tax bill, tenancy agreement, or utility bill). Our AI extracts your address and checks it matches your bank statements and other documents — address consistency is scrutinised closely in citizenship applications.',
+      category: 'supporting',
+      required: true,
+      priority: 'critical',
+      formatRequired: 'PDF or JPG — council tax bill, tenancy agreement, or utility bill',
+      tips: 'The Home Office cross-references address history meticulously for citizenship. If your current address differs across documents, it raises questions about your claimed UK residency.',
+      displayOrder: 102,
+      tier: 'free',
+      isFreeItem: true,
+      govLink: 'https://www.gov.uk/apply-citizenship-indefinite-leave-to-remain',
+      officialRequirement: 'You must provide evidence of your current UK address. This must be consistent with your declared residence history.',
+      commonMistakes: ['Different addresses on bank statements vs accommodation proof', 'Address evidence dated more than 3 months ago', 'Not covering current address in 5-year address history'],
+      bestPractices: ['Use the most recent bills available — ideally dated within the last 3 months', 'Ensure all current documents show identical address (including postcode)', 'If you share accommodation, get a letter from the main tenant/owner confirming your residence'],
+      aiFeatures: {
+        confidenceScoring: true,
+        riskFlagging: true,
+        addressExtraction: true,
+      },
     },
   ],
 };

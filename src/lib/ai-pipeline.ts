@@ -76,7 +76,74 @@ const REQUIREMENTS: Record<string, RequirementDef[]> = {
   ],
 };
 
-function getRequirements(docTitle: string): RequirementDef[] {
+// ─── Multi-Document Requirements for Free AI Preview Items ────────────────
+
+const MULTI_DOC_REQUIREMENTS: Record<string, { documents: string[]; crossChecks: string[] }> = {
+  'financial-validation': {
+    documents: ['bank_statement', 'payslip', 'employer_letter'],
+    crossChecks: [
+      'Salary amount on payslip matches bank credit (within £10 tolerance)',
+      'Pay periods on payslip match bank statement dates',
+      'Employer name on payslip matches employer letter',
+      'Salary stated in employer letter matches payslip gross amount',
+      '6 consecutive months covered with no gaps (spouse/family visa)',
+    ],
+  },
+  'identity-verification': {
+    documents: ['passport'],
+    crossChecks: [
+      'Passport expiry date is 6+ months from intended travel',
+      'Machine-readable zone (MRZ) is fully visible and intact',
+      'Name on passport is consistent with other application documents',
+      'Photo on passport matches current appearance',
+      'All pages included (bio page + stamps + blank pages)',
+    ],
+  },
+  'accommodation-check': {
+    documents: ['accommodation_proof', 'bank_statement'],
+    crossChecks: [
+      'Address extracted from accommodation document',
+      'Address matches bank statement billing address',
+      'Accommodation document is current (not expired)',
+      'Document is from an official source (landlord/mortgage/council)',
+      'Postcode is consistent across all documents',
+    ],
+  },
+};
+
+// Get enhanced requirements for free AI preview items based on item ID
+function getFreeItemRequirements(itemId: string): RequirementDef[] {
+  if (itemId.includes('free-financial-validation')) {
+    const crossChecks = MULTI_DOC_REQUIREMENTS['financial-validation'].crossChecks;
+    return crossChecks.map((check) => ({
+      requirement: check,
+      govLink: 'https://www.gov.uk/uk-family-visa/proof-income',
+    }));
+  }
+  if (itemId.includes('free-identity-verification')) {
+    return [
+      ...REQUIREMENTS.passport,
+      { requirement: 'Name consistent with other application documents', govLink: 'https://www.gov.uk/uk-family-visa/documents-youll-need-to-apply' },
+      { requirement: 'Passport not expiring within 6 months of travel', govLink: 'https://www.gov.uk/uk-family-visa/documents-youll-need-to-apply' },
+    ];
+  }
+  if (itemId.includes('free-accommodation-check')) {
+    const crossChecks = MULTI_DOC_REQUIREMENTS['accommodation-check'].crossChecks;
+    return crossChecks.map((check) => ({
+      requirement: check,
+      govLink: 'https://www.gov.uk/uk-family-visa/adequate-accommodation',
+    }));
+  }
+  return REQUIREMENTS.default;
+}
+
+function getRequirements(docTitle: string, checklistItemId?: string): RequirementDef[] {
+  // Check for free AI preview items first (by checklist item ID)
+  if (checklistItemId) {
+    const freeReqs = getFreeItemRequirements(checklistItemId);
+    if (freeReqs !== REQUIREMENTS.default) return freeReqs;
+  }
+
   const lower = docTitle.toLowerCase();
   for (const [key, reqs] of Object.entries(REQUIREMENTS)) {
     if (key !== 'default' && lower.includes(key)) return reqs;
@@ -315,7 +382,11 @@ Respond ONLY with JSON: {"isDocument": boolean, "documentType": "string", "isVis
     }
 
     // Build requirement-specific prompt
-    const requirements = getRequirements(doc.checklist_item_id + ' ' + (classification.documentType || ''));
+    // Pass checklist_item_id so free AI preview items get enhanced requirements
+    const requirements = getRequirements(
+      doc.checklist_item_id + ' ' + (classification.documentType || ''),
+      doc.checklist_item_id,
+    );
     const reqList = requirements.map((r, i) => `${i + 1}. ${r.requirement}`).join('\n');
 
     const analyzeResponse = await callClaude(

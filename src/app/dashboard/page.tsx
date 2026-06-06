@@ -1202,6 +1202,16 @@ function ChecklistTab({
     };
   };
 
+  // Helper: can this item be accessed? (free items always accessible)
+  const canAccessItem = (item: ChecklistItem): boolean => {
+    if (item.tier === 'free' || item.isFreeItem) return true;
+    return unlocked;
+  };
+
+  // Free items to show in locked view (derived from byCategory which has all items)
+  const freeItems = [...byCategory.personal, ...byCategory.financial, ...byCategory.supporting]
+    .filter((item: ChecklistItem) => item.tier === 'free' || item.isFreeItem);
+
   if (unlocked) {
     const completionMsg = getCompletionMessage();
 
@@ -1244,7 +1254,7 @@ function ChecklistTab({
               </div>
               <div className="divide-y divide-gray-50">
                 {items.map((item) => (
-                  <ChecklistItemRow key={item.id} item={item} checked={!!checkedDocs[item.id]} onToggle={() => toggleDoc(item.id)} unlocked={unlocked} notApplicableReason={getItemNotApplicableReason(item.id, storeVisaType, storeIncome, storeEmployment)} serverDoc={serverDocs[item.id] || null} onShowPaywall={onUnlock} applicationId={applicationId} />
+                  <ChecklistItemRow key={item.id} item={item} checked={!!checkedDocs[item.id]} onToggle={() => toggleDoc(item.id)} unlocked={canAccessItem(item)} notApplicableReason={getItemNotApplicableReason(item.id, storeVisaType, storeIncome, storeEmployment)} serverDoc={serverDocs[item.id] || null} onShowPaywall={onUnlock} applicationId={applicationId} />
                 ))}
               </div>
             </motion.div>
@@ -1258,13 +1268,64 @@ function ChecklistTab({
   const personalItems = byCategory.personal;
   const financialItems = byCategory.financial;
   const supportingItems = byCategory.supporting;
-  const personalTeaser = personalItems.slice(0, 4);
-  const personalLockedCount = Math.max(0, personalItems.length - 4);
-  const lockedDocCount = financialItems.length + supportingItems.length + personalLockedCount;
+  // Exclude free items from locked counts (they're shown separately)
+  const lockedPersonalItems = personalItems.filter((i) => !i.isFreeItem && i.tier !== 'free');
+  const lockedFinancialItems = financialItems.filter((i) => !i.isFreeItem && i.tier !== 'free');
+  const lockedSupportingItems = supportingItems.filter((i) => !i.isFreeItem && i.tier !== 'free');
+  const personalTeaser = lockedPersonalItems.slice(0, 4);
+  const personalLockedCount = Math.max(0, lockedPersonalItems.length - 4);
+  const lockedDocCount = lockedFinancialItems.length + lockedSupportingItems.length + personalLockedCount;
 
   return (
     <div className="space-y-6">
       <ProgressCard checkedCount={checkedCount} total={total} progressPct={progressPct} verifiedCount={verifiedCount} />
+
+      {/* FREE AI PREVIEW ITEMS — always visible, fully functional */}
+      {freeItems.length > 0 && (
+        <div className="bg-white rounded-2xl border border-emerald-200 shadow-sm overflow-hidden">
+          <div className="px-5 sm:px-6 py-4 border-b border-emerald-200 flex items-center justify-between bg-emerald-50">
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-emerald-600" />
+              <h3 className="font-semibold text-emerald-900">Free AI Preview</h3>
+              <span className="inline-flex items-center gap-1 ml-2 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold">
+                ✓ No payment needed
+              </span>
+            </div>
+            <span className="text-xs text-emerald-700 font-medium">{freeItems.length} items fully unlocked</span>
+          </div>
+          <div className="px-5 sm:px-6 py-3 bg-emerald-50/30 border-b border-emerald-100">
+            <p className="text-sm text-emerald-800">
+              <span className="font-semibold">Try our AI document analysis for free.</span>{' '}
+              Upload your documents below to see AI confidence scoring and risk flags — no payment required.
+            </p>
+          </div>
+          <div className="divide-y divide-gray-50">
+            {freeItems.map((item: ChecklistItem) => (
+              <ChecklistItemRow
+                key={item.id}
+                item={item}
+                checked={!!checkedDocs[item.id]}
+                onToggle={() => toggleDoc(item.id)}
+                unlocked={true}
+                notApplicableReason={getItemNotApplicableReason(item.id, storeVisaType, storeIncome, storeEmployment)}
+                serverDoc={serverDocs[item.id] || null}
+                onShowPaywall={onUnlock}
+                applicationId={applicationId}
+              />
+            ))}
+          </div>
+          <div className="px-5 sm:px-6 py-3 bg-emerald-50/30 border-t border-emerald-100">
+            <button
+              onClick={onUnlock}
+              className="w-full flex items-center justify-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-xl shadow-sm transition-all btn-hover"
+            >
+              <Lock className="w-4 h-4" />
+              Unlock {lockedDocCount}+ more documents + AI verification — from £9.99
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Personal Documents — teaser */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
@@ -1298,11 +1359,11 @@ function ChecklistTab({
               <Lock className="w-3 h-3" /> Locked
             </span>
           </div>
-          <span className="text-xs text-amber-600">{financialItems.length} documents</span>
+          <span className="text-xs text-amber-600">{lockedFinancialItems.length} documents</span>
         </div>
         <div className="px-5 sm:px-6 py-6 bg-amber-50/30">
           <div className="space-y-2 mb-4 select-none">
-            {financialItems.slice(0, 2).map((item) => (
+            {lockedFinancialItems.slice(0, 2).map((item) => (
               <div key={item.id} className="flex items-center gap-3 opacity-40 blur-[2px] pointer-events-none">
                 <Square className="w-5 h-5 text-gray-300 flex-shrink-0" />
                 <div>
@@ -1329,11 +1390,11 @@ function ChecklistTab({
               <Lock className="w-3 h-3" /> Locked
             </span>
           </div>
-          <span className="text-xs text-amber-600">{supportingItems.length} documents</span>
+          <span className="text-xs text-amber-600">{lockedSupportingItems.length} documents</span>
         </div>
         <div className="px-5 sm:px-6 py-6 bg-amber-50/30">
           <div className="space-y-2 mb-4 select-none">
-            {supportingItems.slice(0, 2).map((item) => (
+            {lockedSupportingItems.slice(0, 2).map((item) => (
               <div key={item.id} className="flex items-center gap-3 opacity-40 blur-[2px] pointer-events-none">
                 <Square className="w-5 h-5 text-gray-300 flex-shrink-0" />
                 <div>
@@ -1460,7 +1521,13 @@ function ChecklistItemRow({ item, checked, onToggle, unlocked = false, notApplic
               <p className={`font-medium text-sm ${checked ? 'text-gray-400 line-through' : 'text-gray-900'}`}>
                 {item.title}
               </p>
-              {purchasedTier !== 'premium' && (
+              {(item.tier === 'free' || item.isFreeItem) && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-xs font-semibold">
+                  <Sparkles className="w-3 h-3" />
+                  Free AI Preview
+                </span>
+              )}
+              {purchasedTier !== 'premium' && !(item.tier === 'free' || item.isFreeItem) && (
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 text-xs font-semibold">
                   <Sparkles className="w-3 h-3" />
                   AI Scoring
