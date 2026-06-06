@@ -6,20 +6,20 @@ import { analytics } from '@/lib/analytics';
 
 const FAQ_ITEMS = [
   {
-    q: 'Why should I upgrade to Premium?',
-    a: 'The Premium tier includes AI-powered document verification that catches mistakes, formatting issues, and missing information before you submit to UKVI. It\'s like having a second pair of expert eyes on your application — and it could save you from a costly refusal.',
+    q: 'What do I get when I unlock?',
+    a: 'You get everything: all 30+ checklist items unlocked, AI document verification on every item, risk scoring & confidence scores, 37 downloadable document preparation templates, PDF export, and full timeline tracking.',
   },
   {
     q: 'What if I\'m not happy with my purchase?',
     a: 'We offer a 7-day money-back guarantee, no questions asked. If you\'re not satisfied for any reason, email tim.bot@silvergriffindsc.com within 7 days and we\'ll refund you in full.',
   },
   {
-    q: 'Can I upgrade later?',
-    a: 'You can purchase Premium at any time. Each purchase is one-time, so pick the tier that\'s right for you.',
+    q: 'Is this per application or per account?',
+    a: 'It\'s per application. Each UK visa application you create is £9.99 to unlock. If you start a new application (e.g. a different visa type), that\'s a separate unlock. This keeps costs low for most applicants.',
   },
   {
     q: 'Do I get support?',
-    a: 'Premium tier includes email support with a 24-hour response time. Standard tier users can reach us at tim.bot@silvergriffindsc.com for general enquiries.',
+    a: 'Yes. All unlocked users can reach us at tim.bot@silvergriffindsc.com for help with their application pack.',
   },
   {
     q: 'Is this legal advice?',

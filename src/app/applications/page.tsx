@@ -203,10 +203,8 @@ function ApplicationsContent() {
                       </div>
                       <div className="flex items-center gap-1 flex-shrink-0 ml-2">
                         <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
-                          app.purchasedTier === 'premium'
+                          app.purchasedTier === 'unlocked'
                             ? 'bg-emerald-100 text-emerald-700'
-                            : app.purchasedTier === 'standard'
-                            ? 'bg-blue-100 text-blue-700'
                             : 'bg-gray-100 text-gray-600'
                         }`}>
                           {tier.badge}
@@ -234,7 +232,7 @@ function ApplicationsContent() {
                         <FileText className="w-3 h-3" />
                         {app.documentCount} uploaded
                       </span>
-                      {app.purchasedTier === 'premium' && (
+                      {app.purchasedTier === 'unlocked' && (
                         <span className="flex items-center gap-1 text-emerald-600">
                           <Sparkles className="w-3 h-3" />
                           AI enabled

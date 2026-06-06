@@ -7,9 +7,9 @@
  * Automation flows:
  *   Day 0:  Welcome email (triggered on subscribe)
  *   Day 3:  First tip email (visa-type-specific advice)
- *   Day 7:  Upsell email (£149 review tier)
+ *   Day 7:  Upsell email (£9.99 full access)
  *   Day 14: Re-engagement (for non-payers)
- *   Day 30: £149 upsell follow-up
+ *   Day 30: £9.99 upsell follow-up
  * 
  * Rate limit: max 1 email per 3 days per subscriber.
  */
@@ -47,7 +47,7 @@ export const EMAIL_SEQUENCES: EmailSequenceStep[] = [
   {
     day: 7,
     templateId: 'upsell_review',
-    subject: 'Want an expert to double-check your documents? 📋',
+    subject: 'Unlock your full application checklist — £9.99 🔓',
     condition: (sub) => !sub.tags.includes('stage:paid_user'),
   },
   {
@@ -59,7 +59,7 @@ export const EMAIL_SEQUENCES: EmailSequenceStep[] = [
   {
     day: 30,
     templateId: 'upsell_followup',
-    subject: '£149 document review — before you submit your application',
+    subject: 'Before you submit — unlock everything for £9.99',
     condition: (sub) => !sub.tags.includes('stage:paid_user'),
   },
 ];
@@ -114,9 +114,9 @@ export function getTemplateHtml(templateId: string, subscriber: EmailSubscriber)
 
     case 'upsell_review':
       return wrapEmail(`
-        <h1>Want peace of mind before you submit? 📋</h1>
+        <h1>Unlock your full application checklist — &pound;9.99 🔓</h1>
         <p>Hi there,</p>
-        <p>Most people tell us the scariest part isn't gathering documents — it's wondering <strong>"did I miss something?"</strong></p>
+        <p>You've already used your 3 free AI document checks. Ready to take the next step?</p>
         <p>A single missing document can mean:</p>
         <ul style="color: #ef4444; font-size: 14px;">
           <li>Weeks of delays while they request more evidence</li>
@@ -125,12 +125,12 @@ export function getTemplateHtml(templateId: string, subscriber: EmailSubscriber)
         </ul>
         
         <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 20px; margin: 20px 0; text-align: center;">
-          <p style="font-weight: 700; color: #166534; font-size: 18px; margin: 0 0 4px 0;">Document Review — £149</p>
-          <p style="color: #15803d; font-size: 13px; margin: 0 0 12px 0;">We check your pack against official requirements and flag any gaps</p>
-          <a href="${appUrl}/dashboard" style="display: inline-block; background: #16a34a; color: white; padding: 10px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px;">Get Your Review →</a>
+          <p style="font-weight: 700; color: #166534; font-size: 18px; margin: 0 0 4px 0;">Unlock Full Access &mdash; &pound;9.99</p>
+          <p style="color: #15803d; font-size: 13px; margin: 0 0 12px 0;">All 30+ checklist items + AI verification on every document + 37 templates</p>
+          <a href="${appUrl}/applications" style="display: inline-block; background: #16a34a; color: white; padding: 10px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px;">Unlock My Application &rarr;</a>
         </div>
         
-        <p style="font-size: 13px; color: #64748b;">Not ready yet? No worries — your free checklist is always available in your dashboard.</p>
+        <p style="font-size: 13px; color: #64748b;">One-time payment per application &middot; 7-day money-back guarantee &middot; No subscription.</p>
       `, unsubUrl);
 
     case 're_engagement':
@@ -153,7 +153,7 @@ export function getTemplateHtml(templateId: string, subscriber: EmailSubscriber)
         <h1>Before you submit: one last check ✅</h1>
         <p>Hi there,</p>
         <p>If you're getting close to submitting your ${visaLabel} application, this is the most important email we'll send you.</p>
-        <p>Our £149 document review catches an average of <strong>2.3 issues</strong> per application. Things like:</p>
+        <p>Our AI catches an average of <strong>2.3 issues</strong> per application. Things like:</p>
         <ul style="font-size: 14px; color: #334155;">
           <li>Missing pages from bank statements</li>
           <li>Income evidence that doesn't cover the right period</li>
@@ -162,8 +162,9 @@ export function getTemplateHtml(templateId: string, subscriber: EmailSubscriber)
         </ul>
         
         <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 12px; padding: 20px; margin: 20px 0; text-align: center;">
-          <p style="font-weight: 700; color: #1e3a8a; font-size: 16px; margin: 0 0 4px 0;">£149 now could save you £1,000+ in resubmission fees</p>
-          <a href="${appUrl}/dashboard" style="display: inline-block; background: #1d4ed8; color: white; padding: 10px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; margin-top: 12px;">Get Expert Review →</a>
+          <p style="font-weight: 700; color: #1e3a8a; font-size: 16px; margin: 0 0 4px 0;">&pound;9.99 now could save you &pound;1,000+ in resubmission fees</p>
+          <p style="color: #3b82f6; font-size: 13px; margin: 4px 0 12px 0;">All 30+ checklist items + AI verification + 37 templates &mdash; one-time payment</p>
+          <a href="${appUrl}/applications" style="display: inline-block; background: #1d4ed8; color: white; padding: 10px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; margin-top: 12px;">Unlock Full Access &mdash; &pound;9.99 &rarr;</a>
         </div>
 
         <p style="font-size: 13px; color: #64748b;">This is the last upsell email we'll send. From here, we'll only share useful tips and updates. Good luck with your application! 🦅</p>

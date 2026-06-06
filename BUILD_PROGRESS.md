@@ -1,56 +1,108 @@
 # BUILD_PROGRESS.md
 
-## Task: Remove Questionnaire — Replace with Simple Visa Type Selector
+## Build: FEAT — Collapse to Single Paid Tier + Fix Per-App Paywall + Update Pricing UI
 **Date:** 2026-06-06  
-**Status:** IN PROGRESS
+**Status:** ✅ COMPLETE
 
 ---
 
-## What Changed
+## TASK 1: Collapse Tiers in Type System ✅
 
-### `src/app/app/start/page.tsx`
-- **Before:** Rendered `<OnboardingGate><Onboarding /></OnboardingGate>` — a full 5-step wizard
-- **After:** Renders `<OnboardingGate><VisaTypeSelector /></OnboardingGate>` — simple 3-card picker
-- The new `VisaTypeSelector` is defined inline in this file (no new component file needed)
+### src/lib/application-types.ts
+- Changed `PurchasedTier = 'none' | 'standard' | 'premium'` → `'none' | 'unlocked'`
+- Updated `TIER_CONFIG` to remove 'standard'/'premium' keys, add 'unlocked' key
 
-### Behaviour
-1. User sees 3 cards: Spouse/Partner Visa, Skilled Worker Visa, British Citizenship
-2. Clicking a card immediately calls `POST /api/applications` with just `{ visaType }`
-3. Loading spinner shown on the selected card while creating
-4. On success (or failure) → redirect to `/applications`
-5. Auth guard still active via `OnboardingGate`
+### src/lib/store.ts
+- Changed `PurchasedTier = 'none' | 'standard' | 'premium'` → `'none' | 'unlocked'`
 
-### `src/components/Onboarding.tsx`
-- **NOT deleted** — left as-is for safety
-- No longer imported anywhere (only was imported in `start/page.tsx`)
+### src/lib/types.ts
+- Updated `purchased_tier?: 'none' | 'standard' | 'premium'` → `'none' | 'unlocked'`
 
----
+### src/lib/visa-data.ts
+- Updated `tier?: 'free' | 'standard' | 'premium'` → `'free' | 'unlocked'`
+- Replaced all `tier: 'standard'` with `tier: 'unlocked'` across all checklist items
 
-## ⚠️ Conditional Logic Note — IMPORTANT, DO NOT REMOVE
-
-The following questionnaire fields are used in conditional checklist/risk logic and **must remain in the codebase**:
-
-| Field | Used In | Effect |
-|-------|---------|--------|
-| `currentlyInUk` | `visa-data.ts` line 1793, `dashboard/page.tsx` lines 131, 252, 262 | Marks location-dependent checklist items as N/A; affects risk display |
-| `relationshipDurationMonths` | `visa-data.ts` lines 1738, 2106–2110 | Flags short-relationship risk for spouse visa |
-| `hasPreviousRefusal` | `visa-data.ts` lines 1767, 2122 | Shows refusal-specific checklist warnings |
-| `hasPreviousOverstay` | `visa-data.ts` lines 1780, 2127 | Shows overstay-specific checklist warnings |
-
-**These fields are now NULL on newly-created applications** (they were previously populated by the questionnaire). The conditional logic gracefully handles null values — it simply won't show those conditional items/risks if the data isn't present.
-
-**Do NOT remove this logic.** It may be re-introduced later via an in-app settings/profile editor so users can still provide this context after initial application creation.
+### All other files with 'standard'/'premium' PurchasedTier references updated:
+- `src/app/dashboard/page.tsx` — tier checks, backwards compat normalization
+- `src/app/applications/page.tsx` — tier badge display
+- `src/app/app/success/page.tsx` — was already using 'unlocked' ✓
+- `src/components/TierFeatureButtons.tsx` — TIER_RANK, feature minTier, labels
+- `src/components/TopNav.tsx` — tier prop type and display
+- `src/components/PremiumUpgradeBanner.tsx` — simplified to single tier
+- `src/components/PaywallModal.tsx` — replaced two-tier TIERS array with single 'unlocked' tier
+- `src/components/PaymentSuccessBanner.tsx` — updated tierInfo to use 'unlocked' key
+- `src/components/FeatureComparison.tsx` — rebuilt as single-column 'Full Access' table
+- `src/components/PaywallFAQ.tsx` — updated FAQ content to single-tier messaging
 
 ---
 
-## API Used
-- `POST /api/applications` — requires `visaType` only, all other fields optional
-- Sets `onboarding_completed: true` on the application record
-- Returns `{ application: { id, ... } }`
+## TASK 2: Update Stripe Config ✅
+
+### src/lib/stripe.ts
+- Changed `STRIPE_PRICE_IDS` from `{standard, premium}` to `{unlocked: process.env.STRIPE_PRICE_STANDARD!}`
+- Updated `TIER_METADATA` to single 'unlocked' tier with comprehensive feature list
+
+### src/app/api/checkout/route.ts
+- Default tier changed from 'standard' to 'unlocked'
+- Removed conditional `productType: 'premium_review'` logic
+- Updated health check `priceIds` display
+
+### src/app/api/checkout/premium-review/route.ts
+- Deprecated; now routes all requests to 'unlocked' tier
+
+### src/app/api/webhooks/stripe/route.ts
+- Updated TIER_LABELS to use 'unlocked' (backwards compat entries for 'standard'/'premium' kept)
+- Updated tier safety check to accept 'unlocked' | 'standard' | 'premium' (backwards compat)
+- Both `handlePremiumReviewPurchase` and `handleFullPackPurchase` now write 'unlocked' to DB
+
+### src/app/api/webhooks/stripe-prices/route.ts
+- Updated price→tier mapping: STRIPE_PRICE_STANDARD → 'unlocked'
+
+### src/app/api/user/tier/route.ts
+- Added normalization: 'standard'/'premium' from DB → 'unlocked' (backwards compat)
 
 ---
 
-## Build Steps
-- [ ] `npx tsc --noEmit` — type check
-- [ ] `npm run build` — full build
-- [ ] `git commit && git push`
+## TASK 3: Fix Per-Application Paywall Leak ✅
+
+### src/app/dashboard/page.tsx
+- Added backwards compat normalization for old DB values ('standard'/'premium' → 'unlocked')
+- Poll logic updated to set 'unlocked' for all successful payments
+- All `purchasedTier === 'premium'` checks changed to `=== 'unlocked'`
+- All `purchasedTier !== 'premium'` checks changed to `!== 'unlocked'`
+- Source of truth remains DB (purchased_tier from application row), seeded into Zustand store
+
+---
+
+## TASK 4: Update Pricing UI ✅
+
+### src/app/page.tsx
+- Replaced two-tier pricing section with single "One price. Everything unlocked." card
+- £9.99 per application, one-time, instant access
+- 6-item feature list, single CTA button
+
+---
+
+## TASK 5: Update Email Sequences ✅
+
+### src/lib/email-automation.ts
+- Updated `upsell_review` subject + template: removed £149 document review, added £9.99 full access unlock CTA
+- Updated `upsell_followup` subject + template: removed £149 reference, replaced with £9.99 unlock CTA
+- Removed all human review / expert review references from drip sequences
+
+---
+
+## TypeScript Check ✅
+`npx tsc --noEmit` — 0 errors
+
+## Build Output ✅
+`npm run build` — ✓ Generating static pages (55/55)
+All pre-existing warnings unchanged (DYNAMIC_SERVER_USAGE in API routes, Prisma instrumentation, Supabase fetch during build) — not caused by this build.
+
+---
+
+## Previous Build
+## Build: FEAT — Landing Page AI Hooks + Questionnaire Migration + Risk-Reactive CTA + Welcome Email Rewrite
+**Commit:** 31eb8a4  
+**Date:** 2026-06-06  
+**Status:** ✅ COMPLETE

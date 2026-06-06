@@ -4,19 +4,17 @@ import { Sparkles, ChevronRight, CheckCircle, Zap } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface PremiumUpgradeBannerProps {
-  currentTier: 'none' | 'standard' | 'premium';
+  currentTier: 'none' | 'unlocked';
   onUpgrade: () => void;
 }
 
 export default function PremiumUpgradeBanner({ currentTier, onUpgrade }: PremiumUpgradeBannerProps) {
-  // Show banner for Free and Standard users
-  if (currentTier === 'premium') {
+  // Don't show banner if already unlocked
+  if (currentTier === 'unlocked') {
     return null;
   }
 
-  const isStandard = currentTier === 'standard';
-
-  const premiumFeatures = [
+  const unlockFeatures = [
     {
       icon: Sparkles,
       title: 'AI Risk Scoring',
@@ -38,66 +36,40 @@ export default function PremiumUpgradeBanner({ currentTier, onUpgrade }: Premium
     <motion.div
       initial={{ opacity: 0, y: -8 }}
       animate={{ opacity: 1, y: 0 }}
-      className={`rounded-2xl p-5 sm:p-6 mb-6 border-2 ${
-        isStandard
-          ? 'bg-gradient-to-r from-blue-50 to-indigo-50 border-indigo-300'
-          : 'bg-gradient-to-r from-emerald-50 to-emerald-100 border-emerald-300'
-      }`}
+      className="rounded-2xl p-5 sm:p-6 mb-6 border-2 bg-gradient-to-r from-emerald-50 to-emerald-100 border-emerald-300"
     >
       <div className="flex flex-col gap-4">
         {/* Header */}
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h3 className={`font-bold text-lg mb-1 flex items-center gap-2 ${
-              isStandard ? 'text-indigo-900' : 'text-emerald-900'
-            }`}>
+            <h3 className="font-bold text-lg mb-1 flex items-center gap-2 text-emerald-900">
               <Sparkles className="w-5 h-5" />
-              {isStandard ? 'Ready for AI-Powered Insights?' : 'Unlock Premium Features'}
+              Unlock Full Access — £9.99
             </h3>
-            <p className={`text-sm ${
-              isStandard ? 'text-indigo-700' : 'text-emerald-700'
-            }`}>
-              {isStandard
-                ? 'Upgrade to Premium to unlock AI-powered analysis & insights'
-                : 'Get AI guidance, document verification, and application readiness checks'
-              }
+            <p className="text-sm text-emerald-700">
+              Get AI document verification, all 30+ checklist items, and 37 templates
             </p>
           </div>
           <button
             onClick={onUpgrade}
-            className={`px-5 py-3 rounded-xl font-bold text-sm whitespace-nowrap flex items-center gap-2 transition-all hover:shadow-lg active:scale-95 flex-shrink-0 ${
-              isStandard
-                ? 'bg-indigo-600 hover:bg-indigo-700 text-white'
-                : 'bg-emerald-600 hover:bg-emerald-700 text-white'
-            }`}
+            className="px-5 py-3 rounded-xl font-bold text-sm whitespace-nowrap flex items-center gap-2 transition-all hover:shadow-lg active:scale-95 flex-shrink-0 bg-emerald-600 hover:bg-emerald-700 text-white"
           >
-            Upgrade to Premium
+            Unlock — £9.99
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>
 
         {/* Features Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          {premiumFeatures.map((feature, i) => {
+          {unlockFeatures.map((feature, i) => {
             const Icon = feature.icon;
             return (
-              <div
-                key={i}
-                className={`flex gap-3 p-3 rounded-lg ${
-                  isStandard ? 'bg-white/70' : 'bg-white/80'
-                }`}
-              >
-                <div className={`flex-shrink-0 ${
-                  isStandard ? 'text-indigo-600' : 'text-emerald-600'
-                }`}>
+              <div key={i} className="flex gap-3 p-3 rounded-lg bg-white/80">
+                <div className="flex-shrink-0 text-emerald-600">
                   <Icon className="w-4 h-4 mt-0.5" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className={`text-xs font-semibold mb-0.5 ${
-                    isStandard ? 'text-indigo-900' : 'text-emerald-900'
-                  }`}>
-                    {feature.title}
-                  </p>
+                  <p className="text-xs font-semibold mb-0.5 text-emerald-900">{feature.title}</p>
                   <p className="text-xs text-gray-600">{feature.description}</p>
                 </div>
               </div>
@@ -106,22 +78,9 @@ export default function PremiumUpgradeBanner({ currentTier, onUpgrade }: Premium
         </div>
 
         {/* Pricing */}
-        <div className={`flex items-center justify-between pt-2 border-t ${
-          isStandard ? 'border-indigo-200' : 'border-emerald-200'
-        }`}>
-          <p className={`text-xs font-medium ${
-            isStandard ? 'text-indigo-700' : 'text-emerald-700'
-          }`}>
-            {isStandard
-              ? 'Currently on: Standard Plan (£9.99)'
-              : 'Start with: Standard Plan (£9.99)'
-            }
-          </p>
-          <p className={`text-sm font-bold ${
-            isStandard ? 'text-indigo-900' : 'text-emerald-900'
-          }`}>
-            Premium: £79.99
-          </p>
+        <div className="flex items-center justify-between pt-2 border-t border-emerald-200">
+          <p className="text-xs font-medium text-emerald-700">One-time payment per application</p>
+          <p className="text-sm font-bold text-emerald-900">£9.99 · 7-day money-back guarantee</p>
         </div>
       </div>
     </motion.div>

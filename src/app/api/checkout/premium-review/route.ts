@@ -4,25 +4,15 @@ import { NextRequest, NextResponse } from 'next/server';
 
 /**
  * POST /api/checkout/premium-review
- * Create a Stripe checkout session for premium document review.
- *
- * Uses Stripe Price IDs — no hardcoded amounts.
- * Accepts tier: "premium" (standard is handled by /api/checkout)
+ * @deprecated Use /api/checkout instead. Kept for backwards compat.
+ * Redirects to main checkout with 'unlocked' tier.
  */
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    const { tier } = body;
+    // Accept any body — all requests now go to the single 'unlocked' tier
+    const tier: TierKey = 'unlocked';
 
-    // Validate tier — only premium is valid for review checkout
-    if (!tier || tier !== 'premium') {
-      return NextResponse.json(
-        { error: 'Invalid tier. Must be "premium".' },
-        { status: 400 }
-      );
-    }
-
-    const priceId = STRIPE_PRICE_IDS[tier as TierKey];
+    const priceId = STRIPE_PRICE_IDS[tier];
 
     if (!priceId) {
       return NextResponse.json(
@@ -77,10 +67,10 @@ export async function POST(req: NextRequest) {
       success_url: `${process.env.NEXT_PUBLIC_SITE_URL}/app/review-success?session_id={CHECKOUT_SESSION_ID}&tier=${tier}`,
       cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard`,
       metadata: {
-        userId: user.id,
-        email: email,
-        productType: 'premium_review',
-        tier: tier,
+        userId: String(user.id),
+        email: String(email),
+        productType: 'full_pack',
+        tier: String(tier),
       },
     });
 

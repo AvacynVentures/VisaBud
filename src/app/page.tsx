@@ -236,31 +236,36 @@ export default function Home() {
         {/* Pricing */}
         <section className="container-max py-16">
           <FadeIn>
-            <div className="text-center mb-12">
+            <div className="text-center mb-8">
               <p className="text-blue-600 text-sm font-semibold mb-2 uppercase tracking-wide">Simple pricing</p>
-              <h2 className="text-3xl font-bold text-slate-900 mb-3">Simple, transparent pricing.</h2>
-              <p className="text-slate-500">No subscription, no hidden fees. Pay once, yours forever. All prices incl. UK VAT.</p>
+              <h2 className="text-3xl font-bold text-slate-900 mb-3">One price. Everything unlocked.</h2>
+              <p className="text-slate-500">No tiers. No confusion. Pay once per application, unlock everything.</p>
             </div>
           </FadeIn>
           <FadeIn delay={0.1}>
-            <div className="max-w-md mx-auto">
-              <div className="card p-8 text-center border-2 border-blue-100 relative overflow-hidden">
-                {/* Subtle shimmer */}
-                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-emerald-400 to-blue-500" />
-                <div className="mb-2">
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full text-xs font-bold">
-                    🔥 Early access pricing — locked in
-                  </span>
+            <div className="max-w-sm mx-auto">
+              <div className="card p-8 border-2 border-blue-200">
+                <div className="text-center mb-6">
+                  <p className="text-sm font-semibold text-emerald-600 mb-1">🔓 Full Application Unlock</p>
+                  <div className="text-5xl font-bold text-blue-600 mb-1">£9.99</div>
+                  <p className="text-slate-500 text-sm">Per application · One-time · Instant access</p>
                 </div>
-                <div className="text-5xl font-bold text-blue-600 mb-1">From £9.99</div>
-                <p className="text-slate-500 text-sm mb-2">One-time payment · Instant access · 7-day money-back guarantee</p>
-                <p className="text-slate-400 text-xs mb-4">Standard £9.99 · Premium £79.99 (all incl. VAT)</p>
-                <Link href="/auth/signup" className="btn-primary w-full block mb-3 py-3.5 text-base shadow-lg shadow-blue-200/50">
-                  Start Free
+                <ul className="space-y-3 mb-6 text-sm text-slate-700">
+                  {[
+                    '✓ All 30+ checklist items unlocked',
+                    '✓ AI document verification on every item',
+                    '✓ Risk scoring & confidence scores',
+                    '✓ 37 document preparation templates',
+                    '✓ PDF export & timeline',
+                    '✓ 7-day money-back guarantee',
+                  ].map((item, i) => (
+                    <li key={i} className="flex items-center gap-2">{item}</li>
+                  ))}
+                </ul>
+                <Link href="/auth/signup" className="btn-primary w-full block text-center py-3.5">
+                  Start Free — Unlock for £9.99
                 </Link>
-                <p className="text-xs text-slate-500">3 AI checks free. Full checklist + 37 templates + risk management from £9.99.</p>
-                <p className="text-xs text-slate-400 mt-2">💬 1,000+ applicants have already unlocked their plans</p>
-                <p className="text-xs text-slate-400 mt-1">🛡️ 7-day money-back guarantee · Recommended by immigration consultants</p>
+                <p className="text-xs text-slate-400 text-center mt-3">3 AI checks always free. Pay per application when ready.</p>
               </div>
             </div>
           </FadeIn>

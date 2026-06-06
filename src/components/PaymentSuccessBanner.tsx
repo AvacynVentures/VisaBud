@@ -16,35 +16,44 @@ import { useApplicationStore } from '@/lib/store';
 export default function PaymentSuccessBanner({ onDismiss }: { onDismiss?: () => void }) {
   const searchParams = useSearchParams();
   const isSuccess = searchParams.get('payment') === 'success';
-  const tier = searchParams.get('tier') || 'standard';
+  const tier = searchParams.get('tier') || 'unlocked';
   const [visible, setVisible] = useState(false);
   const [confettiActive, setConfettiActive] = useState(false);
 
   const tierInfo: Record<string, { name: string; price: string; features: string[] }> = {
-    standard: {
-      name: 'Standard Pack',
+    unlocked: {
+      name: 'Full Access',
       price: '£9.99',
       features: [
-        'Personalised document checklist',
-        'Step-by-step submission timeline',
-        'Risk assessment & alerts',
-        'PDF export of your plan',
+        'All 30+ checklist items unlocked',
+        'AI document verification on every item',
+        'Risk scoring & confidence scores',
+        '37 downloadable document preparation templates',
+        'PDF export & timeline',
+      ],
+    },
+    // backwards compat
+    standard: {
+      name: 'Full Access',
+      price: '£9.99',
+      features: [
+        'All checklist items unlocked',
+        'AI document verification',
+        'PDF export',
       ],
     },
     premium: {
-      name: 'Premium Pack',
-      price: '£79.99',
+      name: 'Full Access',
+      price: '£9.99',
       features: [
-        'AI document verification & scoring',
-        'Downloadable preparation templates',
-        'Email support within 24 hours',
-        'Everything in Standard',
+        'All checklist items unlocked',
+        'AI document verification',
+        'Templates',
       ],
     },
-
   };
 
-  const info = tierInfo[tier] || tierInfo.standard;
+  const info = tierInfo[tier] || tierInfo.unlocked;
 
   const { setUnlocked } = useApplicationStore();
 

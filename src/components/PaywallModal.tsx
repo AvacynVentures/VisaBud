@@ -17,46 +17,29 @@ interface PaywallModalProps {
   onClose: () => void;
   visaType: string;
   applicationId?: string | null;
-  currentTier?: 'none' | 'standard' | 'premium';
+  currentTier?: 'none' | 'unlocked';
 }
 
 const TIERS = [
   {
-    id: 'standard',
-    name: 'Standard',
+    id: 'unlocked',
+    name: 'Full Access',
     price: 9.99,
-    badge: null,
-    color: 'blue',
-    description: 'Perfect to get started — everything you need to prepare with confidence',
-    benefits: [
-      'Personalised document checklist',
-      'Step-by-step submission timeline',
-      'Risk assessment & alerts',
-      'PDF export of your plan',
-    ],
-    buttonLabel: 'Get Started',
-    buttonStyle: 'bg-blue-600 hover:bg-blue-700 text-white',
-    cardStyle: 'border-gray-200 bg-white',
-    priceId: 'standard',
-    guarantee: 'Satisfaction guaranteed',
-  },
-  {
-    id: 'premium',
-    name: 'AI Premium',
-    price: 79.99,
-    badge: 'Most Popular',
+    badge: 'Best Value',
     color: 'emerald',
-    description: 'AI-powered verification to catch mistakes before you submit',
+    description: 'Everything you need to prepare and submit with confidence — one price, all unlocked',
     benefits: [
-      'Everything in Standard',
-      'AI document verification & scoring',
-      'Downloadable preparation templates',
-      'Email support within 24 hours',
+      'All 30+ checklist items unlocked',
+      'AI document verification on every item',
+      'Risk scoring & confidence scores',
+      '37 downloadable document preparation templates',
+      'PDF export & timeline tracking',
+      '7-day money-back guarantee',
     ],
-    buttonLabel: 'Unlock AI Premium',
+    buttonLabel: 'Unlock Full Access',
     buttonStyle: 'bg-emerald-600 hover:bg-emerald-700 text-white',
     cardStyle: 'border-emerald-400 bg-emerald-50/30 ring-2 ring-emerald-200 shadow-lg',
-    priceId: 'premium',
+    priceId: 'unlocked',
     guarantee: 'Satisfaction guaranteed',
   },
 ] as const;
@@ -176,7 +159,7 @@ export default function PaywallModal({ isOpen, onClose, visaType, applicationId,
               Unlock Your Complete {visaType} Plan
             </h2>
             <p className="text-blue-200 text-sm">
-              Choose the level of support that fits your needs
+              One price. Everything unlocked. Per application.
             </p>
           </motion.div>
         </div>
@@ -256,10 +239,6 @@ export default function PaywallModal({ isOpen, onClose, visaType, applicationId,
                       <CheckCircle className="w-4 h-4 text-emerald-500" />
                       Current plan
                     </div>
-                  ) : currentTier === 'premium' && tier.id === 'standard' ? (
-                    <div className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-lg font-semibold text-sm bg-gray-50 text-gray-400">
-                      Included in your Premium plan
-                    </div>
                   ) : (
                   <button
                     onClick={() => handleCheckout(tier.id)}
@@ -273,7 +252,7 @@ export default function PaywallModal({ isOpen, onClose, visaType, applicationId,
                       </>
                     ) : (
                       <>
-                        {tier.id === 'premium' && currentTier === 'standard' ? 'Upgrade to Premium' : tier.buttonLabel} — £{tier.price}
+                        {tier.buttonLabel} — £{tier.price}
                         <ArrowRight className="w-4 h-4" />
                       </>
                     )}

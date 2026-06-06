@@ -10,7 +10,7 @@ import { LogOut, User, ChevronDown } from 'lucide-react';
 interface TopNavProps {
   showBackToApps?: boolean;
   applicationName?: string | null;
-  currentTier?: 'none' | 'standard' | 'premium' | null;
+  currentTier?: 'none' | 'unlocked' | null;
 }
 
 export default function TopNav({ showBackToApps = false, applicationName, currentTier }: TopNavProps) {
@@ -56,11 +56,9 @@ export default function TopNav({ showBackToApps = false, applicationName, curren
           )}
           {currentTier && currentTier !== 'none' && (
             <span className={`hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold ${
-              currentTier === 'premium'
-                ? 'bg-emerald-100 text-emerald-700'
-                : 'bg-blue-100 text-blue-700'
+              'bg-emerald-100 text-emerald-700'
             }`}>
-              {currentTier === 'premium' ? '✨ Premium' : '✓ Standard'}
+              {'🔓 Unlocked'}
             </span>
           )}
         </div>

@@ -19,7 +19,7 @@ interface FeatureButton {
   id: string;
   label: string;
   icon: typeof FileText;
-  minTier: 'premium';
+  minTier: 'unlocked';
   color: string;
   lockedColor: string;
   description: string;
@@ -30,7 +30,7 @@ const FEATURES: FeatureButton[] = [
     id: 'templates',
     label: 'Templates',
     icon: FileText,
-    minTier: 'premium',
+    minTier: 'unlocked',
     color: 'bg-blue-600 hover:bg-blue-700 text-white',
     lockedColor: 'bg-gray-100 text-gray-400 border border-gray-200',
     description: '37+ document preparation templates to help you fill in forms correctly.',
@@ -39,7 +39,7 @@ const FEATURES: FeatureButton[] = [
     id: 'ai-confidence',
     label: 'Application Readiness',
     icon: Sparkles,
-    minTier: 'premium',
+    minTier: 'unlocked',
     color: 'bg-violet-600 hover:bg-violet-700 text-white',
     lockedColor: 'bg-gray-100 text-gray-400 border border-gray-200',
     description: 'Traffic-light readiness score based on your uploaded documents. Shows category breakdown and weakest document.',
@@ -48,7 +48,7 @@ const FEATURES: FeatureButton[] = [
     id: 'ai-validation',
     label: 'Issues & Tips',
     icon: ShieldCheck,
-    minTier: 'premium',
+    minTier: 'unlocked',
     color: 'bg-emerald-600 hover:bg-emerald-700 text-white',
     lockedColor: 'bg-gray-100 text-gray-400 border border-gray-200',
     description: 'All AI-flagged issues across your documents, prioritised by severity with specific fixes.',
@@ -58,16 +58,14 @@ const FEATURES: FeatureButton[] = [
 
 const TIER_RANK: Record<PurchasedTier, number> = {
   none: 0,
-  standard: 1,
-  premium: 2,
-  unlocked: 2,
+  unlocked: 1,
 };
 
 const TIER_LABELS: Record<string, string> = {
-  premium: 'Premium (£79.99)',
+  unlocked: 'Full Access (£9.99)',
 };
 
-function isUnlocked(userTier: PurchasedTier, requiredTier: 'premium'): boolean {
+function isUnlocked(userTier: PurchasedTier, requiredTier: 'unlocked'): boolean {
   return TIER_RANK[userTier] >= TIER_RANK[requiredTier];
 }
 
@@ -102,11 +100,8 @@ export default function TierFeatureButtons({ purchasedTier, onUpgrade, visaType 
         <Sparkles className="w-5 h-5 text-violet-600" />
         <h3 className="font-semibold text-gray-900">Premium Features</h3>
         {purchasedTier !== 'none' && (
-          <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
-            purchasedTier === 'premium' ? 'bg-emerald-100 text-emerald-700' :
-            'bg-blue-100 text-blue-700'
-          }`}>
-            {purchasedTier.charAt(0).toUpperCase() + purchasedTier.slice(1)} Plan
+          <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">
+            Full Access
           </span>
         )}
       </div>
@@ -164,7 +159,7 @@ export default function TierFeatureButtons({ purchasedTier, onUpgrade, visaType 
                 </p>
                 <p className="text-xs text-amber-600 mb-3">
                   Available from the{' '}
-                  <strong>{TIER_LABELS[FEATURES.find(f => f.id === upgradePrompt)?.minTier || 'premium']}</strong> plan.
+                  <strong>{TIER_LABELS[FEATURES.find(f => f.id === upgradePrompt)?.minTier || 'unlocked']}</strong> plan.
                 </p>
                 <button
                   onClick={() => { setUpgradePrompt(null); onUpgrade(); }}

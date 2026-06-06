@@ -208,10 +208,12 @@ function DashboardContent() {
           if (application.has_previous_overstay !== null) store.setHasPreviousOverstay(application.has_previous_overstay);
 
           // Override payment tier from application (not global user)
-          const appTier = application.purchased_tier || 'none';
+          // Backwards compat: treat old 'standard'/'premium' values as 'unlocked'
+          const rawTier = application.purchased_tier || 'none';
+          const appTier = (rawTier === 'standard' || rawTier === 'premium') ? 'unlocked' : rawTier;
           if (appTier !== 'none') {
             store.setUnlocked(true);
-            store.setPurchasedTier(appTier);
+            store.setPurchasedTier(appTier as 'unlocked');
           }
 
           // Force wizard to "completed" state
@@ -261,12 +263,14 @@ function DashboardContent() {
   useEffect(() => {
     if (!applicationId || !appData) return;
 
-    const appTier = appData.purchased_tier || 'none';
+    const rawTier = appData.purchased_tier || 'none';
+    // Backwards compat: treat old 'standard'/'premium' values as 'unlocked'
+    const appTier = (rawTier === 'standard' || rawTier === 'premium') ? 'unlocked' : rawTier;
     console.log(`[Dashboard] App loaded: tier = ${appTier}`, appData);
     
     if (appTier !== 'none') {
       setUnlocked(true);
-      setPurchasedTier(appTier);
+      setPurchasedTier(appTier as 'unlocked');
       return;
     }
 
@@ -289,11 +293,12 @@ function DashboardContent() {
           const updatedTier = application?.purchased_tier || 'none';
           console.log(`[Dashboard] Poll ${pollCount}: tier = ${updatedTier}`, application);
 
-          if (updatedTier !== 'none') {
+          const normalizedTier = (updatedTier === 'standard' || updatedTier === 'premium') ? 'unlocked' : updatedTier;
+          if (normalizedTier !== 'none') {
             setAppData(application);
             setUnlocked(true);
-            setPurchasedTier(updatedTier);
-            console.log(`[Dashboard] Tier updated to ${updatedTier}, stopping poll`);
+            setPurchasedTier(normalizedTier as 'unlocked');
+            console.log(`[Dashboard] Tier updated to ${normalizedTier}, stopping poll`);
             clearInterval(pollTimer);
           }
         } catch (err) {
@@ -347,30 +352,16 @@ function DashboardContent() {
           
           if (payments && payments.length > 0) {
             setUnlocked(true);
-            // Use tier column from payments table (source of truth from webhook)
-            // Fallback to inferring from amount if tier column doesn't exist
-            const storedTier = payments[0].tier;
-            if (storedTier) {
-              setPurchasedTier(storedTier);
-            } else {
-              // Fallback: infer from amount (for backwards compat with old payments)
-              const amount = payments[0].amount_pence || 0;
-              if (amount >= 14900 || amount === 32 || amount === 2) {
-                setPurchasedTier('premium');
-              } else {
-                setPurchasedTier('standard');
-              }
-            }
+            // All payments now map to 'unlocked'
+            setPurchasedTier('unlocked');
             return true;
           }
         }
 
         // Also set tier from URL param if returning from payment
         if (tierParam) {
-          const validTiers = ['standard', 'premium'] as const;
-          if (validTiers.includes(tierParam as any)) {
-            setPurchasedTier(tierParam as any);
-          }
+          // Any non-none tier maps to 'unlocked'
+          setPurchasedTier('unlocked');
         }
 
         return false;
@@ -945,7 +936,7 @@ function FullDashboard({
           </FadeIn>
 
           {/* Premium Upgrade Banner — shown to all users except Premium tier */}
-          {purchasedTier !== 'premium' && (
+          {purchasedTier !== 'unlocked' && (
             <FadeIn delay={0.04}>
               <PremiumUpgradeBanner currentTier={purchasedTier || 'none'} onUpgrade={() => setShowPaywall(true)} />
             </FadeIn>
@@ -1558,7 +1549,7 @@ function ChecklistItemRow({ item, checked, onToggle, unlocked = false, notApplic
                   Free AI Preview
                 </span>
               )}
-              {purchasedTier !== 'premium' && !(item.tier === 'free' || item.isFreeItem) && (
+              {purchasedTier !== 'unlocked' && !(item.tier === 'free' || item.isFreeItem) && (
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 text-xs font-semibold">
                   <Sparkles className="w-3 h-3" />
                   AI Scoring
@@ -1588,7 +1579,7 @@ function ChecklistItemRow({ item, checked, onToggle, unlocked = false, notApplic
           <GetTemplateButton
             itemTitle={item.title}
             templateFilename={getTemplateForItem(item.title) || undefined}
-            isPremium={purchasedTier === 'premium'}
+            isPremium={purchasedTier === 'unlocked'}
             onUnlock={() => {}} // Handled by parent
           />
 
@@ -1613,7 +1604,7 @@ function ChecklistItemRow({ item, checked, onToggle, unlocked = false, notApplic
             checklistItemId={item.id}
             requirement={`${item.title}: ${item.description}`}
             locked={!unlocked}
-            isPremium={purchasedTier === 'premium'}
+            isPremium={purchasedTier === 'unlocked'}
             applicationId={applicationId}
             onUpgradeClick={onShowPaywall}
             serverDoc={serverDoc ? {
