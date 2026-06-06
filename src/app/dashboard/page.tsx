@@ -1276,6 +1276,24 @@ function ChecklistTab({
   const personalLockedCount = Math.max(0, lockedPersonalItems.length - 4);
   const lockedDocCount = lockedFinancialItems.length + lockedSupportingItems.length + personalLockedCount;
 
+  // Calculate risk state from free item uploads
+  const freeItemIds = freeItems.map((i: ChecklistItem) => i.id);
+  const freeUploads = freeItemIds.map((id: string) => serverDocs[id]).filter(Boolean);
+  const hasHighRisk = freeUploads.some((doc: any) => doc?.flags?.some((f: any) => f.severity === 'high'));
+  const hasMediumRisk = freeUploads.some((doc: any) => doc?.flags?.some((f: any) => f.severity === 'medium'));
+  const totalFlags = freeUploads.reduce((acc: number, doc: any) => acc + (doc?.flags?.length || 0), 0);
+  const anyChecksRun = freeUploads.some((doc: any) => doc?.ai_status === 'complete');
+  const allChecklistItems = [...byCategory.personal, ...byCategory.financial, ...byCategory.supporting];
+  const lockedCount = allChecklistItems.filter((i) => !i.isFreeItem && i.tier !== 'free').length;
+
+  const ctaCopy = hasHighRisk
+    ? `⚠️ We found ${totalFlags} issue${totalFlags !== 1 ? 's' : ''} in your free checks. Your remaining ${lockedCount} documents likely have more. Fix them before you submit.`
+    : hasMediumRisk
+    ? `💡 Good start — but we spotted ${totalFlags} thing${totalFlags !== 1 ? 's' : ''} worth addressing. Unlock the full checklist to catch everything before submission.`
+    : anyChecksRun
+    ? `✅ Your free checks look clean. Unlock the remaining ${lockedCount} checklist items to complete your full application pack.`
+    : `Run your 3 free AI checks above, then unlock your full ${lockedCount}-item checklist for a complete application.`;
+
   return (
     <div className="space-y-6">
       <ProgressCard checkedCount={checkedCount} total={total} progressPct={progressPct} verifiedCount={verifiedCount} />
@@ -1314,15 +1332,28 @@ function ChecklistTab({
               />
             ))}
           </div>
-          <div className="px-5 sm:px-6 py-3 bg-emerald-50/30 border-t border-emerald-100">
-            <button
-              onClick={onUnlock}
-              className="w-full flex items-center justify-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-xl shadow-sm transition-all btn-hover"
-            >
-              <Lock className="w-4 h-4" />
-              Unlock {lockedDocCount}+ more documents + AI verification — from £9.99
-              <ArrowRight className="w-4 h-4" />
-            </button>
+          <div className="px-5 sm:px-6 py-4 bg-emerald-50/30 border-t border-emerald-100">
+            {/* Upgrade CTA — risk reactive */}
+            <div className={`rounded-xl p-5 border ${
+              hasHighRisk ? 'bg-red-50 border-red-200' :
+              hasMediumRisk ? 'bg-amber-50 border-amber-200' :
+              'bg-blue-50 border-blue-200'
+            }`}>
+              <p className={`text-sm font-semibold mb-3 ${
+                hasHighRisk ? 'text-red-800' : hasMediumRisk ? 'text-amber-800' : 'text-blue-800'
+              }`}>{ctaCopy}</p>
+              <button
+                onClick={onUnlock}
+                className={`w-full py-3 px-4 rounded-lg font-bold text-white text-sm ${
+                  hasHighRisk ? 'bg-red-600 hover:bg-red-700' :
+                  hasMediumRisk ? 'bg-amber-600 hover:bg-amber-700' :
+                  'bg-blue-600 hover:bg-blue-700'
+                } transition-colors`}
+              >
+                Unlock Full Checklist — from £9.99 →
+              </button>
+              <p className="text-xs text-slate-400 text-center mt-2">One-time payment · 7-day money-back guarantee</p>
+            </div>
           </div>
         </div>
       )}

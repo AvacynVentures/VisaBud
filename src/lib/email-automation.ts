@@ -169,6 +169,33 @@ export function getTemplateHtml(templateId: string, subscriber: EmailSubscriber)
         <p style="font-size: 13px; color: #64748b;">This is the last upsell email we'll send. From here, we'll only share useful tips and updates. Good luck with your application! 🦅</p>
       `, unsubUrl);
 
+    case 'welcome':
+      return wrapEmail(`
+    <h1>You have 3 free AI document checks waiting &#x1F389;</h1>
+    <p>Hi,</p>
+    <p>Most people preparing a UK visa application don't know what they're missing until it's too late. These 3 free AI checks are designed to catch the issues that cause refusals — before you submit.</p>
+    
+    <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; padding: 14px 16px; margin: 12px 0;">
+      <p style="font-weight: 700; color: #166534; margin: 0 0 4px 0;">&#x1F4B0; Financial Documents Cross-Check <span style="background:#dcfce7;color:#166534;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;margin-left:6px;">FREE</span></p>
+      <p style="font-size:12px;color:#15803d;margin:0;">Upload your bank statements + payslips. AI flags salary mismatches, period gaps, and threshold issues.</p>
+    </div>
+    
+    <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; padding: 14px 16px; margin: 12px 0;">
+      <p style="font-weight: 700; color: #166534; margin: 0 0 4px 0;">&#x1FAA3; Passport Identity &amp; Fraud Check <span style="background:#dcfce7;color:#166534;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;margin-left:6px;">FREE</span></p>
+      <p style="font-size:12px;color:#15803d;margin:0;">Upload your passport. AI checks expiry date, MRZ integrity, and name consistency.</p>
+    </div>
+    
+    <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; padding: 14px 16px; margin: 12px 0;">
+      <p style="font-weight: 700; color: #166534; margin: 0 0 4px 0;">&#x1F3E0; Accommodation &amp; Address Check <span style="background:#dcfce7;color:#166534;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;margin-left:6px;">FREE</span></p>
+      <p style="font-size:12px;color:#15803d;margin:0;">Upload your proof of address. AI extracts and cross-references for consistency across all docs.</p>
+    </div>
+
+    <p>These 3 checks are completely free — no payment needed.</p>
+    <a href="${appUrl}/applications" style="display:inline-block;background:#1d4ed8;color:white;padding:12px 28px;border-radius:10px;text-decoration:none;font-weight:700;font-size:14px;margin:16px 0;">Start My Free Checks &rarr;</a>
+    
+    <p style="font-size:13px;color:#64748b;margin-top:16px;">Ready for the full checklist? 30+ items, 37 templates, complete risk management — from &pound;9.99 one-time.</p>
+  `, unsubUrl);
+
     default:
       return '';
   }

@@ -72,10 +72,10 @@ export default function Home() {
             </FadeIn>
             <FadeIn delay={0.15}>
               <p className="text-xl text-slate-600 mb-4 leading-relaxed">
-                Get a personalised checklist, timeline, and guidance in 5 minutes. Free to start.
+                Get AI-powered document checks, a personalised checklist, and timeline — free to start.
               </p>
               <p className="text-sm text-slate-500 mb-6">
-                Free checklist preview · Upgrade to AI Premium (£9.99 Standard, £79.99 AI Premium)
+                3 free AI document checks included · Full access from £9.99
               </p>
             </FadeIn>
             <FadeIn delay={0.2}>
@@ -106,9 +106,32 @@ export default function Home() {
               </div>
               <p className="text-slate-500 text-sm flex items-center gap-2">
                 <svg className="w-4 h-4 text-emerald-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
-                Takes 3 minutes · Free preview · No spam, ever
+                Takes 3 minutes · 3 free AI checks included · No spam, ever
               </p>
             </FadeIn>
+          </div>
+        </section>
+
+        {/* Free AI Checks Strip */}
+        <section className="bg-emerald-50 border-y border-emerald-100 py-8">
+          <div className="container-max">
+            <p className="text-center text-sm font-semibold text-emerald-700 mb-5 uppercase tracking-wide">✨ Included free — no payment needed</p>
+            <div className="grid md:grid-cols-3 gap-4">
+              {[
+                { icon: '🪪', title: 'Passport Identity & Fraud Check', desc: 'AI checks expiry, MRZ integrity, and name consistency across your documents.' },
+                { icon: '💰', title: 'Financial Documents Cross-Check', desc: 'AI flags salary mismatches between payslips, bank statements, and employer letter.' },
+                { icon: '🏠', title: 'Accommodation & Address Check', desc: 'AI extracts your address and cross-references it for consistency across all docs.' },
+              ].map((item, i) => (
+                <div key={i} className="bg-white rounded-xl p-5 border border-emerald-100 flex items-start gap-3">
+                  <span className="text-2xl">{item.icon}</span>
+                  <div>
+                    <p className="font-semibold text-slate-900 text-sm mb-1">{item.title}</p>
+                    <p className="text-xs text-slate-500">{item.desc}</p>
+                    <span className="inline-block mt-2 text-xs font-bold text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded-full">Free</span>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </section>
 
@@ -175,7 +198,7 @@ export default function Home() {
           </FadeIn>
           <StaggerContainer className="grid md:grid-cols-3 gap-8">
             {[
-              { emoji: '🗣️', step: 'STEP 1', title: 'Answer a few simple questions', desc: 'Tell us your visa type, situation, and timeline. No jargon — just plain English.' },
+              { emoji: '🗣️', step: 'STEP 1', title: 'Choose your visa type', desc: 'Select Spouse, Skilled Worker, or British Citizenship — we instantly build your personalised checklist and AI checks.' },
               { emoji: '⚡', step: 'STEP 2', title: 'Get your personalised plan', desc: 'We instantly build your checklist, timeline, and flag any risks — tailored to your exact situation.' },
               { emoji: '📦', step: 'STEP 3', title: 'Apply with confidence', desc: 'A clean, structured pack ready to reference. Know exactly what to submit and when.' },
             ].map((item, i) => (
@@ -235,7 +258,7 @@ export default function Home() {
                 <Link href="/auth/signup" className="btn-primary w-full block mb-3 py-3.5 text-base shadow-lg shadow-blue-200/50">
                   Start Free
                 </Link>
-                <p className="text-xs text-slate-500">Preview your checklist free. Unlock everything from £9.99.</p>
+                <p className="text-xs text-slate-500">3 AI checks free. Full checklist + 37 templates + risk management from £9.99.</p>
                 <p className="text-xs text-slate-400 mt-2">💬 1,000+ applicants have already unlocked their plans</p>
                 <p className="text-xs text-slate-400 mt-1">🛡️ 7-day money-back guarantee · Recommended by immigration consultants</p>
               </div>

@@ -8,61 +8,90 @@ interface EmailTemplate {
 
 export const emailTemplates = {
   welcome: (_userEmail: string): EmailTemplate => ({
-    subject: 'Your VisaBud checklist is ready 🎉',
-    html: `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <style>
-            body { font-family: Arial, sans-serif; color: #333; }
-            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-            .header { color: #1E3A8A; font-size: 24px; font-weight: bold; margin-bottom: 20px; }
-            .content { line-height: 1.6; margin-bottom: 20px; }
-            .cta { background-color: #1E3A8A; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; display: inline-block; }
-            .footer { border-top: 1px solid #ddd; margin-top: 20px; padding-top: 20px; font-size: 12px; color: #666; }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <div class="header">VisaBud</div>
-            <div class="content">
-              <p>Hi,</p>
-              <p>Your personalised UK visa checklist is here — and ready to download.</p>
-              <p><strong>Inside, you'll find:</strong></p>
-              <ul>
-                <li>✓ Exact documents you need (for your situation)</li>
-                <li>✓ Pro tips to avoid common mistakes</li>
-                <li>✓ Timeline so you know what's coming next</li>
-                <li>✓ Risk alerts (in case you're missing anything)</li>
-              </ul>
-              <p>Download it now and keep it handy while you prepare your application.</p>
-              <p><strong>Important:</strong> This checklist is based on official UKVI guidance, but always verify with Gov.uk before submitting. Immigration law changes, and we want your application to succeed.</p>
-              <p>Questions? Reply to this email — we're here to help.</p>
-              <p>Best,<br/>The VisaBud Team</p>
-            </div>
-            <div class="footer">
-              <p>VisaBud Ltd · Not a law firm · For guidance only</p>
-              <p>Always verify with official Gov.uk guidance before submitting your application.</p>
-            </div>
-          </div>
-        </body>
-      </html>
-    `,
-    text: `
-Your VisaBud checklist is ready.
+    subject: "You've got 3 free AI document checks waiting 🎉",
+    html: `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #1e293b; margin: 0; padding: 0; background: #f8fafc; }
+    .wrapper { max-width: 560px; margin: 0 auto; padding: 32px 20px; }
+    .card { background: white; border-radius: 16px; padding: 32px; border: 1px solid #e2e8f0; }
+    .logo { font-size: 20px; font-weight: 700; color: #1e3a8a; margin-bottom: 24px; }
+    h1 { font-size: 22px; color: #1e3a8a; margin: 0 0 12px 0; }
+    p { font-size: 14px; line-height: 1.6; color: #334155; }
+    .check-item { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; padding: 14px 16px; margin: 10px 0; }
+    .check-title { font-weight: 700; color: #166534; font-size: 14px; margin: 0 0 4px 0; }
+    .check-desc { font-size: 12px; color: #15803d; margin: 0; }
+    .free-badge { display: inline-block; background: #dcfce7; color: #166534; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px; margin-left: 6px; }
+    .cta { display: inline-block; background: #1d4ed8; color: white; padding: 14px 32px; border-radius: 10px; text-decoration: none; font-weight: 700; font-size: 15px; margin: 20px 0; }
+    .divider { border: none; border-top: 1px solid #e2e8f0; margin: 20px 0; }
+    .footer { font-size: 11px; color: #94a3b8; text-align: center; margin-top: 16px; }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="card">
+      <div class="logo">VisaBud</div>
+      <h1>Your account is ready — and you have 3 free AI checks waiting.</h1>
+      <p>Hi,</p>
+      <p>Most people preparing a UK visa application don't know what they're missing until it's too late. These 3 free AI checks are designed to catch the issues that cause refusals — before you submit.</p>
 
-Inside, you'll find:
-✓ Exact documents you need
-✓ Pro tips to avoid mistakes
-✓ Timeline reference
-✓ Risk alerts
+      <div class="check-item">
+        <p class="check-title">&#x1F4B0; Financial Documents Cross-Check <span class="free-badge">FREE</span></p>
+        <p class="check-desc">Upload your bank statements + payslips. AI flags salary mismatches, period gaps, and threshold issues.</p>
+      </div>
 
-Download it now and keep it handy.
+      <div class="check-item">
+        <p class="check-title">&#x1FAA3; Passport Identity &amp; Fraud Check <span class="free-badge">FREE</span></p>
+        <p class="check-desc">Upload your passport. AI checks expiry date, MRZ integrity, and name consistency across your documents.</p>
+      </div>
 
-Important: Always verify with Gov.uk before submitting.
+      <div class="check-item">
+        <p class="check-title">&#x1F3E0; Accommodation &amp; Address Check <span class="free-badge">FREE</span></p>
+        <p class="check-desc">Upload your proof of address. AI extracts and cross-references your address across all your documents.</p>
+      </div>
+
+      <p style="margin-top: 16px;">These checks are completely free. No payment needed.</p>
+
+      <a href="https://visabud.co.uk/applications" class="cta">Start My Free AI Checks &rarr;</a>
+
+      <hr class="divider">
+      <p style="font-size: 13px; color: #64748b;">When you're ready for the full checklist — 30+ documents, 37 preparation templates, and complete risk management — it's a one-time payment from &pound;9.99.</p>
+      <p style="font-size: 13px; color: #64748b;">Any questions? Just reply to this email.</p>
+      <p style="font-size: 13px;">The VisaBud Team</p>
+    </div>
+    <div class="footer">
+      <p>VisaBud Ltd &middot; Not a law firm &middot; For guidance only</p>
+      <p>Always verify with official Gov.uk guidance before submitting your application.</p>
+    </div>
+  </div>
+</body>
+</html>`,
+    text: `Your VisaBud account is ready — and you have 3 free AI checks waiting.
+
+Hi,
+
+Most people preparing a UK visa application don't know what they're missing until it's too late. These 3 free AI checks are designed to catch the issues that cause refusals — before you submit.
+
+FREE: Financial Documents Cross-Check
+Upload your bank statements + payslips. AI flags salary mismatches, period gaps, and threshold issues.
+
+FREE: Passport Identity & Fraud Check
+Upload your passport. AI checks expiry date, MRZ integrity, and name consistency across your documents.
+
+FREE: Accommodation & Address Check
+Upload your proof of address. AI extracts and cross-references your address for consistency.
+
+Start your free checks: https://visabud.co.uk/applications
+
+When you're ready for the full checklist (30+ documents, 37 templates, complete risk management), it's from £9.99 one-time.
 
 The VisaBud Team
-    `,
+
+---
+VisaBud Ltd · Not a law firm · For guidance only
+`,
   }),
 
   paymentConfirmation: (_userEmail: string, downloadLink: string): EmailTemplate => ({
