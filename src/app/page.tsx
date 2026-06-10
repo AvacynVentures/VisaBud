@@ -88,6 +88,38 @@ export default function Home() {
           </div>
         </section>
 
+        {/* Visa Type Selector (If not logged in) - Moved High */}
+        {!user && (
+          <section className="bg-gradient-to-b from-blue-50 to-white py-12 md:py-16">
+            <div className="container-max">
+              <FadeIn>
+                <div className="text-center mb-10">
+                  <p className="text-blue-600 text-sm font-semibold mb-3 uppercase tracking-wide">📋 Pick your visa type</p>
+                  <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-2">Choose your UK visa pathway</h2>
+                  <p className="text-slate-600 text-sm">Free guidance & documents for your specific visa — no signup required</p>
+                </div>
+              </FadeIn>
+              <StaggerContainer className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {getAllVisas().map((visa) => (
+                  <StaggerItem key={visa.id}>
+                    <Link
+                      href={`/visa-guidance/${visa.id}`}
+                      className={`card card-hover p-6 text-center group bg-gradient-to-br ${visa.color} bg-opacity-5 hover:bg-opacity-10 transition-all border-2 border-transparent hover:border-blue-300`}
+                    >
+                      <div className="text-4xl mb-3 group-hover:scale-110 transition-transform">{visa.icon}</div>
+                      <h3 className="font-bold text-slate-900 mb-1 text-sm">{visa.title}</h3>
+                      <p className="text-xs text-slate-600 mb-3 line-clamp-2 min-h-10">{visa.overview}</p>
+                      <div className="text-xs font-semibold text-blue-600 flex items-center justify-center gap-1">
+                        View Checklist →
+                      </div>
+                    </Link>
+                  </StaggerItem>
+                ))}
+              </StaggerContainer>
+            </div>
+          </section>
+        )}
+
         {/* Free AI Checks Strip */}
         <section className="bg-emerald-50 border-y border-emerald-100 py-8">
           <div className="container-max">
@@ -163,35 +195,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Visa Type Selector (If not logged in) */}
-        {!user && (
-          <section className="container-max py-16">
-            <FadeIn>
-              <div className="text-center mb-12">
-                <p className="text-blue-600 text-sm font-semibold mb-2 uppercase tracking-wide">Choose your visa type</p>
-                <h2 className="text-3xl font-bold text-slate-900 mb-3">Select your path to the UK</h2>
-                <p className="text-slate-600 max-w-lg mx-auto">Get a free personalized checklist and see exactly what documents you need.</p>
-              </div>
-            </FadeIn>
-            <StaggerContainer className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {getAllVisas().map((visa) => (
-                <StaggerItem key={visa.id}>
-                  <Link
-                    href={`/visa-guidance/${visa.id}`}
-                    className={`card card-hover p-6 text-center group bg-gradient-to-br ${visa.color} bg-opacity-5 hover:bg-opacity-10 transition-all border-2 border-transparent hover:border-blue-300`}
-                  >
-                    <div className="text-5xl mb-3 group-hover:scale-110 transition-transform">{visa.icon}</div>
-                    <h3 className="font-bold text-slate-900 mb-2">{visa.title}</h3>
-                    <p className="text-xs text-slate-600 mb-4 line-clamp-2">{visa.overview}</p>
-                    <div className="text-xs font-semibold text-blue-600 flex items-center justify-center gap-1">
-                      See Checklist →
-                    </div>
-                  </Link>
-                </StaggerItem>
-              ))}
-            </StaggerContainer>
-          </section>
-        )}
+
 
         {/* How It Works */}
         <section className="container-max py-16">
