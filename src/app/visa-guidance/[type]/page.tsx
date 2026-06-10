@@ -29,6 +29,19 @@ export default function VisaGuidancePage() {
     );
   }
 
+  const getCostWarning = () => {
+    if (visaType === 'spouse') {
+      return 'A spouse visa application costs £1,673 in fees and healthcare surcharge. Refusals mean reapplying and paying those fees again.';
+    } else if (visaType === 'skilled_worker') {
+      return 'A skilled worker visa costs £719 in visa fees plus £284/year healthcare surcharge. Refusals mean reapplying and paying those fees again.';
+    } else if (visaType === 'student') {
+      return 'A student visa costs £719 in visa fees plus £1,035/year healthcare surcharge. Refusals mean reapplying and paying those fees again.';
+    } else if (visaType === 'citizenship') {
+      return 'UK citizenship applications cost £1,335 in application fees. Refusals mean reapplying and paying those fees again.';
+    }
+    return '';
+  };
+
   const toggleDoc = (catName: string) => {
     setExpandedDocs(prev => ({ ...prev, [catName]: !prev[catName] }));
   };
@@ -152,7 +165,7 @@ export default function VisaGuidancePage() {
               <div key={i} className="text-slate-800 font-semibold">{reason}</div>
             ))}
             <div className="md:col-span-2 text-sm text-slate-800">
-              A spouse visa application can cost over £1,800 in fees and healthcare charges. Refusals can mean reapplying and paying those fees again.
+              {getCostWarning()}
             </div>
           </div>
           <div className="bg-white border-2 border-orange-400 rounded-lg p-4">
@@ -163,7 +176,7 @@ export default function VisaGuidancePage() {
 
       {/* TYPICAL DOCUMENTS */}
       <section className="container-max py-12">
-        <h2 className="text-2xl font-bold text-slate-900 mb-6">Typical Documents Needed For A {visa.title}</h2>
+        <h2 className="text-2xl font-bold text-slate-900 mb-6">Typical Documents Needed For {visa.title}</h2>
         <div className="space-y-3">
           {visa.documents.map((category, catIdx) => (
             <div key={catIdx} className="bg-white border-2 border-slate-300 rounded-lg overflow-hidden">
