@@ -43,10 +43,10 @@ export default function VisaGuidancePage() {
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div>
               <h1 className="text-4xl md:text-5xl font-bold mb-4 leading-tight text-slate-900">
-                Don't Risk a £{visa.cost.match(/\d+/)?.[0] || '1,000'}+ Visa Application
+                Avoid Costly Visa Mistakes Before You Submit
               </h1>
               <p className="text-lg text-slate-800 mb-6">
-                Upload your documents and let VisaBud identify missing evidence, inconsistencies and common mistakes before you submit.
+                Upload one document and see exactly what VisaBud finds. Identify missing evidence, inconsistencies and common mistakes in minutes.
               </p>
               <Link
                 href={`/auth/signup?visa=${visaType}`}
@@ -89,8 +89,8 @@ export default function VisaGuidancePage() {
       {/* QUICK TRY BOX */}
       <section className="container-max py-12">
         <div className="bg-gradient-to-br from-blue-50 to-slate-50 border-2 border-blue-300 rounded-lg p-8 md:p-12">
-          <h2 className="text-2xl font-bold text-slate-900 mb-2">🟢 Try It With One Document</h2>
-          <p className="text-slate-800 mb-6">Upload any one document. See exactly what VisaBud finds. No account. No credit card. Results in under 60 seconds.</p>
+          <h2 className="text-2xl font-bold text-slate-900 mb-2">🟢 Upload Any One Visa Document</h2>
+          <p className="text-slate-800 mb-6">Try a payslip, passport, bank statement or marriage certificate. See exactly what VisaBud finds. No account. No credit card. Results in under 60 seconds.</p>
           <div className="grid md:grid-cols-2 gap-8 items-center">
             <div>
               <p className="text-sm font-bold text-slate-700 mb-3">You Can Upload:</p>
@@ -106,7 +106,7 @@ export default function VisaGuidancePage() {
                 href={`/demo-upload?visa=${visaType}`}
                 className="inline-flex items-center gap-2 px-8 py-4 bg-blue-700 text-white font-bold rounded-xl hover:bg-blue-800 transition-all text-lg"
               >
-                📁 Try Demo Now
+                📁 Try Now
               </Link>
               <p className="text-xs text-slate-600 mt-3">No signup required</p>
             </div>
@@ -127,8 +127,9 @@ export default function VisaGuidancePage() {
               </div>
             </div>
             <div className="bg-white rounded-lg p-6 border-2 border-emerald-400 shadow-sm">
-              <p className="text-xs font-bold text-slate-700 mb-4 uppercase">AI ANALYSIS</p>
-              <p className="text-xs font-bold text-slate-900 mb-2">VISA READINESS SCORE</p>
+              <p className="text-xs font-bold text-slate-700 mb-2 uppercase">Document Type Detected</p>
+              <p className="text-lg font-bold text-emerald-700 mb-4">Payslip ✅</p>
+              <p className="text-xs font-bold text-slate-700 mb-2 uppercase">Visa Readiness Score</p>
               <p className="text-4xl font-bold text-emerald-600 mb-4">82%</p>
               <div className="space-y-3 text-sm">
                 <div className="flex gap-2"><Check className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" /> <span className="text-slate-800">Income Verified: £45,000/year</span></div>
@@ -150,6 +151,9 @@ export default function VisaGuidancePage() {
             {['❌ Missing financial evidence', '❌ Incomplete relationship proof', '❌ Expired documents', '❌ Missing translations', '❌ Inconsistent dates', '❌ Poor document quality'].map((reason, i) => (
               <div key={i} className="text-slate-800 font-semibold">{reason}</div>
             ))}
+            <div className="md:col-span-2 text-sm text-slate-800">
+              A spouse visa application can cost over £1,800 in fees and healthcare charges. Refusals can mean reapplying and paying those fees again.
+            </div>
           </div>
           <div className="bg-white border-2 border-orange-400 rounded-lg p-4">
             <p className="text-sm text-slate-800"><span className="font-bold">What it costs:</span> Delays add 4-12 weeks. Refusals mean reapplying (another £{visa.cost.match(/\d+/)?.[0] || '1,000'}+).</p>
@@ -218,38 +222,30 @@ export default function VisaGuidancePage() {
         </div>
       </section>
 
-      {/* DOCUMENT TYPES FAQ */}
-      <section className="container-max py-12 bg-blue-50 border-y-2 border-blue-300">
-        <h3 className="text-xl font-bold text-slate-900 mb-6">What Documents Can I Upload?</h3>
-        <div className="grid md:grid-cols-2 gap-4">
-          {['Payslips', 'Bank Statements', 'Passports', 'Employment Contracts', 'Marriage Certificates', 'Utility Bills', 'Sponsor Documents', 'Medical Records'].map((doc, i) => (
-            <div key={i} className="flex items-center gap-2 text-slate-800">
-              <Check className="w-4 h-4 text-blue-600 flex-shrink-0" />
-              <span className="text-sm">{doc}</span>
-            </div>
-          ))}
-        </div>
-      </section>
-
       {/* SECURITY */}
       <section className="bg-slate-900 text-white py-12">
         <div className="container-max">
           <h2 className="text-2xl font-bold text-center mb-8">Your Data Is Protected</h2>
-          <div className="grid md:grid-cols-3 gap-6 max-w-2xl mx-auto">
+          <div className="grid md:grid-cols-4 gap-6 max-w-4xl mx-auto">
+            <div className="text-center">
+              <p className="text-3xl mb-3">✅</p>
+              <p className="font-bold text-sm mb-1">Built Using Official UKVI Guidance</p>
+              <p className="text-xs text-slate-400">UK visa requirements mapped</p>
+            </div>
             <div className="text-center">
               <p className="text-3xl mb-3">🔒</p>
               <p className="font-bold text-sm mb-1">Bank-Level Encryption</p>
-              <p className="text-xs text-slate-400">All documents encrypted in transit</p>
+              <p className="text-xs text-slate-400">All documents encrypted</p>
             </div>
             <div className="text-center">
               <p className="text-3xl mb-3">🏛️</p>
               <p className="font-bold text-sm mb-1">GDPR Compliant</p>
-              <p className="text-xs text-slate-400">UK data protection standards</p>
+              <p className="text-xs text-slate-400">UK data protection</p>
             </div>
             <div className="text-center">
               <p className="text-3xl mb-3">🚫</p>
               <p className="font-bold text-sm mb-1">Never Shared</p>
-              <p className="text-xs text-slate-400">Your documents stay private</p>
+              <p className="text-xs text-slate-400">Documents stay private</p>
             </div>
           </div>
         </div>
@@ -301,12 +297,7 @@ export default function VisaGuidancePage() {
         )}
       </section>
 
-      {/* CREDIBILITY */}
-      <section className="bg-slate-900 text-white py-12">
-        <div className="container-max text-center mb-8">
-          <p className="text-sm text-slate-300">Built using official UKVI requirements and document guidance.</p>
-        </div>
-      </section>
+
 
       {/* FINAL CTA */}
       <section className="container-max py-12">
