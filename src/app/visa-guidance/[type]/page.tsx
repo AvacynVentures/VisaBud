@@ -108,7 +108,7 @@ export default function VisaGuidancePage() {
             <h2 className="text-2xl font-bold text-slate-900 mb-6">Documents Required ({docsCount}+)</h2>
             <div className="space-y-4">
               {visa.documents.map((category, catIdx) => (
-                <div key={catIdx} className="bg-slate-100 rounded-lg p-5 border-2 border-slate-300">
+                <div key={catIdx} className="bg-white rounded-lg p-5 border-3 border-slate-400 shadow-md">
                   <h3 className="font-bold text-slate-900 mb-3 text-sm">{category.category}</h3>
                   <ul className="space-y-2">
                     {category.items.map((item, itemIdx) => (
@@ -126,7 +126,7 @@ export default function VisaGuidancePage() {
       </div>
 
       {/* AI Document Checks - The Premium Offer */}
-      <section className="bg-slate-50 py-16 md:py-24 border-t-2 border-slate-300">
+      <section className="bg-white py-16 md:py-24 border-t-4 border-slate-400 shadow-sm">
         <div className="container-max">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             {/* Left: Benefits */}
@@ -173,7 +173,7 @@ export default function VisaGuidancePage() {
                 ))}
               </ul>
 
-              <div className="bg-emerald-50 border-2 border-emerald-300 rounded-xl p-6 mb-8">
+              <div className="bg-white border-3 border-emerald-400 rounded-xl p-6 mb-8 shadow-sm">
                 <p className="font-bold text-emerald-900 mb-2">🎁 3 Free AI Checks Included</p>
                 <p className="text-sm text-emerald-800 mb-4 leading-relaxed">
                   Try 3 free document reviews before you upgrade.
@@ -200,22 +200,22 @@ export default function VisaGuidancePage() {
 
             {/* Right: Visual Walkthrough */}
             <div className="space-y-4">
-              <div className="bg-blue-50 rounded-lg p-6 border-2 border-blue-300">
+              <div className="bg-white rounded-lg p-6 border-3 border-blue-400 shadow-md">
                 <div className="text-sm font-bold text-blue-700 mb-3">STEP 1: UPLOAD</div>
                 <p className="text-slate-800 text-sm leading-relaxed">Select a document from your computer (PDF, image, or Word doc)</p>
               </div>
 
-              <div className="bg-blue-50 rounded-lg p-6 border-2 border-blue-300">
+              <div className="bg-white rounded-lg p-6 border-3 border-blue-400 shadow-md">
                 <div className="text-sm font-bold text-blue-700 mb-3">STEP 2: AI ANALYSIS</div>
                 <p className="text-slate-800 text-sm leading-relaxed">AI scans your document against UK immigration requirements in seconds</p>
               </div>
 
-              <div className="bg-blue-50 rounded-lg p-6 border-2 border-blue-300">
+              <div className="bg-white rounded-lg p-6 border-3 border-blue-400 shadow-md">
                 <div className="text-sm font-bold text-blue-700 mb-3">STEP 3: GET FEEDBACK</div>
                 <p className="text-slate-800 text-sm leading-relaxed">See your confidence score + specific improvements before you submit</p>
               </div>
 
-              <div className="bg-blue-50 rounded-lg p-6 border-2 border-blue-300">
+              <div className="bg-white rounded-lg p-6 border-3 border-blue-400 shadow-md">
                 <div className="text-sm font-bold text-blue-700 mb-3">STEP 4: APPLY WITH CONFIDENCE</div>
                 <p className="text-slate-800 text-sm leading-relaxed">Submit your application knowing every document is visa-ready</p>
               </div>
