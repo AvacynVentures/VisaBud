@@ -34,7 +34,7 @@ export default function Home() {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-slate-50 to-white">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-          <p className="text-slate-600">Loading...</p>
+          <p className="text-slate-700">Loading...</p>
         </div>
       </div>
     );
@@ -60,10 +60,10 @@ export default function Home() {
               </h1>
             </FadeIn>
             <FadeIn delay={0.15}>
-              <p className="text-xl text-slate-600 mb-4 leading-relaxed">
+              <p className="text-xl text-slate-700 mb-4 leading-relaxed">
                 Get AI-powered document checks, a personalised checklist, and timeline — free to start.
               </p>
-              <p className="text-sm text-slate-500 mb-6">
+              <p className="text-sm text-slate-700 mb-6">
                 3 free AI document checks included · Full access from £9.99
               </p>
             </FadeIn>
@@ -96,7 +96,7 @@ export default function Home() {
                 <div className="text-center mb-10">
                   <p className="text-blue-600 text-sm font-semibold mb-3 uppercase tracking-wide">📋 Pick your visa type</p>
                   <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-2">Choose your UK visa pathway</h2>
-                  <p className="text-slate-600 text-sm">Free guidance & documents for your specific visa — no signup required</p>
+                  <p className="text-slate-700 text-sm">Free guidance & documents for your specific visa — no signup required</p>
                 </div>
               </FadeIn>
               <StaggerContainer className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -108,7 +108,7 @@ export default function Home() {
                     >
                       <div className="text-4xl mb-3 group-hover:scale-110 transition-transform">{visa.icon}</div>
                       <h3 className="font-bold text-slate-900 mb-1 text-sm">{visa.title}</h3>
-                      <p className="text-xs text-slate-600 mb-3 line-clamp-2 min-h-10">{visa.overview}</p>
+                      <p className="text-xs text-slate-700 mb-3 line-clamp-2 min-h-10">{visa.overview}</p>
                       <div className="text-xs font-semibold text-blue-600 flex items-center justify-center gap-1">
                         View Checklist →
                       </div>
@@ -134,7 +134,7 @@ export default function Home() {
                   <span className="text-2xl">{item.icon}</span>
                   <div>
                     <p className="font-semibold text-slate-900 text-sm mb-1">{item.title}</p>
-                    <p className="text-xs text-slate-500">{item.desc}</p>
+                    <p className="text-xs text-slate-700">{item.desc}</p>
                     <span className="inline-block mt-2 text-xs font-bold text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded-full">Free</span>
                   </div>
                 </div>
@@ -165,7 +165,7 @@ export default function Home() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-slate-900 mb-1">1,000+ applicants guided</h3>
-                    <p className="text-sm text-slate-600">Real people getting their visas approved — first time</p>
+                    <p className="text-sm text-slate-700">Real people getting their visas approved — first time</p>
                   </div>
                 </div>
               </StaggerItem>
@@ -176,7 +176,7 @@ export default function Home() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-slate-900 mb-1">Sleep well knowing you&apos;re ready</h3>
-                    <p className="text-sm text-slate-600">Every document checked, nothing left to chance</p>
+                    <p className="text-sm text-slate-700">Every document checked, nothing left to chance</p>
                   </div>
                 </div>
               </StaggerItem>
@@ -187,7 +187,7 @@ export default function Home() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-slate-900 mb-1">Your data stays private</h3>
-                    <p className="text-sm text-slate-600">GDPR compliant, encrypted, never shared with anyone</p>
+                    <p className="text-sm text-slate-700">GDPR compliant, encrypted, never shared with anyone</p>
                   </div>
                 </div>
               </StaggerItem>
@@ -203,7 +203,7 @@ export default function Home() {
             <div className="text-center mb-12">
               <p className="text-blue-600 text-sm font-semibold mb-2 uppercase tracking-wide">How it works</p>
               <h2 className="text-3xl font-bold text-slate-900 mb-3">Three steps. Zero guesswork.</h2>
-              <p className="text-slate-500 max-w-md mx-auto">No legal jargon. No spreadsheets. Just a clear path from &ldquo;I don&apos;t know where to start&rdquo; to &ldquo;I&apos;m ready to apply.&rdquo;</p>
+              <p className="text-slate-700 max-w-md mx-auto">No legal jargon. No spreadsheets. Just a clear path from &ldquo;I don&apos;t know where to start&rdquo; to &ldquo;I&apos;m ready to apply.&rdquo;</p>
             </div>
           </FadeIn>
           <StaggerContainer className="grid md:grid-cols-3 gap-8">
@@ -217,7 +217,7 @@ export default function Home() {
                   <div className="text-4xl mb-4 icon-hover-spin inline-block">{item.emoji}</div>
                   <p className="text-sm font-semibold text-blue-600 mb-2">{item.step}</p>
                   <h3 className="text-lg font-bold text-slate-900 mb-3">{item.title}</h3>
-                  <p className="text-slate-600">{item.desc}</p>
+                  <p className="text-slate-700">{item.desc}</p>
                 </div>
               </StaggerItem>
             ))}
@@ -236,7 +236,7 @@ export default function Home() {
                 <div className="w-10 h-10 rounded-full bg-blue-200 flex items-center justify-center text-blue-700 font-bold text-sm">PS</div>
                 <div className="text-left">
                   <p className="text-slate-900 font-semibold text-sm">Priya S.</p>
-                  <p className="text-slate-500 text-xs">Spouse Visa · Approved October 2024</p>
+                  <p className="text-slate-700 text-xs">Spouse Visa · Approved October 2024</p>
                 </div>
               </div>
             </div>
@@ -249,7 +249,7 @@ export default function Home() {
             <div className="text-center mb-8">
               <p className="text-blue-600 text-sm font-semibold mb-2 uppercase tracking-wide">Simple pricing</p>
               <h2 className="text-3xl font-bold text-slate-900 mb-3">One price. Everything unlocked.</h2>
-              <p className="text-slate-500">No tiers. No confusion. Pay once per application, unlock everything.</p>
+              <p className="text-slate-700">No tiers. No confusion. Pay once per application, unlock everything.</p>
             </div>
           </FadeIn>
           <FadeIn delay={0.1}>
@@ -258,7 +258,7 @@ export default function Home() {
                 <div className="text-center mb-6">
                   <p className="text-sm font-semibold text-emerald-600 mb-1">🔓 Full Application Unlock</p>
                   <div className="text-5xl font-bold text-blue-600 mb-1">£9.99</div>
-                  <p className="text-slate-500 text-sm">Per application · One-time · Instant access</p>
+                  <p className="text-slate-700 text-sm">Per application · One-time · Instant access</p>
                 </div>
                 <ul className="space-y-3 mb-6 text-sm text-slate-700">
                   {[
@@ -300,7 +300,7 @@ export default function Home() {
         {/* Disclaimer Section */}
         <section className="bg-slate-50 border-t border-slate-200 py-8">
           <div className="container-max">
-            <p className="text-xs text-slate-600 leading-relaxed">
+            <p className="text-xs text-slate-700 leading-relaxed">
               <span className="font-semibold">*Disclaimer:</span> VisaBud is not affiliated with UK Visas and Immigration (UKVI) or any government agency. We provide private document preparation checklists to help you organize materials for visa applications. This service is for informational guidance only and does not constitute legal advice. Always verify information with official <a href="https://www.gov.uk/visas-immigration" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline font-semibold">Gov.uk</a> guidance before submitting your application.
             </p>
           </div>
@@ -319,8 +319,8 @@ export default function Home() {
                   <span className="font-bold text-white">VisaBud</span>
                 </div>
                 <p className="text-slate-400 text-sm mb-3">Not a law firm · For guidance only</p>
-                <p className="text-slate-500 text-xs mb-4">Always verify with official Gov.uk guidance before submitting your application.</p>
-                <div className="flex items-center gap-4 text-xs text-slate-500">
+                <p className="text-slate-700 text-xs mb-4">Always verify with official Gov.uk guidance before submitting your application.</p>
+                <div className="flex items-center gap-4 text-xs text-slate-700">
                   <Link href="/privacy" className="hover:text-slate-300 transition-colors">Privacy</Link>
                   <Link href="/terms" className="hover:text-slate-300 transition-colors">Terms</Link>
                   <Link href="/about" className="hover:text-slate-300 transition-colors">About</Link>
@@ -332,7 +332,7 @@ export default function Home() {
               </div>
             </div>
             <div className="border-t border-slate-800 pt-4 text-center">
-              <p className="text-xs text-slate-600">Join 1,000+ applicants who prepared their visa with VisaBud</p>
+              <p className="text-xs text-slate-700">Join 1,000+ applicants who prepared their visa with VisaBud</p>
             </div>
           </div>
         </footer>
@@ -340,3 +340,4 @@ export default function Home() {
     </PageFadeIn>
   );
 }
+
