@@ -38,43 +38,40 @@ export default function VisaGuidancePage() {
     <div className="min-h-screen bg-white">
       <TopNav />
 
-      {/* HERO - MONEY & CONSEQUENCE FOCUSED */}
+      {/* HERO - MONEY-FOCUSED */}
       <section className={`bg-gradient-to-br ${visa.color} text-white py-16 md:py-20`}>
         <div className="container-max">
           <div className="max-w-3xl">
             <h1 className="text-4xl md:text-5xl font-bold mb-4 leading-tight">
-              Before You Spend £{visa.cost.match(/\d+/)?.[0] || '1,000'}+ On Your {visa.title}...
+              Don't Risk a £{visa.cost.match(/\d+/)?.[0] || '1,000'}+ Visa Application
             </h1>
-            <p className="text-lg text-white/95 mb-4">
-              Check your documents for missing evidence, inconsistencies and common mistakes.
+            <p className="text-lg text-white/95 mb-6">
+              Upload your documents and let VisaBud identify missing evidence, inconsistencies and common mistakes before you submit.
             </p>
             <ul className="text-sm text-white/90 mb-8 space-y-2">
               <li className="flex items-center gap-2"><Check className="w-4 h-4" /> 3 Free AI Document Checks</li>
               <li className="flex items-center gap-2"><Check className="w-4 h-4" /> No Credit Card Required</li>
-              <li className="flex items-center gap-2"><Check className="w-4 h-4" /> Personalised Document Feedback</li>
+              <li className="flex items-center gap-2"><Check className="w-4 h-4" /> Results in Minutes</li>
             </ul>
-            <div className="flex items-center gap-2 text-sm text-white/80">
-              <span className="text-lg">⏱️</span>
-              <span>{visa.timeline} processing time</span>
-              <span className="text-lg">•</span>
-              <span>✓ {visa.successRate}</span>
-            </div>
+            <Link
+              href={`/auth/signup?visa=${visaType}`}
+              className="inline-flex items-center gap-2 px-8 py-3.5 bg-white text-blue-700 font-bold rounded-xl hover:bg-blue-50 transition-all"
+            >
+              Check My Documents Free
+              <ArrowRight className="w-5 h-5" />
+            </Link>
           </div>
         </div>
       </section>
 
-      {/* EMOTIONAL HOOK */}
-      <section className="bg-slate-50 border-b-2 border-slate-300 py-8">
-        <div className="container-max text-center">
-          <p className="text-lg text-slate-800 max-w-2xl mx-auto">
-            <span className="font-semibold">Applying for a {visa.title.toLowerCase()} is stressful enough.</span> VisaBud helps you check your documents before submission so you can apply with confidence.
-          </p>
-        </div>
+      {/* VISA TYPE HEADING */}
+      <section className="container-max pt-8 pb-4">
+        <h2 className="text-3xl font-bold text-slate-900">{visa.title}</h2>
       </section>
 
       {/* DOCUMENTS REQUIRED - COMPRESSED & COLLAPSIBLE */}
-      <section className="container-max py-12">
-        <h2 className="text-2xl font-bold text-slate-900 mb-6">What You'll Need ({docsCount}+ documents)</h2>
+      <section className="container-max py-8 border-b-2 border-slate-200">
+        <h3 className="text-xl font-bold text-slate-900 mb-6">What You'll Need ({docsCount}+ documents)</h3>
         <div className="space-y-3">
           {visa.documents.map((category, catIdx) => (
             <div key={catIdx} className="bg-white border-2 border-slate-300 rounded-lg overflow-hidden">
@@ -133,10 +130,42 @@ export default function VisaGuidancePage() {
         </div>
       </section>
 
+      {/* COMPARISON TABLE */}
+      <section className="container-max py-12">
+        <h2 className="text-2xl font-bold text-slate-900 mb-8">Why VisaBud? Not Just a Checklist</h2>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="bg-slate-100 border-2 border-slate-300">
+                <th className="p-4 text-left font-bold text-slate-900">Feature</th>
+                <th className="p-4 text-center font-bold text-slate-900">DIY + Checklist</th>
+                <th className="p-4 text-center font-bold text-slate-900">VisaBud</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[
+                ['Checklist of documents', true, true],
+                ['AI document review', false, true],
+                ['Missing document detection', false, true],
+                ['Confidence score', false, true],
+                ['Instant feedback', false, true],
+                ['Cost', '£0', 'From £10'],
+              ].map((row, i) => (
+                <tr key={i} className={`border-2 border-slate-300 ${i % 2 === 0 ? 'bg-white' : 'bg-slate-50'}`}>
+                  <td className="p-4 text-slate-900 font-semibold">{row[0]}</td>
+                  <td className="p-4 text-center">{row[1] ? '✓' : '✗'}</td>
+                  <td className="p-4 text-center font-bold">{row[2] ? '✓' : row[2]}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
       {/* AI EXAMPLE - THE PROOF */}
       <section className="bg-blue-50 py-12 border-y-2 border-blue-300">
         <div className="container-max">
-          <h2 className="text-2xl font-bold text-slate-900 mb-2">Here's What VisaBud AI Does</h2>
+          <h2 className="text-2xl font-bold text-slate-900 mb-2">See Exactly What VisaBud Finds</h2>
           <p className="text-slate-800 mb-8">Real example: Payslip uploaded</p>
           <div className="grid md:grid-cols-2 gap-8">
             <div className="bg-white rounded-lg p-6 border-2 border-slate-400 shadow-sm">
@@ -162,8 +191,14 @@ export default function VisaGuidancePage() {
       {/* TRY IT NOW - DEMO UPLOAD (NO SIGNUP) */}
       <section className="bg-emerald-50 py-12 border-y-2 border-emerald-300">
         <div className="container-max">
-          <h2 className="text-2xl font-bold text-slate-900 mb-2">Try It Right Now</h2>
-          <p className="text-slate-800 mb-8">Upload a sample payslip or bank statement. See exactly what VisaBud does.</p>
+          <h2 className="text-2xl font-bold text-slate-900 mb-2">Upload One Document. Find Out What's Missing.</h2>
+          <p className="text-slate-800 mb-3">Upload a payslip, bank statement or passport and receive:</p>
+          <ul className="text-sm text-slate-800 mb-8 space-y-1">
+            <li className="flex items-center gap-2"><Check className="w-4 h-4 text-emerald-600" /> Confidence Score</li>
+            <li className="flex items-center gap-2"><Check className="w-4 h-4 text-emerald-600" /> Missing Documents List</li>
+            <li className="flex items-center gap-2"><Check className="w-4 h-4 text-emerald-600" /> Personalised Recommendations</li>
+            <li className="flex items-center gap-2"><Check className="w-4 h-4 text-emerald-600" /> Instant AI Feedback</li>
+          </ul>
           
           <div className="max-w-2xl mx-auto">
             <div className="bg-white rounded-lg border-2 border-dashed border-emerald-400 p-8">
@@ -211,10 +246,10 @@ export default function VisaGuidancePage() {
         </div>
       </section>
 
-      {/* WHAT YOU'LL RECEIVE */}
+      {/* WHAT YOU'LL KNOW BEFORE SUBMIT */}
       <section className="bg-purple-50 py-12 border-y-2 border-purple-300">
         <div className="container-max">
-          <h2 className="text-2xl font-bold text-slate-900 mb-8">What You'll Receive</h2>
+          <h2 className="text-2xl font-bold text-slate-900 mb-8">What You'll Know Before You Submit</h2>
           <div className="grid md:grid-cols-2 gap-6">
             {[
               {icon: '📊', title: 'Confidence Score', desc: 'See exactly how strong each document is'},
@@ -237,7 +272,7 @@ export default function VisaGuidancePage() {
       {/* TESTIMONIALS - SHORT & PUNCHY */}
       <section className="bg-slate-50 py-12">
         <div className="container-max">
-          <h2 className="text-2xl font-bold text-slate-900 mb-8">Real People. Real Approvals.</h2>
+          <h2 className="text-2xl font-bold text-slate-900 mb-8">Mistakes VisaBud Caught Before Submission</h2>
           <div className="grid md:grid-cols-3 gap-6">
             {[
               {name: 'Sarah M.', visa: 'Spouse Visa', quote: 'VisaBud identified two missing bank statements before submission. Uploaded them and was approved first time.'},
