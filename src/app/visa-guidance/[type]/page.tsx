@@ -39,48 +39,48 @@ export default function VisaGuidancePage() {
       <TopNav />
 
       {/* HERO WITH VISUAL JOURNEY */}
-      <section className={`bg-gradient-to-br ${visa.color} text-white py-16 md:py-20`}>
+      <section className="bg-gradient-to-br from-blue-50 to-slate-100 py-16 md:py-20">
         <div className="container-max">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div>
-              <h1 className="text-4xl md:text-5xl font-bold mb-4 leading-tight">
+              <h1 className="text-4xl md:text-5xl font-bold mb-4 leading-tight text-slate-900">
                 Don't Risk a £{visa.cost.match(/\d+/)?.[0] || '1,000'}+ Visa Application
               </h1>
-              <p className="text-lg text-white/95 mb-6">
+              <p className="text-lg text-slate-800 mb-6">
                 Upload your documents and let VisaBud identify missing evidence, inconsistencies and common mistakes before you submit.
               </p>
-              <ul className="text-sm text-white/90 mb-8 space-y-2">
-                <li className="flex items-center gap-2"><Check className="w-4 h-4" /> 3 Free AI Document Checks</li>
-                <li className="flex items-center gap-2"><Check className="w-4 h-4" /> No Credit Card Required</li>
-                <li className="flex items-center gap-2"><Check className="w-4 h-4" /> Results in Minutes</li>
+              <ul className="text-sm text-slate-800 mb-8 space-y-2">
+                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-blue-600" /> 3 Free AI Document Checks</li>
+                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-blue-600" /> No Credit Card Required</li>
+                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-blue-600" /> Results in Minutes</li>
               </ul>
               <Link
                 href={`/auth/signup?visa=${visaType}`}
-                className="inline-flex items-center gap-2 px-8 py-3.5 bg-white text-blue-700 font-bold rounded-xl hover:bg-blue-50 transition-all"
+                className="inline-flex items-center gap-2 px-8 py-3.5 bg-blue-700 text-white font-bold rounded-xl hover:bg-blue-800 transition-all"
               >
                 Check My Documents Free
                 <ArrowRight className="w-5 h-5" />
               </Link>
             </div>
             <div className="hidden md:flex flex-col items-center justify-center gap-4 text-center">
-              <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center text-3xl">📄</div>
-              <p className="text-white font-semibold text-sm">Upload document</p>
-              <p className="text-white/70">↓</p>
-              <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center text-3xl">🤖</div>
-              <p className="text-white font-semibold text-sm">AI review</p>
-              <p className="text-white/70">↓</p>
-              <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center text-3xl">📊</div>
-              <p className="text-white font-semibold text-sm">Confidence score</p>
-              <p className="text-white/70">↓</p>
-              <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center text-3xl">✅</div>
-              <p className="text-white font-semibold text-sm">Submit with confidence</p>
+              <div className="w-16 h-16 rounded-full bg-blue-200 flex items-center justify-center text-3xl">📄</div>
+              <p className="text-slate-900 font-semibold text-sm">Upload document</p>
+              <p className="text-slate-600">↓</p>
+              <div className="w-16 h-16 rounded-full bg-blue-200 flex items-center justify-center text-3xl">🤖</div>
+              <p className="text-slate-900 font-semibold text-sm">AI review</p>
+              <p className="text-slate-600">↓</p>
+              <div className="w-16 h-16 rounded-full bg-blue-200 flex items-center justify-center text-3xl">📊</div>
+              <p className="text-slate-900 font-semibold text-sm">Confidence score</p>
+              <p className="text-slate-600">↓</p>
+              <div className="w-16 h-16 rounded-full bg-blue-200 flex items-center justify-center text-3xl">✅</div>
+              <p className="text-slate-900 font-semibold text-sm">Submit with confidence</p>
             </div>
           </div>
         </div>
       </section>
 
       {/* FREE TRIAL BANNER */}
-      <section className="bg-emerald-500 text-white py-4">
+      <section className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white py-4">
         <div className="container-max text-center">
           <div className="flex items-center justify-center gap-2 mb-2">
             <span className="text-lg font-bold">🟢 Free Trial</span>
