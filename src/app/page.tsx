@@ -7,6 +7,7 @@ import { useAuth } from '@/lib/auth-context';
 import { PageFadeIn, StaggerContainer, StaggerItem, FadeIn } from '@/lib/animations';
 import FooterEmailCapture from '@/components/FooterEmailCapture';
 import TopNav from '@/components/TopNav';
+import { getAllVisas } from '@/lib/visa-guidance-data';
 import { Loader2 } from 'lucide-react';
 
 export default function Home() {
@@ -67,35 +68,22 @@ export default function Home() {
               </p>
             </FadeIn>
             <FadeIn delay={0.2}>
-              <div className="flex flex-col sm:flex-row gap-3 mb-6">
-                {user ? (
-                  <>
-                    <Link href="/app/start" className="btn-primary flex items-center justify-center gap-2 text-base py-3.5 px-7 shadow-lg shadow-blue-200/50">
-                      Start a New Application
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                      </svg>
-                    </Link>
-                    <Link href="/applications" className="flex items-center justify-center gap-2 text-base py-3.5 px-7 border-2 border-gray-200 hover:border-blue-300 hover:bg-blue-50 rounded-xl font-semibold text-gray-700 hover:text-blue-700 transition-all">
-                      View My Applications
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </Link>
-                  </>
-                ) : (
-                  <Link href="/auth/signup" className="btn-primary flex items-center justify-center gap-2 text-base py-3.5 px-7 shadow-lg shadow-blue-200/50">
-                    Get Started Free
+              {user && (
+                <div className="flex flex-col sm:flex-row gap-3 mb-6">
+                  <Link href="/app/start" className="btn-primary flex items-center justify-center gap-2 text-base py-3.5 px-7 shadow-lg shadow-blue-200/50">
+                    Start a New Application
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                    </svg>
+                  </Link>
+                  <Link href="/applications" className="flex items-center justify-center gap-2 text-base py-3.5 px-7 border-2 border-gray-200 hover:border-blue-300 hover:bg-blue-50 rounded-xl font-semibold text-gray-700 hover:text-blue-700 transition-all">
+                    View My Applications
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                     </svg>
                   </Link>
-                )}
-              </div>
-              <p className="text-slate-500 text-sm flex items-center gap-2">
-                <svg className="w-4 h-4 text-emerald-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
-                Takes 3 minutes · 3 free AI checks included · No spam, ever
-              </p>
+                </div>
+              )}
             </FadeIn>
           </div>
         </section>
@@ -174,6 +162,36 @@ export default function Home() {
             </StaggerContainer>
           </div>
         </section>
+
+        {/* Visa Type Selector (If not logged in) */}
+        {!user && (
+          <section className="container-max py-16">
+            <FadeIn>
+              <div className="text-center mb-12">
+                <p className="text-blue-600 text-sm font-semibold mb-2 uppercase tracking-wide">Choose your visa type</p>
+                <h2 className="text-3xl font-bold text-slate-900 mb-3">Select your path to the UK</h2>
+                <p className="text-slate-600 max-w-lg mx-auto">Get a free personalized checklist and see exactly what documents you need.</p>
+              </div>
+            </FadeIn>
+            <StaggerContainer className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {getAllVisas().map((visa) => (
+                <StaggerItem key={visa.id}>
+                  <Link
+                    href={`/visa-guidance/${visa.id}`}
+                    className={`card card-hover p-6 text-center group bg-gradient-to-br ${visa.color} bg-opacity-5 hover:bg-opacity-10 transition-all border-2 border-transparent hover:border-blue-300`}
+                  >
+                    <div className="text-5xl mb-3 group-hover:scale-110 transition-transform">{visa.icon}</div>
+                    <h3 className="font-bold text-slate-900 mb-2">{visa.title}</h3>
+                    <p className="text-xs text-slate-600 mb-4 line-clamp-2">{visa.overview}</p>
+                    <div className="text-xs font-semibold text-blue-600 flex items-center justify-center gap-1">
+                      See Checklist →
+                    </div>
+                  </Link>
+                </StaggerItem>
+              ))}
+            </StaggerContainer>
+          </section>
+        )}
 
         {/* How It Works */}
         <section className="container-max py-16">
