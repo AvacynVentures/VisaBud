@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { getVisaDetails, VisaType } from '@/lib/visa-guidance-data';
 import TopNav from '@/components/TopNav';
-import { ArrowRight, Check, ChevronDown, AlertCircle, Upload } from 'lucide-react';
+import { ArrowRight, Check, ChevronDown, AlertCircle } from 'lucide-react';
 
 export default function VisaGuidancePage() {
   const params = useParams();
@@ -38,29 +38,55 @@ export default function VisaGuidancePage() {
     <div className="min-h-screen bg-white">
       <TopNav />
 
-      {/* HERO - MONEY-FOCUSED */}
+      {/* HERO WITH VISUAL JOURNEY */}
       <section className={`bg-gradient-to-br ${visa.color} text-white py-16 md:py-20`}>
         <div className="container-max">
-          <div className="max-w-3xl">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4 leading-tight">
-              Don't Risk a £{visa.cost.match(/\d+/)?.[0] || '1,000'}+ Visa Application
-            </h1>
-            <p className="text-lg text-white/95 mb-6">
-              Upload your documents and let VisaBud identify missing evidence, inconsistencies and common mistakes before you submit.
-            </p>
-            <ul className="text-sm text-white/90 mb-8 space-y-2">
-              <li className="flex items-center gap-2"><Check className="w-4 h-4" /> 3 Free AI Document Checks</li>
-              <li className="flex items-center gap-2"><Check className="w-4 h-4" /> No Credit Card Required</li>
-              <li className="flex items-center gap-2"><Check className="w-4 h-4" /> Results in Minutes</li>
-            </ul>
-            <Link
-              href={`/auth/signup?visa=${visaType}`}
-              className="inline-flex items-center gap-2 px-8 py-3.5 bg-white text-blue-700 font-bold rounded-xl hover:bg-blue-50 transition-all"
-            >
-              Check My Documents Free
-              <ArrowRight className="w-5 h-5" />
-            </Link>
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            <div>
+              <h1 className="text-4xl md:text-5xl font-bold mb-4 leading-tight">
+                Don't Risk a £{visa.cost.match(/\d+/)?.[0] || '1,000'}+ Visa Application
+              </h1>
+              <p className="text-lg text-white/95 mb-6">
+                Upload your documents and let VisaBud identify missing evidence, inconsistencies and common mistakes before you submit.
+              </p>
+              <ul className="text-sm text-white/90 mb-8 space-y-2">
+                <li className="flex items-center gap-2"><Check className="w-4 h-4" /> 3 Free AI Document Checks</li>
+                <li className="flex items-center gap-2"><Check className="w-4 h-4" /> No Credit Card Required</li>
+                <li className="flex items-center gap-2"><Check className="w-4 h-4" /> Results in Minutes</li>
+              </ul>
+              <Link
+                href={`/auth/signup?visa=${visaType}`}
+                className="inline-flex items-center gap-2 px-8 py-3.5 bg-white text-blue-700 font-bold rounded-xl hover:bg-blue-50 transition-all"
+              >
+                Check My Documents Free
+                <ArrowRight className="w-5 h-5" />
+              </Link>
+            </div>
+            <div className="hidden md:flex flex-col items-center justify-center gap-4 text-center">
+              <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center text-3xl">📄</div>
+              <p className="text-white font-semibold text-sm">Upload document</p>
+              <p className="text-white/70">↓</p>
+              <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center text-3xl">🤖</div>
+              <p className="text-white font-semibold text-sm">AI review</p>
+              <p className="text-white/70">↓</p>
+              <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center text-3xl">📊</div>
+              <p className="text-white font-semibold text-sm">Confidence score</p>
+              <p className="text-white/70">↓</p>
+              <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center text-3xl">✅</div>
+              <p className="text-white font-semibold text-sm">Submit with confidence</p>
+            </div>
           </div>
+        </div>
+      </section>
+
+      {/* FREE TRIAL BANNER */}
+      <section className="bg-emerald-500 text-white py-4">
+        <div className="container-max text-center">
+          <div className="flex items-center justify-center gap-2 mb-2">
+            <span className="text-lg font-bold">🟢 Free Trial</span>
+          </div>
+          <p className="text-sm font-semibold mb-2">Upload 1 document and receive: Confidence Score • Missing Documents List • Personalised Recommendations</p>
+          <p className="text-xs text-emerald-50">No account required. No credit card required.</p>
         </div>
       </section>
 
@@ -69,7 +95,7 @@ export default function VisaGuidancePage() {
         <h2 className="text-3xl font-bold text-slate-900">{visa.title}</h2>
       </section>
 
-      {/* DOCUMENTS REQUIRED - COMPRESSED & COLLAPSIBLE */}
+      {/* DOCUMENTS REQUIRED */}
       <section className="container-max py-8 border-b-2 border-slate-200">
         <h3 className="text-xl font-bold text-slate-900 mb-6">What You'll Need ({docsCount}+ documents)</h3>
         <div className="space-y-3">
@@ -105,7 +131,7 @@ export default function VisaGuidancePage() {
         </div>
       </section>
 
-      {/* COMMON FAILURES - URGENCY & CONSEQUENCE */}
+      {/* COMMON FAILURES */}
       <section className="bg-red-50 py-12 border-y-2 border-red-300">
         <div className="container-max">
           <h2 className="text-2xl font-bold text-slate-900 mb-2">Why Applications Get Delayed or Refused</h2>
@@ -138,23 +164,24 @@ export default function VisaGuidancePage() {
             <thead>
               <tr className="bg-slate-100 border-2 border-slate-300">
                 <th className="p-4 text-left font-bold text-slate-900">Feature</th>
-                <th className="p-4 text-center font-bold text-slate-900">DIY + Checklist</th>
+                <th className="p-4 text-center font-bold text-slate-900">DIY</th>
                 <th className="p-4 text-center font-bold text-slate-900">VisaBud</th>
               </tr>
             </thead>
             <tbody>
               {[
-                ['Checklist of documents', true, true],
-                ['AI document review', false, true],
-                ['Missing document detection', false, true],
-                ['Confidence score', false, true],
-                ['Instant feedback', false, true],
-                ['Cost', '£0', 'From £10'],
+                ['Checklist of documents', '✓', '✓'],
+                ['AI document review', '✗', '✓'],
+                ['Missing document detection', '✗', '✓'],
+                ['Confidence score', '✗', '✓'],
+                ['Instant feedback', '✗', '✓'],
+                ['Time required', 'Several hours', 'Minutes'],
+                ['Risk of missing evidence', 'High', 'Lower'],
               ].map((row, i) => (
                 <tr key={i} className={`border-2 border-slate-300 ${i % 2 === 0 ? 'bg-white' : 'bg-slate-50'}`}>
                   <td className="p-4 text-slate-900 font-semibold">{row[0]}</td>
-                  <td className="p-4 text-center">{row[1] ? '✓' : '✗'}</td>
-                  <td className="p-4 text-center font-bold">{row[2] ? '✓' : row[2]}</td>
+                  <td className="p-4 text-center">{row[1]}</td>
+                  <td className="p-4 text-center font-bold text-emerald-600">{row[2]}</td>
                 </tr>
               ))}
             </tbody>
@@ -162,7 +189,7 @@ export default function VisaGuidancePage() {
         </div>
       </section>
 
-      {/* AI EXAMPLE - THE PROOF */}
+      {/* AI EXAMPLE */}
       <section className="bg-blue-50 py-12 border-y-2 border-blue-300">
         <div className="container-max">
           <h2 className="text-2xl font-bold text-slate-900 mb-2">See Exactly What VisaBud Finds</h2>
@@ -188,10 +215,23 @@ export default function VisaGuidancePage() {
         </div>
       </section>
 
-      {/* TRY IT NOW - DEMO UPLOAD (NO SIGNUP) */}
+      {/* DOCUMENT TYPES FAQ */}
+      <section className="container-max py-12 bg-blue-50 border-y-2 border-blue-300">
+        <h3 className="text-xl font-bold text-slate-900 mb-6">What Documents Can I Upload?</h3>
+        <div className="grid md:grid-cols-2 gap-4">
+          {['Payslips', 'Bank Statements', 'Passports', 'Employment Contracts', 'Marriage Certificates', 'Utility Bills', 'Sponsor Documents', 'Medical Records'].map((doc, i) => (
+            <div key={i} className="flex items-center gap-2 text-slate-800">
+              <Check className="w-4 h-4 text-blue-600 flex-shrink-0" />
+              <span className="text-sm">{doc}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* TRY IT NOW */}
       <section className="bg-emerald-50 py-12 border-y-2 border-emerald-300">
         <div className="container-max">
-          <h2 className="text-2xl font-bold text-slate-900 mb-2">Upload One Document. Find Out What's Missing.</h2>
+          <h2 className="text-2xl font-bold text-slate-900 mb-2">Check One Document Free Before You Apply</h2>
           <p className="text-slate-800 mb-3">Upload a payslip, bank statement or passport and receive:</p>
           <ul className="text-sm text-slate-800 mb-8 space-y-1">
             <li className="flex items-center gap-2"><Check className="w-4 h-4 text-emerald-600" /> Confidence Score</li>
@@ -199,30 +239,52 @@ export default function VisaGuidancePage() {
             <li className="flex items-center gap-2"><Check className="w-4 h-4 text-emerald-600" /> Personalised Recommendations</li>
             <li className="flex items-center gap-2"><Check className="w-4 h-4 text-emerald-600" /> Instant AI Feedback</li>
           </ul>
-          
+
           <div className="max-w-2xl mx-auto">
-            <div className="bg-white rounded-lg border-2 border-dashed border-emerald-400 p-8">
-              <div className="text-center">
-                <Upload className="w-12 h-12 text-emerald-600 mx-auto mb-4" />
-                <p className="font-bold text-slate-900 mb-4">Drag & Drop Your Document Here</p>
-                <p className="text-sm text-slate-600 mb-6">or</p>
-                <Link
-                  href={`/demo-upload?visa=${visaType}`}
-                  className="inline-flex items-center gap-2 px-6 py-2.5 bg-emerald-600 text-white font-bold rounded-lg hover:bg-emerald-700 transition-all"
-                >
-                  📁 Choose File
-                </Link>
-                <p className="text-xs text-slate-600 mt-6">
-                  No account required. No credit card required.<br/>
-                  See your AI review instantly.
-                </p>
+            <div className="grid md:grid-cols-2 gap-8 mb-8">
+              <div>
+                <p className="text-xs font-bold text-slate-700 mb-3 uppercase">Example Document</p>
+                <div className="bg-white rounded-lg border-2 border-slate-400 p-4 h-48 flex flex-col justify-center items-center">
+                  <div className="w-full h-32 bg-gradient-to-br from-slate-200 to-slate-300 rounded mb-3 relative overflow-hidden">
+                    <div className="absolute inset-0 opacity-30">
+                      <div className="text-xs text-slate-600 p-2 line-clamp-6">PAYSLIP | Jan 2026 | Income £45,000 | [blurred] | [blurred]</div>
+                    </div>
+                  </div>
+                  <p className="text-xs text-slate-600">📄 payslip_jan2026.pdf</p>
+                </div>
               </div>
+              <div>
+                <p className="text-xs font-bold text-slate-700 mb-3 uppercase">What You See</p>
+                <div className="bg-white rounded-lg border-2 border-emerald-400 p-4">
+                  <p className="text-sm font-bold text-emerald-600 mb-2">82%</p>
+                  <p className="text-xs text-slate-600 mb-3">Confidence Score</p>
+                  <div className="space-y-2 text-xs">
+                    <p className="font-bold text-slate-900">✓ Verified</p>
+                    <p className="text-slate-700">Income: £45,000/year</p>
+                    <p className="font-bold text-slate-900 mt-2">⚠️ Missing</p>
+                    <p className="text-slate-700">Employer address</p>
+                    <p className="font-bold text-slate-900 mt-2">💡 Recommendation</p>
+                    <p className="text-slate-700">Add bank statement</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="text-center">
+              <Link
+                href={`/demo-upload?visa=${visaType}`}
+                className="inline-flex items-center gap-2 px-8 py-3.5 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-all"
+              >
+                📁 Try It Now
+              </Link>
+              <p className="text-xs text-slate-600 mt-4">
+                No account required. No credit card.
+              </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* SECURITY - MOVED UP */}
+      {/* SECURITY */}
       <section className="bg-slate-900 text-white py-12">
         <div className="container-max">
           <h2 className="text-2xl font-bold text-center mb-8">Your Data Is Protected</h2>
@@ -246,7 +308,7 @@ export default function VisaGuidancePage() {
         </div>
       </section>
 
-      {/* WHAT YOU'LL KNOW BEFORE SUBMIT */}
+      {/* WHAT YOU'LL KNOW */}
       <section className="bg-purple-50 py-12 border-y-2 border-purple-300">
         <div className="container-max">
           <h2 className="text-2xl font-bold text-slate-900 mb-8">What You'll Know Before You Submit</h2>
@@ -269,7 +331,7 @@ export default function VisaGuidancePage() {
         </div>
       </section>
 
-      {/* TESTIMONIALS - SHORT & PUNCHY */}
+      {/* TESTIMONIALS */}
       <section className="bg-slate-50 py-12">
         <div className="container-max">
           <h2 className="text-2xl font-bold text-slate-900 mb-8">Mistakes VisaBud Caught Before Submission</h2>
@@ -290,7 +352,7 @@ export default function VisaGuidancePage() {
         </div>
       </section>
 
-      {/* TIMELINE - COLLAPSIBLE */}
+      {/* TIMELINE */}
       <section className="container-max py-12">
         <button
           onClick={() => setExpandedTimeline(!expandedTimeline)}
@@ -316,13 +378,16 @@ export default function VisaGuidancePage() {
         )}
       </section>
 
-      {/* STATS - DEFENSIBLE ONLY */}
+      {/* CREDIBILITY */}
       <section className="bg-slate-900 text-white py-12">
+        <div className="container-max text-center mb-8">
+          <p className="text-sm text-slate-300">Built using official UKVI requirements and document guidance.</p>
+        </div>
         <div className="container-max">
           <div className="grid md:grid-cols-3 gap-8 text-center">
             <div>
               <p className="text-4xl font-bold mb-2">1,000+</p>
-              <p className="text-slate-300">Applicants Guided</p>
+              <p className="text-slate-300">Documents Reviewed</p>
             </div>
             <div>
               <p className="text-4xl font-bold mb-2">20+</p>
@@ -353,10 +418,15 @@ export default function VisaGuidancePage() {
 
       {/* Footer */}
       <footer className="border-t-2 border-slate-300 bg-slate-900 py-10">
-        <div className="container-max text-center">
-          <p className="text-slate-400 text-sm">
-            Information based on official UK Home Office guidance. Always verify with gov.uk before applying.
-          </p>
+        <div className="container-max">
+          <div className="text-center">
+            <p className="text-slate-400 text-sm mb-2">
+              Information based on official UK Home Office guidance. Always verify with gov.uk before applying.
+            </p>
+            <p className="text-slate-500 text-xs">
+              VisaBud is not affiliated with or endorsed by the UK Home Office or UKVI.
+            </p>
+          </div>
         </div>
       </footer>
     </div>
