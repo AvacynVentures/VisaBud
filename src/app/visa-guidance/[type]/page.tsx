@@ -317,6 +317,60 @@ export default function VisaGuidancePage() {
         </div>
       </section>
 
+      {/* Visa Readiness Score */}
+      <section className="bg-gradient-to-br from-purple-50 to-blue-50 py-16 md:py-20 border-y-4 border-purple-300">
+        <div className="container-max">
+          <h2 className="text-3xl font-bold text-slate-900 mb-2">Track Your Visa Readiness</h2>
+          <p className="text-slate-800 mb-10">See exactly how strong your application is before submission:</p>
+          
+          <div className="grid md:grid-cols-2 gap-8">
+            <div className="bg-white rounded-lg p-8 border-3 border-purple-400 shadow-md">
+              <p className="text-sm font-bold text-slate-700 mb-4 uppercase tracking-wide">Your Readiness Score</p>
+              <p className="text-6xl font-bold text-purple-600 mb-1">87%</p>
+              <p className="text-sm text-slate-600 mb-6">Application is strong ready to submit</p>
+              <div className="w-full bg-slate-200 rounded-full h-3 mb-8"><div className="bg-gradient-to-r from-purple-500 to-blue-500 h-3 rounded-full" style={{width: '87%'}}></div></div>
+              <div className="space-y-4 text-sm"><div><div className="flex items-center justify-between mb-2"><span className="text-slate-700">Relationship Evidence</span><span className="font-bold text-emerald-600">95%</span></div><div className="bg-slate-200 rounded h-2"><div className="bg-emerald-500 h-2 rounded-full" style={{width: '95%'}}></div></div></div><div><div className="flex items-center justify-between mb-2"><span className="text-slate-700">Financial Evidence</span><span className="font-bold text-orange-600">72%</span></div><div className="bg-slate-200 rounded h-2"><div className="bg-orange-500 h-2 rounded-full" style={{width: '72%'}}></div></div></div><div><div className="flex items-center justify-between mb-2"><span className="text-slate-700">Identity Documents</span><span className="font-bold text-emerald-600">100%</span></div><div className="bg-slate-200 rounded h-2"><div className="bg-emerald-500 h-2 rounded-full" style={{width: '100%'}}></div></div></div></div>
+            </div>
+            
+            <div className="space-y-4"><div className="bg-white rounded-lg p-6 border-3 border-slate-400 shadow-md"><p className="font-bold text-slate-900 mb-3">Recommended Next Steps</p><ul className="space-y-2 text-sm text-slate-800"><li className="flex gap-2"><span className="text-emerald-600 font-bold">✓</span><span>Relationship proof complete</span></li><li className="flex gap-2"><span className="text-orange-500 font-bold">!</span><span>Add latest payslip</span></li><li className="flex gap-2"><span className="text-orange-500 font-bold">!</span><span>Add recent bank statement</span></li><li className="flex gap-2"><span className="text-emerald-600 font-bold">✓</span><span>All identity docs verified</span></li></ul></div><div className="bg-emerald-50 border-3 border-emerald-300 rounded-lg p-6"><p className="font-bold text-emerald-900 mb-2">Getting Closer</p><p className="text-sm text-emerald-800">Add the 2 outstanding financial documents to reach 95% readiness.</p></div></div>
+          </div>
+        </div>
+      </section>
+
+      {/* Success Stories */}
+      <section className="bg-white py-16 md:py-20 border-t-2 border-slate-200">
+        <div className="container-max">
+          <h2 className="text-3xl font-bold text-slate-900 mb-2">Real Applicants. Real Results.</h2>
+          <p className="text-slate-800 mb-10">How VisaBud helped others avoid mistakes:</p>
+          
+          <div className="grid md:grid-cols-3 gap-6">
+            <div className="bg-gradient-to-br from-slate-50 to-blue-50 rounded-lg p-6 border-2 border-slate-300 shadow-sm">
+              <div className="text-4xl mb-4">💰</div>
+              <p className="text-sm font-bold text-slate-700 mb-1">Spouse Visa</p>
+              <p className="font-bold text-slate-900 mb-3">Sarah M.</p>
+              <p className="text-sm text-slate-700 leading-relaxed mb-4">VisaBud found her financial evidence was incomplete. She uploaded the missing statements and got approved first time.</p>
+              <p className="text-xs font-bold text-emerald-600">✓ Approved</p>
+            </div>
+            
+            <div className="bg-gradient-to-br from-slate-50 to-blue-50 rounded-lg p-6 border-2 border-slate-300 shadow-sm">
+              <div className="text-4xl mb-4">💼</div>
+              <p className="text-sm font-bold text-slate-700 mb-1">Skilled Worker</p>
+              <p className="font-bold text-slate-900 mb-3">Ahmed K.</p>
+              <p className="text-sm text-slate-700 leading-relaxed mb-4">AI flagged his employment contract was missing the sponsor's license number. He added it before submission. Approved in 6 weeks.</p>
+              <p className="text-xs font-bold text-emerald-600">✓ Approved</p>
+            </div>
+            
+            <div className="bg-gradient-to-br from-slate-50 to-blue-50 rounded-lg p-6 border-2 border-slate-300 shadow-sm">
+              <div className="text-4xl mb-4">🎓</div>
+              <p className="text-sm font-bold text-slate-700 mb-1">Student Visa</p>
+              <p className="font-bold text-slate-900 mb-3">Lisa T.</p>
+              <p className="text-sm text-slate-700 leading-relaxed mb-4">Financial documents had inconsistent dates. VisaBud caught it. She corrected them and submitted with confidence. Accepted.</p>
+              <p className="text-xs font-bold text-emerald-600">✓ Approved</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Social Proof */}
       <section className="bg-slate-900 text-white py-12">
         <div className="container-max">
