@@ -38,7 +38,7 @@ export default function VisaGuidancePage() {
           <div className="max-w-3xl">
             <div className="text-6xl mb-4">{visa.icon}</div>
             <h1 className="text-4xl md:text-5xl font-bold mb-4 leading-tight">{visa.title}</h1>
-            <p className="text-lg text-white/90 mb-8">{visa.overview}</p>
+            <p className="text-lg text-white/95 mb-8">{visa.overview}</p>
             <div className="flex flex-wrap gap-4 text-sm font-semibold">
               <div className="flex items-center gap-2 bg-white/20 px-4 py-2 rounded-lg backdrop-blur">
                 ⏱️ {visa.timeline}
@@ -69,7 +69,7 @@ export default function VisaGuidancePage() {
               </div>
               <ul className="space-y-3">
                 {visa.eligibility.map((item, i) => (
-                  <li key={i} className="flex gap-3 text-slate-700 text-sm">
+                  <li key={i} className="flex gap-3 text-slate-800 text-sm leading-relaxed">
                     <div className="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0 mt-0.5">
                       <span className="text-emerald-600 text-xs font-bold">✓</span>
                     </div>
@@ -95,7 +95,7 @@ export default function VisaGuidancePage() {
                     </div>
                     <div className="flex-1">
                       <p className="font-semibold text-slate-900 text-sm">{step.title}</p>
-                      <p className="text-xs text-slate-600 mt-1">{step.description}</p>
+                      <p className="text-xs text-slate-700 mt-1 leading-relaxed">{step.description}</p>
                     </div>
                   </li>
                 ))}
@@ -108,12 +108,12 @@ export default function VisaGuidancePage() {
             <h2 className="text-2xl font-bold text-slate-900 mb-6">Documents Required ({docsCount}+)</h2>
             <div className="space-y-4">
               {visa.documents.map((category, catIdx) => (
-                <div key={catIdx} className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg p-4 border border-slate-200">
+                <div key={catIdx} className="bg-slate-100 rounded-lg p-5 border-2 border-slate-300">
                   <h3 className="font-bold text-slate-900 mb-3 text-sm">{category.category}</h3>
                   <ul className="space-y-2">
                     {category.items.map((item, itemIdx) => (
-                      <li key={itemIdx} className="flex gap-2 text-slate-700 text-xs">
-                        <Check className="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" />
+                      <li key={itemIdx} className="flex gap-2 text-slate-800 text-xs leading-relaxed">
+                        <Check className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
                         <span>{item}</span>
                       </li>
                     ))}
@@ -126,7 +126,7 @@ export default function VisaGuidancePage() {
       </div>
 
       {/* AI Document Checks - The Premium Offer */}
-      <section className="bg-gradient-to-br from-blue-50 to-slate-50 py-16 md:py-24 border-t border-slate-200">
+      <section className="bg-slate-50 py-16 md:py-24 border-t-2 border-slate-300">
         <div className="container-max">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             {/* Left: Benefits */}
@@ -137,7 +137,7 @@ export default function VisaGuidancePage() {
               <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-6 leading-tight">
                 Get AI to Review Your Documents Before Submission
               </h2>
-              <p className="text-lg text-slate-700 mb-8">
+              <p className="text-lg text-slate-800 mb-8 leading-relaxed">
                 You now have your checklist. Let our AI review each document to catch mistakes, missing sections, and compliance issues before you submit.
               </p>
 
@@ -167,18 +167,18 @@ export default function VisaGuidancePage() {
                     </div>
                     <div>
                       <p className="font-semibold text-slate-900 text-sm">{feature.title}</p>
-                      <p className="text-slate-600 text-sm mt-1">{feature.desc}</p>
+                      <p className="text-slate-800 text-sm mt-1 leading-relaxed">{feature.desc}</p>
                     </div>
                   </div>
                 ))}
               </ul>
 
-              <div className="bg-emerald-50 border-2 border-emerald-200 rounded-xl p-6 mb-8">
+              <div className="bg-emerald-50 border-2 border-emerald-300 rounded-xl p-6 mb-8">
                 <p className="font-bold text-emerald-900 mb-2">🎁 3 Free AI Checks Included</p>
-                <p className="text-sm text-emerald-800 mb-4">
+                <p className="text-sm text-emerald-800 mb-4 leading-relaxed">
                   Try 3 free document reviews before you upgrade.
                 </p>
-                <p className="text-xs text-emerald-700">
+                <p className="text-xs text-emerald-800">
                   No credit card. No commitment. Just see how it works.
                 </p>
               </div>
@@ -190,7 +190,7 @@ export default function VisaGuidancePage() {
                 Get 3 Free AI Checks Now
                 <ArrowRight className="w-5 h-5" />
               </Link>
-              <p className="text-xs text-slate-600 text-center">
+              <p className="text-xs text-slate-700 text-center">
                 Already have an account?{' '}
                 <Link href="/auth/login" className="text-blue-600 font-semibold hover:underline">
                   Sign in here
@@ -200,24 +200,24 @@ export default function VisaGuidancePage() {
 
             {/* Right: Visual Walkthrough */}
             <div className="space-y-4">
-              <div className="bg-white rounded-lg p-6 border-2 border-slate-200 shadow-sm">
-                <div className="text-sm font-bold text-blue-600 mb-3">STEP 1: UPLOAD</div>
-                <p className="text-slate-700 text-sm">Select a document from your computer (PDF, image, or Word doc)</p>
+              <div className="bg-blue-50 rounded-lg p-6 border-2 border-blue-300">
+                <div className="text-sm font-bold text-blue-700 mb-3">STEP 1: UPLOAD</div>
+                <p className="text-slate-800 text-sm leading-relaxed">Select a document from your computer (PDF, image, or Word doc)</p>
               </div>
 
-              <div className="bg-white rounded-lg p-6 border-2 border-slate-200 shadow-sm">
-                <div className="text-sm font-bold text-blue-600 mb-3">STEP 2: AI ANALYSIS</div>
-                <p className="text-slate-700 text-sm">AI scans your document against UK immigration requirements in seconds</p>
+              <div className="bg-blue-50 rounded-lg p-6 border-2 border-blue-300">
+                <div className="text-sm font-bold text-blue-700 mb-3">STEP 2: AI ANALYSIS</div>
+                <p className="text-slate-800 text-sm leading-relaxed">AI scans your document against UK immigration requirements in seconds</p>
               </div>
 
-              <div className="bg-white rounded-lg p-6 border-2 border-slate-200 shadow-sm">
-                <div className="text-sm font-bold text-blue-600 mb-3">STEP 3: GET FEEDBACK</div>
-                <p className="text-slate-700 text-sm">See your confidence score + specific improvements before you submit</p>
+              <div className="bg-blue-50 rounded-lg p-6 border-2 border-blue-300">
+                <div className="text-sm font-bold text-blue-700 mb-3">STEP 3: GET FEEDBACK</div>
+                <p className="text-slate-800 text-sm leading-relaxed">See your confidence score + specific improvements before you submit</p>
               </div>
 
-              <div className="bg-white rounded-lg p-6 border-2 border-slate-200 shadow-sm">
-                <div className="text-sm font-bold text-blue-600 mb-3">STEP 4: APPLY WITH CONFIDENCE</div>
-                <p className="text-slate-700 text-sm">Submit your application knowing every document is visa-ready</p>
+              <div className="bg-blue-50 rounded-lg p-6 border-2 border-blue-300">
+                <div className="text-sm font-bold text-blue-700 mb-3">STEP 4: APPLY WITH CONFIDENCE</div>
+                <p className="text-slate-800 text-sm leading-relaxed">Submit your application knowing every document is visa-ready</p>
               </div>
             </div>
           </div>
@@ -269,7 +269,7 @@ export default function VisaGuidancePage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-slate-200 bg-slate-900 py-10">
+      <footer className="border-t-2 border-slate-300 bg-slate-900 py-10">
         <div className="container-max text-center">
           <p className="text-slate-400 text-sm">
             Information based on official UK Home Office guidance. Always verify with gov.uk before applying.
