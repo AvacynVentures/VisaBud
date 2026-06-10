@@ -44,18 +44,6 @@ export default function Home() {
       <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
         <TopNav />
 
-        {/* Government Disclaimer Banner */}
-        <div className="w-full bg-amber-50 border-b border-amber-200">
-          <div className="container-max py-3 px-4">
-            <div className="flex items-start gap-3">
-              <span className="text-xl mt-0.5">⚠️</span>
-              <p className="text-sm text-amber-900">
-                <strong>VisaBud is not affiliated with UK Visas and Immigration (UKVI) or any government agency.</strong> We provide private document preparation checklists to help you organize materials for visa applications. For official information, visit <a href="https://www.gov.uk/visas-immigration" target="_blank" rel="noopener noreferrer" className="font-semibold underline">gov.uk/visas-immigration</a>.
-              </p>
-            </div>
-          </div>
-        </div>
-
         {/* Hero */}
         <section className="container-max py-16 md:py-24">
           <div className="max-w-3xl">
@@ -66,7 +54,7 @@ export default function Home() {
             </FadeIn>
             <FadeIn delay={0.1}>
               <h1 className="text-4xl md:text-5xl font-bold text-slate-900 mb-4 leading-tight">
-                Complete your UK visa<br />application with confidence.<br />
+                Complete your UK visa<br />application with confidence*<br />
                 <span className="text-gradient">We make sure you don&apos;t miss a thing.</span>
               </h1>
             </FadeIn>
@@ -285,6 +273,15 @@ export default function Home() {
               </Link>
             </div>
           </FadeIn>
+        </section>
+
+        {/* Disclaimer Section */}
+        <section className="bg-slate-50 border-t border-slate-200 py-8">
+          <div className="container-max">
+            <p className="text-xs text-slate-600 leading-relaxed">
+              <span className="font-semibold">*Disclaimer:</span> VisaBud is not affiliated with UK Visas and Immigration (UKVI) or any government agency. We provide private document preparation checklists to help you organize materials for visa applications. This service is for informational guidance only and does not constitute legal advice. Always verify information with official <a href="https://www.gov.uk/visas-immigration" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline font-semibold">Gov.uk</a> guidance before submitting your application.
+            </p>
+          </div>
         </section>
 
         {/* Footer */}
