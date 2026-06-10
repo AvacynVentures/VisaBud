@@ -125,6 +125,99 @@ export default function VisaGuidancePage() {
         </div>
       </div>
 
+      {/* Why Applications Fail Section */}
+      <section className="bg-red-50 py-16 md:py-20 border-y-4 border-red-300">
+        <div className="container-max">
+          <h2 className="text-3xl font-bold text-slate-900 mb-4">Common Reasons Applications Are Delayed or Refused</h2>
+          <p className="text-slate-800 mb-8 leading-relaxed">Don't let your application fail over preventable mistakes:</p>
+          
+          <div className="grid md:grid-cols-2 gap-6 mb-8">
+            {[
+              'Missing financial evidence (bank statements, payslips)',
+              'Incomplete relationship proof (photos, messages, evidence)',
+              'Expired or invalid documents (insufficient validity)',
+              'Missing translations (foreign documents not translated)',
+              'Inconsistent dates or information across documents',
+              'Poor document quality (blurry, missing pages, illegible)',
+            ].map((reason, i) => (
+              <div key={i} className="flex gap-3 text-slate-800 text-sm">
+                <span className="text-lg flex-shrink-0">❌</span>
+                <span>{reason}</span>
+              </div>
+            ))}
+          </div>
+
+          <div className="bg-white border-3 border-orange-400 rounded-lg p-6 shadow-md">
+            <p className="text-slate-800 text-sm"><span className="font-bold">How VisaBud Helps:</span> Our AI scans every document and flags these issues before you submit.</p>
+          </div>
+        </div>
+      </section>
+
+      {/* AI Demo Section */}
+      <section className="bg-blue-50 py-16 md:py-20 border-y-4 border-blue-300">
+        <div className="container-max">
+          <h2 className="text-3xl font-bold text-slate-900 mb-2">See the AI in Action</h2>
+          <p className="text-slate-800 mb-10">Here's what a real AI document review looks like:</p>
+
+          <div className="grid md:grid-cols-2 gap-8">
+            <div>
+              <h3 className="font-bold text-slate-900 mb-4 text-sm">UPLOADED DOCUMENT</h3>
+              <div className="bg-white rounded-lg p-6 border-3 border-slate-400 shadow-md">
+                <div className="bg-gradient-to-br from-blue-100 to-slate-100 rounded-lg p-8 text-center">
+                  <div className="text-5xl mb-2">📄</div>
+                  <p className="font-semibold text-slate-900 text-sm">payslip_jan2026.pdf</p>
+                  <p className="text-xs text-slate-700 mt-1">245 KB</p>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <h3 className="font-bold text-slate-900 mb-4 text-sm">AI REVIEW RESULT</h3>
+              <div className="bg-white rounded-lg p-6 border-3 border-emerald-400 shadow-md space-y-4">
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="font-bold text-slate-900 text-sm">Confidence Score</p>
+                    <p className="text-2xl font-bold text-emerald-600">82%</p>
+                  </div>
+                  <div className="w-full bg-slate-200 rounded-full h-2"><div className="bg-emerald-500 h-2 rounded-full" style={{width: '82%'}}></div></div>
+                </div>
+                <div className="space-y-2 border-t-2 border-slate-200 pt-4">
+                  <div className="flex items-center gap-2 text-sm"><Check className="w-5 h-5 text-emerald-500" /><span className="text-slate-800">Income verified at £45,000/year</span></div>
+                  <div className="flex items-center gap-2 text-sm"><span className="text-orange-500">⚠️</span><span className="text-slate-800"><span className="font-semibold">Missing:</span> Employer address</span></div>
+                  <div className="flex items-center gap-2 text-sm"><span className="text-orange-500">⚠️</span><span className="text-slate-800"><span className="font-semibold">Recommendation:</span> Upload latest bank statement</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* What Happens Next */}
+      <section className="bg-emerald-50 py-16 md:py-20 border-y-4 border-emerald-300">
+        <div className="container-max">
+          <h2 className="text-3xl font-bold text-slate-900 mb-2">What Happens Next?</h2>
+          <p className="text-slate-800 mb-10">Exactly what you get when you start:</p>
+
+          <div className="grid md:grid-cols-2 gap-6 mb-10">
+            {[
+              { num: '1', title: 'Upload up to 3 documents FREE', desc: 'Start with any document: passport, payslip, bank statement, etc.' },
+              { num: '2', title: 'Get instant AI analysis', desc: 'Your documents reviewed in minutes, not hours' },
+              { num: '3', title: 'See your Readiness Score', desc: 'Understand exactly how strong each document is' },
+              { num: '4', title: 'Get specific recommendations', desc: 'Know exactly what to improve before you submit' },
+            ].map((step, i) => (
+              <div key={i} className="flex gap-4">
+                <div className="w-10 h-10 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold flex-shrink-0">{step.num}</div>
+                <div><p className="font-bold text-slate-900 text-sm mb-1">{step.title}</p><p className="text-xs text-slate-700">{step.desc}</p></div>
+              </div>
+            ))}
+          </div>
+
+          <div className="bg-white border-3 border-emerald-400 rounded-lg p-6 shadow-md">
+            <p className="text-slate-800 text-sm"><span className="font-bold">No credit card required.</span> No hidden fees. Your 3 free AI checks help you decide if VisaBud is right for you.</p>
+          </div>
+        </div>
+      </section>
+
       {/* AI Document Checks - The Premium Offer */}
       <section className="bg-white py-16 md:py-24 border-t-4 border-slate-400 shadow-sm">
         <div className="container-max">
