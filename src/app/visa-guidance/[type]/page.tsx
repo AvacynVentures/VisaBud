@@ -87,7 +87,7 @@ export default function VisaGuidancePage() {
       </section>
 
       {/* TRUST STATEMENT */}
-      <section className="bg-gradient-to-r from-emerald-50 to-teal-50 py-8 border-y-2 border-emerald-200">
+      <section className="bg-gradient-to-r from-emerald-50 to-teal-50 py-4 border-y border-emerald-200">
         <div className="container-max">
           <p className="text-sm font-bold text-emerald-900 mb-3">Built on Official UK Visa Requirements</p>
           <div className="grid md:grid-cols-2 gap-4 text-sm text-slate-800">
@@ -100,7 +100,7 @@ export default function VisaGuidancePage() {
       </section>
 
       {/* QUICK TRY BOX & DIRECT CHECKLIST */}
-      <section className="container-max py-8 space-y-4">
+      <section className="container-max py-6 space-y-3">
         <div className="bg-gradient-to-br from-blue-50 to-slate-50 border-2 border-blue-300 rounded-lg p-6">
           <h2 className="text-xl font-bold text-slate-900 mb-2">🟢 Try a Free Demo</h2>
           <p className="text-slate-700 mb-4 text-sm">Upload any document: payslip, passport, bank statement, or marriage certificate. See exactly what VisaBud finds. No account. No credit card. 60 seconds.</p>
@@ -124,7 +124,7 @@ export default function VisaGuidancePage() {
       </section>
 
       {/* AI EXAMPLE */}
-      <section className="bg-blue-50 py-12 border-y-2 border-blue-300">
+      <section className="bg-blue-50 py-8 border-y border-blue-300">
         <div className="container-max">
           <h2 className="text-2xl font-bold text-slate-900 mb-2">See Exactly What VisaBud Finds</h2>
           <p className="text-slate-800 mb-8">Real example: Payslip uploaded</p>
@@ -309,7 +309,7 @@ export default function VisaGuidancePage() {
 
 
       {/* FINAL CTA */}
-      <section className="container-max py-6">
+      <section className="container-max py-4">
         <div className="bg-gradient-to-r from-blue-600 to-cyan-600 rounded-lg p-6 text-white text-center">
           <h2 className="text-lg font-bold mb-2">Ready to organize your documents?</h2>
           <p className="text-blue-100 mb-3 text-sm">Upload all required documents. 3 AI checks free. Upgrade for unlimited.</p>
@@ -323,7 +323,7 @@ export default function VisaGuidancePage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-slate-300 bg-slate-900 py-6">
+      <footer className="border-t border-slate-300 bg-slate-900 py-4">
         <div className="container-max">
           <div className="text-center">
             <p className="text-slate-500 text-xs">
