@@ -41,7 +41,7 @@ export default function FooterEmailCapture() {
     return (
       <div className="flex items-center gap-2 text-emerald-400 text-sm">
         <CheckCircle className="w-4 h-4" />
-        <span>You&apos;re subscribed! Check your inbox.</span>
+        <span>Thank you for subscribing! Check your inbox for visa tips.</span>
       </div>
     );
   }
@@ -53,13 +53,13 @@ export default function FooterEmailCapture() {
       </p>
       <form onSubmit={handleSubmit} className="flex gap-2">
         <div className="relative flex-1">
-          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none flex-shrink-0" />
           <input
             type="email"
             value={email}
             onChange={(e) => { setEmail(e.target.value); setStatus('idle'); }}
-            placeholder="your@email.com"
-            className="w-full pl-9 pr-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-sm text-white placeholder-slate-500 focus:border-blue-500 focus:ring-0 transition-colors"
+            placeholder="you@email.com"
+            className="w-full pl-10 pr-4 py-2 rounded-lg bg-slate-800 border border-slate-700 text-sm text-white placeholder-slate-500 focus:border-blue-500 focus:ring-0 transition-colors overflow-hidden text-ellipsis"
             disabled={status === 'loading'}
           />
         </div>

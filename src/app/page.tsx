@@ -46,72 +46,85 @@ export default function Home() {
         <TopNav />
 
         {/* Hero */}
-        <section className="container-max py-16 md:py-24">
-          <div className="max-w-3xl">
-            <FadeIn delay={0.05}>
-              <div className="mb-6 inline-flex items-center gap-2 bg-blue-50 px-3 py-1.5 rounded-full text-sm text-blue-600 font-medium">
-                🏛️ Built using official UK Home Office guidance
-              </div>
-            </FadeIn>
-            <FadeIn delay={0.1}>
-              <h1 className="text-4xl md:text-5xl font-bold text-slate-900 mb-4 leading-tight">
-                Complete your UK visa<br />application with confidence*<br />
-                <span className="text-gradient">We make sure you don&apos;t miss a thing.</span>
-              </h1>
-            </FadeIn>
-            <FadeIn delay={0.15}>
-              <p className="text-xl text-slate-700 mb-4 leading-relaxed">
-                Get AI-powered document checks, a personalised checklist, and timeline — free to start.
-              </p>
-              <p className="text-sm text-slate-700 mb-6">
-                3 free AI document checks included · Full access from £9.99
-              </p>
-            </FadeIn>
-            <FadeIn delay={0.2}>
-              {user && (
-                <div className="flex flex-col sm:flex-row gap-3 mb-6">
-                  <Link href="/app/start" className="btn-primary flex items-center justify-center gap-2 text-base py-3.5 px-7 shadow-lg shadow-blue-200/50">
-                    Start a New Application
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                    </svg>
-                  </Link>
-                  <Link href="/applications" className="flex items-center justify-center gap-2 text-base py-3.5 px-7 border-2 border-gray-200 hover:border-blue-300 hover:bg-blue-50 rounded-xl font-semibold text-gray-700 hover:text-blue-700 transition-all">
-                    View My Applications
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </Link>
+        <section className="container-max py-12 md:py-16">
+          <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
+            <div>
+              <FadeIn delay={0.05}>
+                <div className="mb-4 inline-flex items-center gap-2 bg-blue-50 px-3 py-1.5 rounded-full text-sm text-blue-600 font-medium">
+                  🏛️ Built using official UK Home Office guidance
                 </div>
-              )}
+              </FadeIn>
+              <FadeIn delay={0.1}>
+                <h1 className="text-4xl md:text-5xl font-bold text-slate-900 mb-3 leading-tight">
+                  Complete your UK visa<br />application with confidence*
+                </h1>
+              </FadeIn>
+              <FadeIn delay={0.15}>
+                <p className="text-lg text-slate-700 mb-2 leading-relaxed">
+                  Get AI-powered document checks, a personalised checklist, and timeline — free to start.
+                </p>
+                <p className="text-sm text-slate-600 mb-6">
+                  3 free AI document checks included · Full access from £9.99
+                </p>
+              </FadeIn>
+              <FadeIn delay={0.2}>
+                {user && (
+                  <div className="flex flex-col sm:flex-row gap-3 mb-6">
+                    <Link href="/app/start" className="btn-primary flex items-center justify-center gap-2 text-base py-3 px-6 shadow-lg shadow-blue-200/50">
+                      Start a New Application
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                      </svg>
+                    </Link>
+                    <Link href="/applications" className="flex items-center justify-center gap-2 text-base py-3 px-6 border-2 border-gray-200 hover:border-blue-300 hover:bg-blue-50 rounded-xl font-semibold text-gray-700 hover:text-blue-700 transition-all">
+                      View My Applications
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </Link>
+                  </div>
+                )}
+              </FadeIn>
+            </div>
+            {/* Hero Visual - AI Document Checker Example */}
+            <FadeIn delay={0.2} className="hidden md:block">
+              <div className="bg-white rounded-xl p-6 border-2 border-emerald-400 shadow-lg">
+                <p className="text-xs font-bold text-slate-600 mb-2 uppercase">AI Document Check Example</p>
+                <div className="bg-gradient-to-br from-blue-100 to-slate-100 rounded p-4 text-center mb-4">
+                  <p className="text-sm font-semibold text-slate-900">📄 payslip_jan2026.pdf</p>
+                </div>
+                <p className="text-xs font-bold text-slate-700 mb-2 uppercase">Document Type Detected</p>
+                <p className="text-lg font-bold text-emerald-700 mb-4">Payslip ✅</p>
+                <p className="text-xs font-bold text-slate-700 mb-1 uppercase">Visa Readiness Score</p>
+                <p className="text-4xl font-bold text-emerald-600 mb-4">82%</p>
+                <div className="space-y-2 text-sm mb-4">
+                  <div className="flex gap-2"><span className="text-emerald-600">✓</span> <span className="text-slate-800">Income Verified: £45,000/year</span></div>
+                  <div className="flex gap-2"><span className="text-orange-600">⚠</span> <span className="text-slate-800">Missing Employer Address</span></div>
+                  <div className="flex gap-2"><span className="text-orange-600">⚠</span> <span className="text-slate-800">Missing Bank Statement</span></div>
+                </div>
+                <p className="text-xs font-bold text-orange-600">⚠️ Not Yet Ready To Submit</p>
+              </div>
             </FadeIn>
           </div>
         </section>
 
-        {/* Visa Type Selector (If not logged in) - Moved High */}
+        {/* Visa Type Selector (If not logged in) - Clean Buttons */}
         {!user && (
-          <section className="bg-gradient-to-b from-blue-50 to-white py-12 md:py-16">
+          <section className="bg-gradient-to-b from-white to-slate-50 py-8 md:py-10 border-b border-slate-200">
             <div className="container-max">
               <FadeIn>
-                <div className="text-center mb-10">
-                  <p className="text-blue-600 text-sm font-semibold mb-3 uppercase tracking-wide">📋 Pick your visa type</p>
-                  <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-2">Choose your UK visa pathway</h2>
-                  <p className="text-slate-700 text-sm">Free guidance & documents for your specific visa — no signup required</p>
+                <div className="text-center mb-6">
+                  <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-2">Choose your visa pathway</h2>
                 </div>
               </FadeIn>
-              <StaggerContainer className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <StaggerContainer className="grid md:grid-cols-2 lg:grid-cols-4 gap-3 max-w-4xl mx-auto">
                 {getAllVisas().map((visa) => (
                   <StaggerItem key={visa.id}>
                     <Link
                       href={`/visa-guidance/${visa.id}`}
-                      className={`card card-hover p-6 text-center group bg-gradient-to-br ${visa.color} bg-opacity-5 hover:bg-opacity-10 transition-all border-2 border-transparent hover:border-blue-300`}
+                      className="block p-4 text-center rounded-lg border-2 border-slate-300 hover:border-blue-500 hover:bg-blue-50 transition-all group"
                     >
-                      <div className="text-4xl mb-3 group-hover:scale-110 transition-transform">{visa.icon}</div>
-                      <h3 className="font-bold text-slate-900 mb-1 text-sm">{visa.title}</h3>
-                      <p className="text-xs text-slate-700 mb-3 line-clamp-2 min-h-10">{visa.overview}</p>
-                      <div className="text-xs font-semibold text-blue-600 flex items-center justify-center gap-1">
-                        View Checklist →
-                      </div>
+                      <h3 className="font-bold text-slate-900 text-sm group-hover:text-blue-700 transition-colors">{visa.title}</h3>
                     </Link>
                   </StaggerItem>
                 ))}
@@ -121,10 +134,10 @@ export default function Home() {
         )}
 
         {/* Free AI Checks Strip */}
-        <section className="bg-emerald-50 border-y border-emerald-100 py-8">
+        <section className="bg-emerald-50 border-y border-emerald-100 py-6">
           <div className="container-max">
-            <p className="text-center text-sm font-semibold text-emerald-700 mb-5 uppercase tracking-wide">✨ Included free — no payment needed</p>
-            <div className="grid md:grid-cols-3 gap-4">
+            <p className="text-center text-xs font-semibold text-emerald-700 mb-4 uppercase tracking-wide">✨ Included free — no payment needed</p>
+            <div className="grid md:grid-cols-3 gap-3">
               {[
                 { icon: '🪪', title: 'Passport Identity & Fraud Check', desc: 'AI checks expiry, MRZ integrity, and name consistency across your documents.' },
                 { icon: '💰', title: 'Financial Documents Cross-Check', desc: 'AI flags salary mismatches between payslips, bank statements, and employer letter.' },
@@ -144,7 +157,7 @@ export default function Home() {
         </section>
 
         {/* Credibility Bar */}
-        <section className="bg-blue-900 py-3">
+        <section className="bg-blue-900 py-2">
           <div className="container-max flex flex-wrap items-center justify-center gap-4 sm:gap-8 text-xs text-blue-200">
             <span className="flex items-center gap-1.5">🏛️ Built on official UKVI guidance</span>
             <span className="hidden sm:inline text-blue-600">·</span>
@@ -155,9 +168,9 @@ export default function Home() {
         </section>
 
         {/* Trust Signals */}
-        <section className="bg-white border-t border-b border-slate-200 py-12">
+        <section className="bg-white border-t border-b border-slate-200 py-8">
           <div className="container-max">
-            <StaggerContainer className="grid md:grid-cols-3 gap-8">
+            <StaggerContainer className="grid md:grid-cols-3 gap-6">
               <StaggerItem>
                 <div className="flex items-start gap-4 card-hover p-4 rounded-xl">
                   <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
@@ -198,19 +211,18 @@ export default function Home() {
 
 
         {/* How It Works */}
-        <section className="container-max py-16">
+        <section className="container-max py-10">
           <FadeIn>
-            <div className="text-center mb-12">
-              <p className="text-blue-600 text-sm font-semibold mb-2 uppercase tracking-wide">How it works</p>
-              <h2 className="text-3xl font-bold text-slate-900 mb-3">Three steps. Zero guesswork.</h2>
-              <p className="text-slate-700 max-w-md mx-auto">No legal jargon. No spreadsheets. Just a clear path from &ldquo;I don&apos;t know where to start&rdquo; to &ldquo;I&apos;m ready to apply.&rdquo;</p>
+            <div className="text-center mb-8">
+              <p className="text-blue-600 text-xs font-semibold mb-2 uppercase tracking-wide">How it works</p>
+              <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-2">Three steps to apply with confidence</h2>
             </div>
           </FadeIn>
-          <StaggerContainer className="grid md:grid-cols-3 gap-8">
+          <StaggerContainer className="grid md:grid-cols-3 gap-6">
             {[
-              { emoji: '🗣️', step: 'STEP 1', title: 'Choose your visa type', desc: 'Select Spouse, Skilled Worker, or British Citizenship — we instantly build your personalised checklist and AI checks.' },
-              { emoji: '⚡', step: 'STEP 2', title: 'Get your personalised plan', desc: 'We instantly build your checklist, timeline, and flag any risks — tailored to your exact situation.' },
-              { emoji: '📦', step: 'STEP 3', title: 'Apply with confidence', desc: 'A clean, structured pack ready to reference. Know exactly what to submit and when.' },
+              { emoji: '📄', step: 'STEP 1', title: 'Upload Your Documents', desc: 'Upload all documents for your visa. No limits.' },
+              { emoji: '🤖', step: 'STEP 2', title: 'Get AI Checks Free', desc: 'Check up to 3 documents with AI. See what we find.' },
+              { emoji: '✅', step: 'STEP 3', title: 'Apply With Confidence', desc: 'Fix any issues we find. Apply knowing nothing is missed.' },
             ].map((item, i) => (
               <StaggerItem key={i}>
                 <div className="card card-hover p-8 text-center">
@@ -225,18 +237,17 @@ export default function Home() {
         </section>
 
         {/* Testimonial */}
-        <section className="bg-blue-50 py-12">
+        <section className="bg-blue-50 py-8">
           <FadeIn>
             <div className="container-max text-center max-w-2xl mx-auto">
-              <div className="text-4xl mb-4">&ldquo;</div>
-              <p className="text-lg text-slate-900 mb-4 italic leading-relaxed">
-                I was terrified I&apos;d get refused — I&apos;d heard so many horror stories. VisaBud told me exactly what I needed, flagged a risk I hadn&apos;t even thought of, and I got my spouse visa approved first time. I wish I&apos;d found this months ago.
+              <p className="text-base text-slate-900 mb-3 italic leading-relaxed">
+                I was terrified I&apos;d get refused. VisaBud flagged a risk I hadn&apos;t even thought of, and I got my spouse visa approved first time.
               </p>
-              <div className="flex items-center justify-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-blue-200 flex items-center justify-center text-blue-700 font-bold text-sm">PS</div>
+              <div className="flex items-center justify-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-blue-200 flex items-center justify-center text-blue-700 font-bold text-xs">PS</div>
                 <div className="text-left">
                   <p className="text-slate-900 font-semibold text-sm">Priya S.</p>
-                  <p className="text-slate-700 text-xs">Spouse Visa · Approved October 2024</p>
+                  <p className="text-slate-600 text-xs">Spouse Visa · Approved October 2024</p>
                 </div>
               </div>
             </div>
@@ -244,27 +255,24 @@ export default function Home() {
         </section>
 
         {/* Pricing */}
-        <section className="container-max py-16">
+        <section className="container-max py-10">
           <FadeIn>
-            <div className="text-center mb-8">
-              <p className="text-blue-600 text-sm font-semibold mb-2 uppercase tracking-wide">Simple pricing</p>
-              <h2 className="text-3xl font-bold text-slate-900 mb-3">One price. Everything unlocked.</h2>
-              <p className="text-slate-700">No tiers. No confusion. Pay once per application, unlock everything.</p>
+            <div className="text-center mb-6">
+              <p className="text-blue-600 text-xs font-semibold mb-1 uppercase tracking-wide">Simple pricing</p>
+              <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-2">One price. Everything unlocked.</h2>
             </div>
           </FadeIn>
           <FadeIn delay={0.1}>
             <div className="max-w-sm mx-auto">
-              <div className="card p-8 border-2 border-blue-200">
-                <div className="text-center mb-6">
-                  <p className="text-sm font-semibold text-emerald-600 mb-1">🔓 Full Application Unlock</p>
-                  <div className="text-5xl font-bold text-blue-600 mb-1">£9.99</div>
-                  <p className="text-slate-700 text-sm">Per application · One-time · Instant access</p>
+              <div className="card p-6 border-2 border-blue-200">
+                <div className="text-center mb-4">
+                  <div className="text-4xl font-bold text-blue-600 mb-1">£9.99</div>
+                  <p className="text-slate-600 text-sm">Per application · One-time · Instant access</p>
                 </div>
-                <ul className="space-y-3 mb-6 text-sm text-slate-700">
+                <ul className="space-y-2 mb-4 text-sm text-slate-700">
                   {[
                     '✓ All 30+ checklist items unlocked',
                     '✓ AI document verification on every item',
-                    '✓ Risk scoring & confidence scores',
                     '✓ 37 document preparation templates',
                     '✓ PDF export & timeline',
                     '✓ 7-day money-back guarantee',
@@ -272,42 +280,39 @@ export default function Home() {
                     <li key={i} className="flex items-center gap-2">{item}</li>
                   ))}
                 </ul>
-                <Link href="/auth/signup" className="btn-primary w-full block text-center py-3.5">
-                  Start Free — Unlock for £9.99
+                <Link href="/auth/signup" className="btn-primary w-full block text-center py-3">
+                  Start Free
                 </Link>
-                <p className="text-xs text-slate-400 text-center mt-3">3 AI checks always free. Pay per application when ready.</p>
+                <p className="text-xs text-slate-500 text-center mt-2">3 AI checks always free. Upgrade when ready.</p>
               </div>
             </div>
           </FadeIn>
         </section>
 
         {/* Final CTA */}
-        <section className="container-max pb-16">
+        <section className="container-max py-8">
           <FadeIn>
-            <div className="bg-gradient-to-br from-blue-700 to-blue-900 rounded-2xl p-8 md:p-12 text-center text-white">
-              <h2 className="text-2xl md:text-3xl font-bold mb-3">Stop guessing. Know exactly what to do.</h2>
-              <p className="text-blue-200 mb-6 max-w-lg mx-auto">Join 1,000+ applicants who got their visa right the first time. Your personalised plan is 3 minutes away.</p>
-              <Link href="/auth/signup" className="inline-flex items-center gap-2 px-8 py-3.5 bg-white text-blue-800 font-bold rounded-xl hover:bg-blue-50 transition-all duration-200 shadow-lg btn-hover">
-                Start Free
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
+            <div className="bg-gradient-to-br from-blue-700 to-blue-900 rounded-lg p-6 md:p-8 text-center text-white">
+              <h2 className="text-xl md:text-2xl font-bold mb-2">Ready to upload your first document?</h2>
+              <p className="text-blue-200 mb-4 max-w-lg mx-auto text-sm">See exactly what VisaBud finds. Free, no credit card needed.</p>
+              <Link href="/auth/signup" className="inline-flex items-center gap-2 px-6 py-3 bg-white text-blue-800 font-bold rounded-lg hover:bg-blue-50 transition-all">
+                Get Started Free
               </Link>
             </div>
           </FadeIn>
         </section>
 
         {/* Disclaimer Section */}
-        <section className="bg-slate-50 border-t border-slate-200 py-8">
+        <section className="bg-slate-50 border-t border-slate-200 py-6">
           <div className="container-max">
-            <p className="text-xs text-slate-700 leading-relaxed">
-              <span className="font-semibold">*Disclaimer:</span> VisaBud is not affiliated with UK Visas and Immigration (UKVI) or any government agency. We provide private document preparation checklists to help you organize materials for visa applications. This service is for informational guidance only and does not constitute legal advice. Always verify information with official <a href="https://www.gov.uk/visas-immigration" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline font-semibold">Gov.uk</a> guidance before submitting your application.
+            <p className="text-xs text-slate-600 leading-relaxed">
+              <span className="font-semibold">*Disclaimer:</span> VisaBud is not affiliated with UKVI or any government agency. This service is for guidance only and does not constitute legal advice. Always verify with official <a href="https://www.gov.uk/visas-immigration" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Gov.uk</a> guidance before submitting.
             </p>
           </div>
         </section>
 
         {/* Footer */}
-        <footer className="border-t border-slate-200 bg-slate-900 py-10">
+        <footer className="border-t border-slate-200 bg-slate-900 py-8">
           <div className="container-max">
             <div className="grid md:grid-cols-2 gap-8 mb-8">
               {/* Brand + links */}

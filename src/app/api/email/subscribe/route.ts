@@ -194,28 +194,28 @@ function getWelcomeEmailHtml(visaType?: string): string {
   <div class="wrapper">
     <div class="card">
       <div class="logo">VisaBud</div>
-      <h1>Thanks for using VisaBud! 🎉</h1>
-      <p class="subtitle">Your ${visaLabel} plan has been created.</p>
+      <h1>Thank you for subscribing! ✨</h1>
+      <p class="subtitle">You'll now receive helpful visa guidance, document tips, and VisaBud updates.</p>
       
-      <p>We've put together a personalised plan based on your answers. Here's what happens next:</p>
+      <p>We're excited to help you prepare your ${visaLabel} application with confidence.</p>
       
       <div class="tip-box">
         <div class="tip-title">Over the next few weeks, we'll send you:</div>
         <ul class="tip-list">
           <li>Tips specific to the ${visaLabel}</li>
           <li>Common mistakes to avoid (and how to fix them)</li>
-          <li>Deadline reminders so nothing slips through</li>
-          <li>Updates when immigration rules change</li>
+          <li>Document preparation guides</li>
+          <li>Timeline reminders and updates</li>
         </ul>
       </div>
 
-      <p>In the meantime, head back to your dashboard to start working through your checklist.</p>
+      <p>Want to get started right now? Upload your first document and see what VisaBud finds.</p>
 
-      <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://visabud.co.uk'}/dashboard" class="cta">View My Dashboard →</a>
+      <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://visabud.co.uk'}/auth/signup" class="cta">Get Started Free →</a>
 
       <p style="font-size: 13px; color: #64748b; margin-top: 20px;">
-        <strong>Tip:</strong> The biggest reason applications get refused? Missing documents. 
-        Your checklist is designed to prevent exactly that.
+        <strong>Pro tip:</strong> The biggest reason applications get delayed or refused? Missing or inconsistent documents. 
+        VisaBud is designed to catch those issues before you submit.
       </p>
 
       <div class="footer">

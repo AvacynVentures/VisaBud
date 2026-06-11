@@ -51,21 +51,21 @@ export default function VisaGuidancePage() {
       <TopNav />
 
       {/* HERO */}
-      <section className="bg-gradient-to-br from-blue-50 to-slate-100 py-16 md:py-20">
+      <section className="bg-gradient-to-br from-blue-50 to-slate-100 py-12 md:py-14">
         <div className="container-max">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
+          <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
             <div>
-              <h1 className="text-4xl md:text-5xl font-bold mb-4 leading-tight text-slate-900">
+              <h1 className="text-4xl md:text-5xl font-bold mb-3 leading-tight text-slate-900">
                 Avoid Costly Visa Mistakes Before You Submit
               </h1>
-              <p className="text-lg text-slate-800 mb-6">
-                Upload one document and see exactly what VisaBud finds. Identify missing evidence, inconsistencies and common mistakes in minutes.
+              <p className="text-lg text-slate-700 mb-4">
+                Upload one document and see exactly what VisaBud finds. Get instant feedback in minutes.
               </p>
               <Link
-                href={`/auth/signup?visa=${visaType}`}
-                className="inline-flex items-center gap-2 px-8 py-3.5 bg-blue-700 text-white font-bold rounded-xl hover:bg-blue-800 transition-all"
+                href={`/demo-upload?visa=${visaType}`}
+                className="inline-flex items-center gap-2 px-8 py-3 bg-blue-700 text-white font-bold rounded-lg hover:bg-blue-800 transition-all"
               >
-                Get 3 Free AI Checks
+                Try a Free Demo
                 <ArrowRight className="w-5 h-5" />
               </Link>
             </div>
@@ -100,29 +100,20 @@ export default function VisaGuidancePage() {
       </section>
 
       {/* QUICK TRY BOX */}
-      <section className="container-max py-12">
-        <div className="bg-gradient-to-br from-blue-50 to-slate-50 border-2 border-blue-300 rounded-lg p-8 md:p-12">
-          <h2 className="text-2xl font-bold text-slate-900 mb-2">🟢 Upload Any One Visa Document</h2>
-          <p className="text-slate-800 mb-6">Try a payslip, passport, bank statement or marriage certificate. See exactly what VisaBud finds. No account. No credit card. Results in under 60 seconds.</p>
-          <div className="grid md:grid-cols-2 gap-8 items-center">
-            <div>
-              <p className="text-sm font-bold text-slate-700 mb-3">You Can Upload:</p>
-              <ul className="space-y-2 text-sm text-slate-800">
-                <li className="flex gap-2"><Check className="w-4 h-4 text-blue-600" /> Payslip</li>
-                <li className="flex gap-2"><Check className="w-4 h-4 text-blue-600" /> Passport</li>
-                <li className="flex gap-2"><Check className="w-4 h-4 text-blue-600" /> Bank Statement</li>
-                <li className="flex gap-2"><Check className="w-4 h-4 text-blue-600" /> Marriage Certificate</li>
-              </ul>
+      <section className="container-max py-10">
+        <div className="bg-gradient-to-br from-blue-50 to-slate-50 border-2 border-blue-300 rounded-lg p-6 md:p-8">
+          <h2 className="text-xl font-bold text-slate-900 mb-2">🟢 Try a Free Demo</h2>
+          <p className="text-slate-700 mb-4 text-sm">Upload any document: payslip, passport, bank statement, or marriage certificate. See exactly what VisaBud finds. No account. No credit card. 60 seconds.</p>
+          <div className="flex gap-4 items-center">
+            <div className="text-sm text-slate-700 flex-1">
+              Results show exactly what we find — missing info, inconsistencies, and what to fix.
             </div>
-            <div className="text-center">
-              <Link
-                href={`/demo-upload?visa=${visaType}`}
-                className="inline-flex items-center gap-2 px-8 py-4 bg-blue-700 text-white font-bold rounded-xl hover:bg-blue-800 transition-all text-lg"
-              >
-                📁 Try Now
-              </Link>
-              <p className="text-xs text-slate-600 mt-3">No signup required</p>
-            </div>
+            <Link
+              href={`/demo-upload?visa=${visaType}`}
+              className="inline-flex items-center gap-2 px-6 py-3 bg-blue-700 text-white font-bold rounded-lg hover:bg-blue-800 transition-all flex-shrink-0 whitespace-nowrap"
+            >
+              Try Now
+            </Link>
           </div>
         </div>
       </section>
@@ -313,29 +304,25 @@ export default function VisaGuidancePage() {
 
 
       {/* FINAL CTA */}
-      <section className="container-max py-12">
-        <div className="bg-gradient-to-r from-blue-600 to-cyan-600 rounded-2xl p-8 md:p-12 text-white text-center">
-          <h2 className="text-3xl font-bold mb-3">Ready to apply with confidence?</h2>
-          <p className="text-lg text-blue-100 mb-6">Get 3 free AI document checks. See what we find.</p>
+      <section className="container-max py-10">
+        <div className="bg-gradient-to-r from-blue-600 to-cyan-600 rounded-lg p-6 md:p-8 text-white text-center">
+          <h2 className="text-2xl font-bold mb-2">Get your full checklist now</h2>
+          <p className="text-blue-100 mb-4 text-sm">Upload all documents, check 3 free, then unlock full access for just £9.99.</p>
           <Link
             href={`/auth/signup?visa=${visaType}`}
-            className="inline-flex items-center gap-2 px-8 py-3.5 bg-white text-blue-700 font-bold rounded-xl hover:bg-blue-50 transition-all"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-white text-blue-700 font-bold rounded-lg hover:bg-blue-50 transition-all"
           >
             Get Started Free
-            <ArrowRight className="w-5 h-5" />
           </Link>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="border-t-2 border-slate-300 bg-slate-900 py-10">
+      <footer className="border-t border-slate-300 bg-slate-900 py-6">
         <div className="container-max">
           <div className="text-center">
-            <p className="text-slate-400 text-sm mb-2">
-              Information based on official UK Home Office guidance. Always verify with gov.uk before applying.
-            </p>
             <p className="text-slate-500 text-xs">
-              VisaBud is not affiliated with or endorsed by the UK Home Office or UKVI.
+              Information based on official UK Home Office guidance. VisaBud is not affiliated with UKVI.
             </p>
           </div>
         </div>
