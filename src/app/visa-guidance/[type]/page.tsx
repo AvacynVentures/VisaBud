@@ -99,22 +99,27 @@ export default function VisaGuidancePage() {
         </div>
       </section>
 
-      {/* QUICK TRY BOX */}
-      <section className="container-max py-10">
-        <div className="bg-gradient-to-br from-blue-50 to-slate-50 border-2 border-blue-300 rounded-lg p-6 md:p-8">
+      {/* QUICK TRY BOX & DIRECT CHECKLIST */}
+      <section className="container-max py-8 space-y-4">
+        <div className="bg-gradient-to-br from-blue-50 to-slate-50 border-2 border-blue-300 rounded-lg p-6">
           <h2 className="text-xl font-bold text-slate-900 mb-2">🟢 Try a Free Demo</h2>
           <p className="text-slate-700 mb-4 text-sm">Upload any document: payslip, passport, bank statement, or marriage certificate. See exactly what VisaBud finds. No account. No credit card. 60 seconds.</p>
-          <div className="flex gap-4 items-center">
-            <div className="text-sm text-slate-700 flex-1">
-              Results show exactly what we find — missing info, inconsistencies, and what to fix.
-            </div>
-            <Link
-              href={`/demo-upload?visa=${visaType}`}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-blue-700 text-white font-bold rounded-lg hover:bg-blue-800 transition-all flex-shrink-0 whitespace-nowrap"
-            >
-              Try Now
-            </Link>
-          </div>
+          <Link
+            href={`/demo-upload?visa=${visaType}`}
+            className="inline-flex items-center gap-2 px-6 py-3 bg-blue-700 text-white font-bold rounded-lg hover:bg-blue-800 transition-all"
+          >
+            Try Free Demo
+          </Link>
+        </div>
+        <div className="bg-gradient-to-br from-slate-50 to-white border-2 border-slate-300 rounded-lg p-6">
+          <h2 className="text-xl font-bold text-slate-900 mb-2">📋 Skip Demo, Go Straight to Checklist</h2>
+          <p className="text-slate-700 mb-4 text-sm">Start uploading your documents now. Get 3 free AI checks, then upgrade if you want VisaBud to check the rest.</p>
+          <Link
+            href={`/auth/signup?visa=${visaType}`}
+            className="inline-flex items-center gap-2 px-6 py-3 bg-slate-700 text-white font-bold rounded-lg hover:bg-slate-800 transition-all"
+          >
+            Start My Document Checklist
+          </Link>
         </div>
       </section>
 
@@ -304,15 +309,15 @@ export default function VisaGuidancePage() {
 
 
       {/* FINAL CTA */}
-      <section className="container-max py-10">
-        <div className="bg-gradient-to-r from-blue-600 to-cyan-600 rounded-lg p-6 md:p-8 text-white text-center">
-          <h2 className="text-2xl font-bold mb-2">Get your full checklist now</h2>
-          <p className="text-blue-100 mb-4 text-sm">Upload all documents, check 3 free, then unlock full access for just £9.99.</p>
+      <section className="container-max py-6">
+        <div className="bg-gradient-to-r from-blue-600 to-cyan-600 rounded-lg p-6 text-white text-center">
+          <h2 className="text-lg font-bold mb-2">Ready to organize your documents?</h2>
+          <p className="text-blue-100 mb-3 text-sm">Upload all required documents. 3 AI checks free. Upgrade for unlimited.</p>
           <Link
             href={`/auth/signup?visa=${visaType}`}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-white text-blue-700 font-bold rounded-lg hover:bg-blue-50 transition-all"
+            className="inline-flex items-center gap-2 px-6 py-2.5 bg-white text-blue-700 font-bold rounded-lg hover:bg-blue-50 transition-all"
           >
-            Get Started Free
+            Start Free
           </Link>
         </div>
       </section>

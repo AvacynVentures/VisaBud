@@ -122,9 +122,9 @@ export default function Home() {
                   <StaggerItem key={visa.id}>
                     <Link
                       href={`/visa-guidance/${visa.id}`}
-                      className="block p-4 text-center rounded-lg border-2 border-slate-300 hover:border-blue-500 hover:bg-blue-50 transition-all group"
+                      className="block p-4 text-center rounded-lg bg-blue-700 hover:bg-blue-800 text-white font-semibold transition-all shadow-md hover:shadow-lg transform hover:scale-105 duration-200"
                     >
-                      <h3 className="font-bold text-slate-900 text-sm group-hover:text-blue-700 transition-colors">{visa.title}</h3>
+                      <h3 className="text-sm">{visa.title}</h3>
                     </Link>
                   </StaggerItem>
                 ))}
