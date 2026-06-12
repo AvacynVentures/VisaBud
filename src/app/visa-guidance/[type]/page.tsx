@@ -50,39 +50,64 @@ export default function VisaGuidancePage() {
     <div className="min-h-screen bg-white">
       <TopNav />
 
-      {/* HERO */}
-      <section className="bg-gradient-to-br from-blue-50 to-slate-100 py-12 md:py-14">
+      {/* HERO - COMPACT */}
+      <section className="bg-gradient-to-br from-blue-50 to-slate-100 py-6 md:py-8">
         <div className="container-max">
-          <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
+          <div className="grid md:grid-cols-2 gap-6 md:gap-8 items-start">
             <div>
-              <h1 className="text-4xl md:text-5xl font-bold mb-3 leading-tight text-slate-900">
-                Avoid Costly Visa Mistakes Before You Submit
+              <h1 className="text-2xl md:text-3xl font-bold mb-2 leading-tight text-slate-900">
+                Avoid Costly Visa Mistakes
               </h1>
-              <p className="text-lg text-slate-700 mb-4">
-                Upload one document and see exactly what VisaBud finds. Get instant feedback in minutes.
+              <p className="text-sm md:text-base text-slate-700 mb-3">
+                Upload a document and see exactly what VisaBud finds. Instant feedback in minutes.
               </p>
               <Link
                 href={`/demo-upload?visa=${visaType}`}
-                className="inline-flex items-center gap-2 px-8 py-3 bg-blue-700 text-white font-bold rounded-lg hover:bg-blue-800 transition-all"
+                className="inline-flex items-center gap-2 px-6 py-2.5 bg-blue-700 text-white font-bold rounded-lg hover:bg-blue-800 transition-all text-sm"
               >
                 Try a Free Demo
-                <ArrowRight className="w-5 h-5" />
+                <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
-            <div className="hidden md:flex flex-col items-center justify-center gap-4 text-center">
-              <div className="w-16 h-16 rounded-full bg-blue-200 flex items-center justify-center text-3xl">📄</div>
-              <p className="text-slate-900 font-semibold text-sm">Upload document</p>
-              <p className="text-slate-600">↓</p>
-              <div className="w-16 h-16 rounded-full bg-blue-200 flex items-center justify-center text-3xl">🤖</div>
-              <p className="text-slate-900 font-semibold text-sm">AI review</p>
-              <p className="text-slate-600">↓</p>
-              <div className="w-16 h-16 rounded-full bg-blue-200 flex items-center justify-center text-3xl">📊</div>
-              <p className="text-slate-900 font-semibold text-sm">Readiness score</p>
-              <p className="text-slate-600">↓</p>
-              <div className="w-16 h-16 rounded-full bg-blue-200 flex items-center justify-center text-3xl">✅</div>
-              <p className="text-slate-900 font-semibold text-sm">Submit with confidence</p>
+            {/* COMPACT FLOW DIAGRAM */}
+            <div className="hidden md:flex flex-col items-center justify-start gap-2 text-center">
+              <div className="w-10 h-10 rounded-full bg-blue-200 flex items-center justify-center text-xl">📄</div>
+              <p className="text-slate-900 font-semibold text-xs">Upload</p>
+              <p className="text-slate-600 text-xs">↓</p>
+              <div className="w-10 h-10 rounded-full bg-blue-200 flex items-center justify-center text-xl">🤖</div>
+              <p className="text-slate-900 font-semibold text-xs">AI check</p>
+              <p className="text-slate-600 text-xs">↓</p>
+              <div className="w-10 h-10 rounded-full bg-blue-200 flex items-center justify-center text-xl">📊</div>
+              <p className="text-slate-900 font-semibold text-xs">Score</p>
+              <p className="text-slate-600 text-xs">↓</p>
+              <div className="w-10 h-10 rounded-full bg-blue-200 flex items-center justify-center text-xl">✅</div>
+              <p className="text-slate-900 font-semibold text-xs">Ready</p>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* CTA SECTION - MOVED HIGHER (RIGHT AFTER HERO) */}
+      <section className="container-max py-6 space-y-3 border-b border-slate-200 pb-6">
+        <div className="bg-gradient-to-br from-blue-50 to-slate-50 border-2 border-blue-300 rounded-lg p-6">
+          <h2 className="text-xl font-bold text-slate-900 mb-2">🟢 Try a Free Demo</h2>
+          <p className="text-slate-700 mb-4 text-sm">Upload any document: payslip, passport, bank statement, or marriage certificate. See exactly what VisaBud finds. No account. No credit card. 60 seconds.</p>
+          <Link
+            href={`/demo-upload?visa=${visaType}`}
+            className="inline-flex items-center gap-2 px-6 py-3 bg-blue-700 text-white font-bold rounded-lg hover:bg-blue-800 transition-all"
+          >
+            Try Free Demo
+          </Link>
+        </div>
+        <div className="bg-gradient-to-br from-slate-50 to-white border-2 border-slate-300 rounded-lg p-6">
+          <h2 className="text-xl font-bold text-slate-900 mb-2">📋 Skip Demo, Go Straight to Checklist</h2>
+          <p className="text-slate-700 mb-4 text-sm">Start uploading your documents now. Your checklist is free. AI checks and templates unlock when you're ready.</p>
+          <Link
+            href={`/dashboard?visa=${visaType}`}
+            className="inline-flex items-center gap-2 px-6 py-3 bg-slate-700 text-white font-bold rounded-lg hover:bg-slate-800 transition-all"
+          >
+            Start My Document Checklist
+          </Link>
         </div>
       </section>
 
@@ -96,30 +121,6 @@ export default function VisaGuidancePage() {
             <div className="flex gap-2"><Check className="w-4 h-4 text-emerald-600 flex-shrink-0" /> <span>GDPR compliant UK data processing</span></div>
             <div className="flex gap-2"><Check className="w-4 h-4 text-emerald-600 flex-shrink-0" /> <span>No immigration advice — document review only</span></div>
           </div>
-        </div>
-      </section>
-
-      {/* QUICK TRY BOX & DIRECT CHECKLIST */}
-      <section className="container-max py-6 space-y-3">
-        <div className="bg-gradient-to-br from-blue-50 to-slate-50 border-2 border-blue-300 rounded-lg p-6">
-          <h2 className="text-xl font-bold text-slate-900 mb-2">🟢 Try a Free Demo</h2>
-          <p className="text-slate-700 mb-4 text-sm">Upload any document: payslip, passport, bank statement, or marriage certificate. See exactly what VisaBud finds. No account. No credit card. 60 seconds.</p>
-          <Link
-            href={`/demo-upload?visa=${visaType}`}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-blue-700 text-white font-bold rounded-lg hover:bg-blue-800 transition-all"
-          >
-            Try Free Demo
-          </Link>
-        </div>
-        <div className="bg-gradient-to-br from-slate-50 to-white border-2 border-slate-300 rounded-lg p-6">
-          <h2 className="text-xl font-bold text-slate-900 mb-2">📋 Skip Demo, Go Straight to Checklist</h2>
-          <p className="text-slate-700 mb-4 text-sm">Start uploading your documents now. Get 3 free AI checks, then upgrade if you want VisaBud to check the rest.</p>
-          <Link
-            href={`/auth/signup?visa=${visaType}`}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-slate-700 text-white font-bold rounded-lg hover:bg-slate-800 transition-all"
-          >
-            Start My Document Checklist
-          </Link>
         </div>
       </section>
 
@@ -308,19 +309,7 @@ export default function VisaGuidancePage() {
 
 
 
-      {/* FINAL CTA */}
-      <section className="container-max py-4">
-        <div className="bg-gradient-to-r from-blue-600 to-cyan-600 rounded-lg p-6 text-white text-center">
-          <h2 className="text-lg font-bold mb-2">Ready to organize your documents?</h2>
-          <p className="text-blue-100 mb-3 text-sm">Upload all required documents. 3 AI checks free. Upgrade for unlimited.</p>
-          <Link
-            href={`/auth/signup?visa=${visaType}`}
-            className="inline-flex items-center gap-2 px-6 py-2.5 bg-white text-blue-700 font-bold rounded-lg hover:bg-blue-50 transition-all"
-          >
-            Start Free
-          </Link>
-        </div>
-      </section>
+
 
       {/* Footer */}
       <footer className="border-t border-slate-300 bg-slate-900 py-4">

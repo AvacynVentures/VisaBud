@@ -3,7 +3,6 @@
 import { useState, useMemo, useEffect, useCallback, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import AuthGate from '@/components/AuthGate';
 import { useAuth } from '@/lib/auth-context';
 import { useApplicationStore } from '@/lib/store';
 import {
@@ -136,18 +135,16 @@ function getItemNotApplicableReason(
 
 export default function DashboardPage() {
   return (
-    <AuthGate>
-      <Suspense fallback={
-        <div className="min-h-screen bg-[#F9FAFB] flex items-center justify-center">
-          <div className="animate-pulse flex flex-col items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-blue-200" />
-            <div className="h-3 w-32 bg-gray-200 rounded" />
-          </div>
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#F9FAFB] flex items-center justify-center">
+        <div className="animate-pulse flex flex-col items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-blue-200" />
+          <div className="h-3 w-32 bg-gray-200 rounded" />
         </div>
-      }>
-        <DashboardContent />
-      </Suspense>
-    </AuthGate>
+      </div>
+    }>
+      <DashboardContent />
+    </Suspense>
   );
 }
 

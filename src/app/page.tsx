@@ -254,53 +254,7 @@ export default function Home() {
           </FadeIn>
         </section>
 
-        {/* Pricing */}
-        <section className="container-max py-10">
-          <FadeIn>
-            <div className="text-center mb-6">
-              <p className="text-blue-600 text-xs font-semibold mb-1 uppercase tracking-wide">Simple pricing</p>
-              <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-2">One price. Everything unlocked.</h2>
-            </div>
-          </FadeIn>
-          <FadeIn delay={0.1}>
-            <div className="max-w-sm mx-auto">
-              <div className="card p-6 border-2 border-blue-200">
-                <div className="text-center mb-4">
-                  <div className="text-4xl font-bold text-blue-600 mb-1">£9.99</div>
-                  <p className="text-slate-600 text-sm">Per application · One-time · Instant access</p>
-                </div>
-                <ul className="space-y-2 mb-4 text-sm text-slate-700">
-                  {[
-                    '✓ All 30+ checklist items unlocked',
-                    '✓ AI document verification on every item',
-                    '✓ 37 document preparation templates',
-                    '✓ PDF export & timeline',
-                    '✓ 7-day money-back guarantee',
-                  ].map((item, i) => (
-                    <li key={i} className="flex items-center gap-2">{item}</li>
-                  ))}
-                </ul>
-                <Link href="/auth/signup" className="btn-primary w-full block text-center py-3">
-                  Start Free
-                </Link>
-                <p className="text-xs text-slate-500 text-center mt-2">3 AI checks always free. Upgrade when ready.</p>
-              </div>
-            </div>
-          </FadeIn>
-        </section>
 
-        {/* Final CTA */}
-        <section className="container-max py-8">
-          <FadeIn>
-            <div className="bg-gradient-to-br from-blue-700 to-blue-900 rounded-lg p-6 md:p-8 text-center text-white">
-              <h2 className="text-xl md:text-2xl font-bold mb-2">Ready to upload your first document?</h2>
-              <p className="text-blue-200 mb-4 max-w-lg mx-auto text-sm">See exactly what VisaBud finds. Free, no credit card needed.</p>
-              <Link href="/auth/signup" className="inline-flex items-center gap-2 px-6 py-3 bg-white text-blue-800 font-bold rounded-lg hover:bg-blue-50 transition-all">
-                Get Started Free
-              </Link>
-            </div>
-          </FadeIn>
-        </section>
 
         {/* Disclaimer Section */}
         <section className="bg-slate-50 border-t border-slate-200 py-6">
